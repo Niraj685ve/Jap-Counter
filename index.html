@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🔱 Mahadev Jap Counter Pro v8</title>
+<title>🔱 Mahadev Jap Counter Pro v11</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow-x: hidden; }
@@ -39,23 +39,53 @@
   }
   @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
 
+  /* ===== TOP BAR with sync dot LEFT of settings ===== */
   .top-bar {
-    display:flex; justify-content:space-between; align-items:center;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
     padding: 6px 10px; background: rgba(0,0,0,0.4);
     border-radius: 12px; backdrop-filter: blur(6px);
     border: 1px solid rgba(255,140,0,0.3);
+    gap: 6px;
   }
+  .top-bar .om-corner { justify-self: start; }
+  .top-bar h1 { justify-self: center; text-align: center; }
+  .top-bar .top-right-tools { justify-self: end; }
+  
   .om-corner { font-size: 26px; color:#ff9933; animation: glow 1.5s infinite alternate; }
   @keyframes glow {
     from{ text-shadow: 0 0 8px #ff6600; }
     to  { text-shadow: 0 0 25px #ffcc00, 0 0 40px #ff3300; }
   }
   h1 {
-    font-size: 15px;
+    font-size: 14px;
     background: linear-gradient(90deg,#ffcc00,#ff6600,#ffcc00);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     font-weight: 900; letter-spacing: 1px;
+    white-space: nowrap;
   }
+  .top-right-tools {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sync-mini {
+    display: flex; align-items: center; gap: 4px;
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(255,140,0,0.3);
+    padding: 4px 8px; border-radius: 14px;
+    cursor: pointer; font-size: 10px; color: #ffcc80;
+  }
+  .sync-mini:hover { background: rgba(255,140,0,0.15); }
+  .sync-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #666; transition: all 0.3s;
+  }
+  .sync-dot.synced { background: #10b981; box-shadow: 0 0 6px #10b981; }
+  .sync-dot.syncing { background: #f59e0b; animation: pulseSync 1s infinite; }
+  .sync-dot.error   { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .sync-dot.offline { background: #666; }
+  @keyframes pulseSync { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .sync-mini .sync-txt { font-size: 10px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
   .icon-btn {
     background: rgba(255,140,0,0.2); border: 1px solid #ffcc00;
     color: #ffcc00; width: 32px; height: 32px; border-radius: 50%;
@@ -70,7 +100,7 @@
     backdrop-filter: blur(4px);
     box-shadow: 0 0 20px rgba(255,80,0,0.3);
   }
-  .timer-panel { display:flex; justify-content:space-around; }
+  .timer-panel { display:flex; justify-content:space-around; margin-top: 6px; }
   .timer-block { flex:1; }
   .timer-block .lbl { font-size:10px; color:#ffcc80; letter-spacing:1px; text-transform:uppercase; }
   .timer-block .val { font-size:14px; color:#fff; font-weight:bold; text-shadow: 0 0 5px #ff6600; }
@@ -86,14 +116,30 @@
   }
 
   .mandala { position: relative; width: 92vw; max-width: 400px; aspect-ratio: 1/1; margin: 5px auto; }
-  .mandala svg { position:absolute; top:0; left:0; width:100%; height:100%; }
+  .mandala.tappable { cursor: pointer; }
+  .mandala.tappable::after {
+    content: '👆 TAP HERE'; position: absolute; bottom: 6%; left: 50%;
+    transform: translateX(-50%); font-size: 11px; color: #6ee7b7;
+    background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;
+    border: 1px solid #10b981; animation: pulseTap 1.5s infinite;
+    pointer-events: none;
+  }
+  .mandala.mansik::after {
+    content: '🧘 MANSIK JAP — Silent auto-count'; position: absolute; bottom: 6%; left: 50%;
+    transform: translateX(-50%); font-size: 10px; color: #c4b5fd;
+    background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;
+    border: 1px solid #8b5cf6; animation: pulseTap 2s infinite;
+    pointer-events: none;
+  }
+  @keyframes pulseTap { 0%,100%{opacity:0.6} 50%{opacity:1} }
+  .mandala svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
+
+  /* Rings ALWAYS rotate — even on pause */
   .ring1 { animation: spin 25s linear infinite; filter: drop-shadow(0 0 6px #ff6600); }
   .ring2 { animation: spinRev 30s linear infinite; filter: drop-shadow(0 0 5px #ffcc00); }
   .ring3 { animation: spin 35s linear infinite; filter: drop-shadow(0 0 5px #ff9933); }
   .ring4 { animation: spinRev 40s linear infinite; filter: drop-shadow(0 0 5px #ffb347); }
   .ring5 { animation: spin 45s linear infinite; filter: drop-shadow(0 0 4px #ffcc00); }
-  /* Only outer rings pause - inner Om ring keeps rotating */
-  .paused .ring1, .paused .ring2, .paused .ring3, .paused .ring4 { animation-play-state: paused; }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes spinRev { to { transform: rotate(-360deg); } }
   .ring-text  { font-size: 17px; font-weight: bold; fill: #ffd700; letter-spacing: 3px; }
@@ -102,7 +148,7 @@
   .ring-text.r4 { fill:#ffcc00; font-size:12px; }
   .ring-text.r5 { fill:#ffd700; font-size:11px; letter-spacing: 5px; }
 
-  .trishul { position:absolute; font-size: 22px; color:#ffcc00; text-shadow: 0 0 10px #ff6600; z-index:2; }
+  .trishul { position:absolute; font-size: 22px; color:#ffcc00; text-shadow: 0 0 10px #ff6600; z-index:2; pointer-events:none; }
   .trishul.tl{top:2%;left:2%} .trishul.tr{top:2%;right:2%;transform:scaleX(-1)}
   .trishul.bl{bottom:2%;left:2%;transform:scaleY(-1)} .trishul.br{bottom:2%;right:2%;transform:scale(-1,-1)}
 
@@ -110,6 +156,7 @@
     position:absolute; top:50%; left:50%;
     transform: translate(-50%, -50%);
     display:flex; gap: 8px; width: 55%;
+    pointer-events: none;
   }
   .circle {
     flex:1; aspect-ratio:1/1; border-radius:50%;
@@ -117,14 +164,38 @@
     border: 2px solid #ffb347;
     box-shadow: 0 0 25px rgba(255,140,0,.6), inset 0 0 20px rgba(255,200,0,.25);
     display:flex; flex-direction:column; justify-content:center; align-items:center;
-    padding: 4px;
+    padding: 4px; pointer-events: auto;
     animation: pulseGlow 2s ease-in-out infinite alternate;
+    transition: border-color 0.3s;
   }
-  .paused .circle { animation-play-state: paused; }
+  .circle.tap-flash { animation: tapFlash 0.15s ease-out; }
+  @keyframes tapFlash {
+    0% { transform: scale(1); box-shadow: 0 0 40px rgba(102,255,153,0.9); }
+    100% { transform: scale(1.05); }
+  }
   @keyframes pulseGlow {
     from{ box-shadow: 0 0 20px rgba(255,140,0,.5), inset 0 0 15px rgba(255,200,0,.2);}
     to  { box-shadow: 0 0 40px rgba(255,80,0,.9), inset 0 0 25px rgba(255,220,0,.4);}
   }
+
+  /* PAUSE state: ONLY counters blink red-yellow, rings keep spinning */
+  .paused .circle {
+    animation: pauseBlink 0.7s ease-in-out infinite !important;
+    border-color: #ff3300 !important;
+  }
+  @keyframes pauseBlink {
+    0%, 100% {
+      background: radial-gradient(circle, rgba(255,0,0,0.6), rgba(80,0,0,0.9));
+      box-shadow: 0 0 30px rgba(255,0,0,0.9), inset 0 0 20px rgba(255,50,0,0.5);
+      border-color: #ff0000;
+    }
+    50% {
+      background: radial-gradient(circle, rgba(255,204,0,0.6), rgba(100,80,0,0.9));
+      box-shadow: 0 0 30px rgba(255,204,0,0.9), inset 0 0 20px rgba(255,220,0,0.5);
+      border-color: #ffcc00;
+    }
+  }
+
   .circle .label { font-size: 9px; color:#ffcc80; letter-spacing:1px; font-weight:bold; text-transform:uppercase; }
   .circle .value {
     font-size: 15px; font-weight:bold; color:#fff; margin: 2px 0; line-height:1.1;
@@ -134,7 +205,7 @@
     background: linear-gradient(135deg,#ff3300,#660000);
     color:white; border:2px solid #ffcc00; border-radius:50%;
     width:22px; height:22px; font-weight:bold; font-size:10px;
-    cursor:pointer; margin-top:2px;
+    cursor:pointer; margin-top:2px; pointer-events: auto;
   }
 
   .big-start {
@@ -148,6 +219,23 @@
   }
   .big-start:active { transform: scale(0.95); }
   .big-start.running { background: linear-gradient(135deg, #666, #222); }
+  .big-start.manual { background: linear-gradient(135deg, #10b981, #059669); }
+  .big-start.mansik { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  .big-start:disabled { opacity: 0.5; cursor: wait; }
+
+  .mode-toggle {
+    background: linear-gradient(135deg, #444, #222);
+    color: white; border: 2px solid #ffcc00;
+    padding: 10px 18px; border-radius: 25px;
+    font-size: 12px; font-weight: bold;
+    margin: 5px 3px; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(255,204,0,.3);
+    min-width: 220px;
+  }
+  .mode-toggle.audio  { background: linear-gradient(135deg, #ff6600, #cc0000); border-color: #ffcc00; }
+  .mode-toggle.manual { background: linear-gradient(135deg, #10b981, #059669); border-color: #6ee7b7; }
+  .mode-toggle.mansik { background: linear-gradient(135deg, #8b5cf6, #6d28d9); border-color: #a78bfa; }
+  .mode-toggle:active { transform: scale(0.95); }
 
   button.main {
     background: linear-gradient(135deg, #ff6600, #cc0000);
@@ -163,6 +251,7 @@
   button.view { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
   button.alert-btn { background: linear-gradient(135deg, #10b981, #059669); }
   button.warn { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  button.danger { background: linear-gradient(135deg, #dc2626, #991b1b); }
 
   .status {
     font-size: 12px; color: #ffcc80; margin-top: 6px; min-height: 16px;
@@ -173,7 +262,6 @@
   .row { display:flex; justify-content:center; flex-wrap:wrap; }
   #wakeVideo { position: fixed; width:1px; height:1px; opacity:0.01; pointer-events:none; }
 
-  /* ===== TOAST ===== */
   .toast {
     position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-100px);
     background: linear-gradient(135deg, #10b981, #059669);
@@ -187,7 +275,6 @@
   .toast.error { background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #ef4444; }
   .toast.info  { background: linear-gradient(135deg, #3b82f6, #1e40af); border-color: #60a5fa; }
 
-  /* ===== ADVANCED CENTERED POPUP MODAL ===== */
   .modal {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.75);
@@ -207,13 +294,9 @@
     width: 100%; max-width: 380px;
     box-shadow: 0 10px 50px rgba(255,80,0,0.5);
     animation: popIn 0.25s ease;
-    margin: auto;
-    overflow: hidden;
+    margin: auto; overflow: hidden;
   }
-  @keyframes popIn {
-    from { transform: scale(0.85); opacity: 0; }
-    to   { transform: scale(1); opacity: 1; }
-  }
+  @keyframes popIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .modal-header {
     display: flex; justify-content: space-between; align-items: center;
     padding: 12px 15px;
@@ -232,13 +315,9 @@
     box-shadow: 0 2px 8px rgba(255,50,0,0.5);
   }
   .modal-body { padding: 12px; }
-  .modal-body .panel {
-    margin: 0 0 10px; max-width: 100%;
-    background: rgba(0,0,0,0.4);
-  }
+  .modal-body .panel { margin: 0 0 10px; max-width: 100%; background: rgba(0,0,0,0.4); }
   .modal-body .panel:last-child { margin-bottom: 0; }
 
-  /* ===== COMPACT ALERT POPUP ===== */
   .alert-popup {
     position: fixed; inset: 0; z-index: 200;
     background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
@@ -254,130 +333,58 @@
     box-shadow: 0 0 40px rgba(255,80,0,0.7);
     animation: alertShake 0.5s ease-in-out infinite;
   }
-  @keyframes alertShake {
-    0%,100% { transform: scale(1); }
-    50%     { transform: scale(1.02); }
-  }
-  .alert-content .om {
-    font-size: 42px; color: #ffcc00;
-    text-shadow: 0 0 15px #ff6600;
-    animation: glow 1s infinite alternate;
-  }
+  @keyframes alertShake { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+  .alert-content .om { font-size: 42px; color: #ffcc00; text-shadow: 0 0 15px #ff6600; animation: glow 1s infinite alternate; }
   .alert-content h3 { font-size: 16px; color: #ffcc00; margin: 6px 0; }
   .alert-content p { font-size: 12px; color: #fff; margin-bottom: 10px; }
-  .alert-content .paused-info {
-    background: rgba(255,204,0,0.15); border: 1px dashed #ffcc00;
-    padding: 6px; border-radius: 6px; margin: 8px 0;
-    font-size: 11px; color: #ffcc80;
-  }
+  .alert-content .paused-info { background: rgba(255,204,0,0.15); border: 1px dashed #ffcc00; padding: 6px; border-radius: 6px; margin: 8px 0; font-size: 11px; color: #ffcc80; }
   .alert-content .new-input-box { display: none; margin: 8px 0; }
-  .alert-content .new-input-box input {
-    width: 100%; background: rgba(0,0,0,0.6); color: #fff;
-    border: 1px solid #ffcc00; border-radius: 6px;
-    padding: 8px; font-size: 14px; text-align: center;
-  }
+  .alert-content .new-input-box input { width: 100%; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid #ffcc00; border-radius: 6px; padding: 8px; font-size: 14px; text-align: center; }
   .alert-content button { width: 100%; margin: 3px 0; padding: 9px; font-size: 13px; }
   .alert-content .btn-row { display: flex; gap: 4px; }
   .alert-content .btn-row button { flex: 1; margin: 0; }
 
-  /* Alerts */
-  .alert-row {
-    background: rgba(0,60,30,0.3); border: 1px solid #10b981;
-    border-radius: 8px; padding: 8px 10px; margin: 6px 0;
-    font-size: 12px; color: #fff; text-align: left;
-  }
+  .alert-row { background: rgba(0,60,30,0.3); border: 1px solid #10b981; border-radius: 8px; padding: 8px 10px; margin: 6px 0; font-size: 12px; color: #fff; text-align: left; }
   .alert-row.triggered { background: rgba(80,40,0,0.3); border-color: #f59e0b; }
   .alert-row .info { margin-bottom: 6px; }
   .alert-row .info small { color: #aaa; display: block; margin-top: 2px; }
   .alert-row .btns { display: flex; gap: 4px; }
-  .alert-row .btns button {
-    flex: 1; padding: 5px 8px; font-size: 11px;
-    border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer;
-  }
+  .alert-row .btns button { flex: 1; padding: 5px 8px; font-size: 11px; border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer; }
   .alert-row .btns .b-edit { background: #8b5cf6; }
   .alert-row .btns .b-react { background: #10b981; }
   .alert-row .btns .b-del { background: #dc2626; }
 
-  .alert-edit-inline {
-    display: none; margin-top: 6px; padding: 6px;
-    background: rgba(0,0,0,0.4); border-radius: 6px;
-  }
-  .alert-edit-inline input {
-    width: 100%; background: rgba(0,0,0,0.6); color: #fff;
-    border: 1px solid #ffcc00; border-radius: 4px;
-    padding: 6px; font-size: 13px; text-align: center; margin-bottom: 4px;
-  }
+  .alert-edit-inline { display: none; margin-top: 6px; padding: 6px; background: rgba(0,0,0,0.4); border-radius: 6px; }
+  .alert-edit-inline input { width: 100%; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid #ffcc00; border-radius: 4px; padding: 6px; font-size: 13px; text-align: center; margin-bottom: 4px; }
   .alert-edit-inline .btns { display: flex; gap: 4px; }
   .alert-edit-inline button { flex:1; padding: 5px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; }
   .alert-edit-inline .save { background: #10b981; color: white; }
   .alert-edit-inline .cancel { background: #666; color: white; }
 
-  .preset-chip {
-    display: inline-block; margin: 3px; padding: 6px 10px;
-    background: rgba(139, 92, 246, 0.25); border: 1px solid #8b5cf6;
-    color: #fff; border-radius: 15px; font-size: 12px; cursor: pointer;
-  }
+  .preset-chip { display: inline-block; margin: 3px; padding: 6px 10px; background: rgba(139, 92, 246, 0.25); border: 1px solid #8b5cf6; color: #fff; border-radius: 15px; font-size: 12px; cursor: pointer; }
   .preset-chip:hover { background: rgba(139, 92, 246, 0.45); }
   .preset-chip .x { color:#ff6666; margin-left:4px; padding-left: 4px; border-left: 1px solid #555; }
 
-  /* Milestones */
-  .m-summary-cards {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
-    margin-bottom: 10px;
-  }
-  .m-card {
-    background: rgba(30,10,0,0.7); border: 1px solid rgba(255,140,0,0.4);
-    border-radius: 8px; padding: 8px; text-align: center;
-  }
+  .m-summary-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
+  .m-card { background: rgba(30,10,0,0.7); border: 1px solid rgba(255,140,0,0.4); border-radius: 8px; padding: 8px; text-align: center; }
   .m-card .lbl { font-size: 9px; color: #ffcc80; text-transform: uppercase; letter-spacing: 1px; }
   .m-card .val { font-size: 14px; color: #ffcc00; font-weight: bold; margin-top: 2px; }
   .m-card .sub { font-size: 9px; color: #aaa; margin-top: 1px; }
 
-  .m-group {
-    background: rgba(30,10,0,0.6);
-    border: 1px solid rgba(255,140,0,0.3);
-    border-radius: 8px; margin-bottom: 6px; overflow: hidden;
-  }
-  .m-group summary {
-    padding: 8px 12px; cursor: pointer;
-    display: flex; justify-content: space-between; align-items: center;
-    background: linear-gradient(90deg, rgba(255,100,0,0.2), transparent);
-    font-weight: bold; color: #ffcc00; font-size: 13px;
-    list-style: none;
-  }
+  .m-group { background: rgba(30,10,0,0.6); border: 1px solid rgba(255,140,0,0.3); border-radius: 8px; margin-bottom: 6px; overflow: hidden; }
+  .m-group summary { padding: 8px 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(90deg, rgba(255,100,0,0.2), transparent); font-weight: bold; color: #ffcc00; font-size: 13px; list-style: none; }
   .m-group summary::-webkit-details-marker { display:none; }
   .m-group summary::after { content: '▼'; font-size: 10px; color: #ff9933; }
   .m-group[open] summary::after { content: '▲'; }
-  .m-group .progress-mini {
-    font-size: 10px; color: #66ff99; font-weight: normal;
-    background: rgba(0,80,0,0.4); padding: 2px 6px; border-radius: 4px;
-  }
-  .m-progress-bar {
-    height: 4px; background: rgba(255,255,255,0.1);
-    position: relative; border-radius: 2px; margin: 0 12px 6px;
-  }
-  .m-progress-bar .fill {
-    position: absolute; left:0; top:0; height:100%;
-    background: linear-gradient(90deg, #ff6600, #ffcc00); border-radius: 2px;
-  }
-
+  .m-group .progress-mini { font-size: 10px; color: #66ff99; font-weight: normal; background: rgba(0,80,0,0.4); padding: 2px 6px; border-radius: 4px; }
+  .m-progress-bar { height: 4px; background: rgba(255,255,255,0.1); position: relative; border-radius: 2px; margin: 0 12px 6px; }
+  .m-progress-bar .fill { position: absolute; left:0; top:0; height:100%; background: linear-gradient(90deg, #ff6600, #ffcc00); border-radius: 2px; }
   .m-table-wrap { overflow-x: auto; padding: 0 4px 8px; }
   .m-table { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 520px; }
-  .m-table th {
-    background: rgba(255,100,0,0.2); color: #ffcc00;
-    padding: 5px 3px; text-align: center; border-bottom: 1px solid #ff6600;
-    font-size: 9px;
-  }
-  .m-table td {
-    padding: 5px 3px; text-align: center;
-    border-bottom: 1px solid rgba(255,140,0,0.15);
-    font-size: 10px; color: #fff;
-  }
+  .m-table th { background: rgba(255,100,0,0.2); color: #ffcc00; padding: 5px 3px; text-align: center; border-bottom: 1px solid #ff6600; font-size: 9px; }
+  .m-table td { padding: 5px 3px; text-align: center; border-bottom: 1px solid rgba(255,140,0,0.15); font-size: 10px; color: #fff; }
   .m-table td.tgt { color: #ffcc00; font-weight: bold; text-align: left; }
-  .m-table td.pct {
-    background: linear-gradient(90deg, rgba(0,180,0,0.35) var(--pct), transparent var(--pct));
-    color: #fff; font-weight: bold;
-  }
+  .m-table td.pct { background: linear-gradient(90deg, rgba(0,180,0,0.35) var(--pct), transparent var(--pct)); color: #fff; font-weight: bold; }
   .m-table td.rem { color: #ffcc80; }
   .m-table td.eta { color: #ff9933; }
   .m-table td.date { color: #66ff99; }
@@ -388,27 +395,33 @@
   .m-table tr.current td.tgt::before { content: '▶ '; color: #ffcc00; }
 
   .form-group { margin-bottom: 10px; text-align: left; }
-  .form-group label {
-    display: block; font-size: 12px; color: #ffcc00;
-    margin-bottom: 4px; font-weight: bold;
-  }
-  .form-group input, .form-group select {
-    width: 100%; background: rgba(0,0,0,0.6); color: #fff;
-    border: 1px solid #ffb347; border-radius: 6px;
-    padding: 8px 10px; font-size: 14px;
-  }
-  .result-box {
-    background: rgba(255,140,0,0.15); border: 1px solid #ffcc00;
-    border-radius: 8px; padding: 10px; margin-top: 10px;
-    font-size: 13px; color: #fff; text-align: left;
-  }
+  .form-group label { display: block; font-size: 12px; color: #ffcc00; margin-bottom: 4px; font-weight: bold; }
+  .form-group input, .form-group select { width: 100%; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid #ffb347; border-radius: 6px; padding: 8px 10px; font-size: 14px; }
+  .form-group small { display:block; font-size:10px; color:#aaa; margin-top:3px; }
+  .result-box { background: rgba(255,140,0,0.15); border: 1px solid #ffcc00; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 13px; color: #fff; text-align: left; }
   .result-box b { color: #ffcc00; }
   .help-text { font-size: 11px; color: #aaa; margin-top: 4px; }
-  .protected-badge {
-    background: rgba(220,38,38,0.2); border: 1px dashed #ef4444;
-    color: #fca5a5; padding: 8px 10px; border-radius: 6px;
-    font-size: 11px; text-align: center;
-  }
+  .protected-badge { background: rgba(220,38,38,0.2); border: 1px dashed #ef4444; color: #fca5a5; padding: 8px 10px; border-radius: 6px; font-size: 11px; text-align: center; }
+  .lock-badge { display: inline-block; font-size: 10px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; margin-left: 4px; }
+
+  .toggle-switch { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; background: rgba(0,0,0,0.4); border-radius: 8px; margin: 4px 0; border: 1px solid rgba(255,140,0,0.2); }
+  .toggle-switch label { color:#fff; font-size:12px; font-weight:bold; }
+  .switch { position: relative; width: 44px; height: 22px; }
+  .switch input { display: none; }
+  .slider { position: absolute; cursor: pointer; inset: 0; background: #444; border-radius: 22px; transition: 0.3s; }
+  .slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+  .switch input:checked + .slider { background: #10b981; }
+  .switch input:checked + .slider::before { transform: translateX(22px); }
+
+  .startup-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.92); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; flex-direction: column; }
+  .startup-overlay.show { display: flex; }
+  .startup-overlay .om-big { font-size: 80px; color: #ffcc00; text-shadow: 0 0 30px #ff6600; animation: glow 1s infinite alternate; margin-bottom: 20px; }
+  .startup-overlay .msg { color: #ffcc00; font-size: 16px; font-weight: bold; margin: 8px; }
+  .startup-overlay .sub-msg { color: #ffcc80; font-size: 12px; }
+  .spinner { border: 3px solid rgba(255,204,0,0.2); border-top: 3px solid #ffcc00; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 15px auto; }
+
+  .screenoff-modal .modal-box { max-width: 340px; }
+  .screenoff-modal .big-count { font-size: 42px; color: #ffcc00; text-align:center; text-shadow: 0 0 20px #ff6600; margin: 10px 0; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -417,11 +430,26 @@
 <div class="fire-layer"></div>
 <div class="embers" id="embers"></div>
 <video id="wakeVideo" loop muted playsinline></video>
+<audio id="silentAudio" loop></audio>
 
+<div class="startup-overlay" id="startupOverlay">
+  <div class="om-big">🕉</div>
+  <div class="msg" id="startupMsg">Syncing with GitHub...</div>
+  <div class="spinner"></div>
+  <div class="sub-msg" id="startupSubMsg">Har Har Mahadev 🔱</div>
+</div>
+
+<!-- TOP BAR with sync dot LEFT of settings -->
 <div class="top-bar">
   <div class="om-corner">🔱</div>
-  <h1>॥ Om Namah Shivay ॥</h1>
-  <button class="icon-btn" onclick="openModal('settings')">⚙</button>
+  <h1>॥ 🔱 ॐ नमः शिवाय 🔱 ॥</h1>
+  <div class="top-right-tools">
+    <div class="sync-mini" onclick="manualSync()" title="Click to force sync">
+      <span class="sync-dot" id="syncDot"></span>
+      <span class="sync-txt" id="syncStatus">...</span>
+    </div>
+    <button class="icon-btn" onclick="openModal('settings')">⚙</button>
+  </div>
 </div>
 
 <div class="panel timer-panel">
@@ -439,43 +467,34 @@
   </div>
 </div>
 
-<div class="mandala" id="mandalaBox">
+<div class="mandala" id="mandalaBox" onclick="onMandalaTap(event)">
   <span class="trishul tl">🔱</span><span class="trishul tr">🔱</span>
   <span class="trishul bl">🔱</span><span class="trishul br">🔱</span>
 
-  <!-- Ring 1 (outer) - Om Namah Shivay -->
   <svg viewBox="0 0 400 400" class="ring1">
     <defs><path id="c1" d="M 200,200 m -185,0 a 185,185 0 1,1 370,0 a 185,185 0 1,1 -370,0"/></defs>
     <text class="ring-text"><textPath href="#c1" startOffset="0">
-      ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय •
+      ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय •
     </textPath></text>
   </svg>
-
-  <!-- Ring 2 - Har Har Mahadev -->
   <svg viewBox="0 0 400 400" class="ring2">
     <defs><path id="c2" d="M 200,200 m -160,0 a 160,160 0 1,1 320,0 a 160,160 0 1,1 -320,0"/></defs>
     <text class="ring-text r2"><textPath href="#c2" startOffset="0">
-      हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦
+      हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦
     </textPath></text>
   </svg>
-
-  <!-- Ring 3 - Shri Shivay Namastubhyam (NEW) -->
   <svg viewBox="0 0 400 400" class="ring3">
     <defs><path id="c3" d="M 200,200 m -136,0 a 136,136 0 1,1 272,0 a 136,136 0 1,1 -272,0"/></defs>
     <text class="ring-text r3"><textPath href="#c3" startOffset="0">
-      श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥
+      श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ नमस्तुभ्यं ॥
     </textPath></text>
   </svg>
-
-  <!-- Ring 4 - Jai Shri Mahakal (NEW) -->
   <svg viewBox="0 0 400 400" class="ring4">
     <defs><path id="c4" d="M 200,200 m -112,0 a 112,112 0 1,1 224,0 a 112,112 0 1,1 -224,0"/></defs>
     <text class="ring-text r4"><textPath href="#c4" startOffset="0">
-      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥
+      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥
     </textPath></text>
   </svg>
-
-  <!-- Ring 5 (innermost, keeps spinning) - Om -->
   <svg viewBox="0 0 400 400" class="ring5">
     <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
     <text class="ring-text r5"><textPath href="#c5" startOffset="0">
@@ -484,20 +503,23 @@
   </svg>
 
   <div class="counters">
-    <div class="circle">
+    <div class="circle" id="permCircle">
       <div class="label">Permanent</div>
       <div class="value" id="permCount">0</div>
     </div>
-    <div class="circle">
+    <div class="circle" id="tripCircle">
       <div class="label">Trip</div>
       <div class="value" id="tripCount">0</div>
-      <button class="reset-btn" onclick="resetTrip()">R</button>
+      <button class="reset-btn" onclick="event.stopPropagation();resetTrip()">R</button>
     </div>
   </div>
 </div>
 
 <div class="row">
-  <button class="big-start" id="startBtn" onclick="toggleJap()">▶ START JAP</button>
+  <button class="big-start" id="startBtn" onclick="onStartClick()">▶ START JAP</button>
+</div>
+<div class="row">
+  <button class="mode-toggle audio" id="modeToggleBtn" onclick="toggleMode()">🎵 Audio Mode (tap to change)</button>
 </div>
 
 <div class="row">
@@ -507,21 +529,21 @@
 </div>
 <div class="row">
   <button class="main secondary" onclick="pickAudio()">🎵 Load Chant</button>
-  <button class="main warn" onclick="openModal('adjust')">✏ Adjust Trip</button>
+  <button class="main warn" onclick="openAdjustProtected()">✏ Adjust Trip <span class="lock-badge">🔒</span></button>
   <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioPick(event)">
 </div>
 <div class="row">
-  <button class="main gh" onclick="ghBackup()">💾 GitHub Backup</button>
-  <button class="main gh" onclick="ghRestore()">⬇ GitHub Restore</button>
+  <button class="main gh" onclick="manualBackup()">💾 GitHub Backup</button>
+  <button class="main gh" onclick="manualRestore()">⬇ GitHub Restore</button>
 </div>
 
 <div class="row"><div class="status" id="status">🙏 Har Har Mahadev.</div></div>
 
-<!-- ========== ADJUST TRIP MODAL ========== -->
+<!-- ADJUST TRIP MODAL -->
 <div class="modal" id="adjustModal" data-name="adjust">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>✏ Adjust Trip Count</h2>
+      <h2>✏ Adjust Trip Count 🔒</h2>
       <button class="close-btn" onclick="closeModal('adjust')">✕</button>
     </div>
     <div class="modal-body">
@@ -530,10 +552,7 @@
           <label>Current Trip: <span id="adjCurrent" style="color:#fff;">0</span></label>
           <input type="number" id="adjustQty" placeholder="e.g. 60 or -60">
         </div>
-        <p class="help-text" style="text-align:center;">
-          Positive = add, Negative = subtract.<br>
-          You'll be asked if to also apply to Permanent.
-        </p>
+        <p class="help-text" style="text-align:center;">Positive = add, Negative = subtract.<br>You'll be asked if to also apply to Permanent.</p>
         <div class="row">
           <button class="main" onclick="adjustTrip()">✓ Apply</button>
           <button class="main secondary" onclick="closeModal('adjust')">Cancel</button>
@@ -543,7 +562,31 @@
   </div>
 </div>
 
-<!-- ========== MILESTONES MODAL ========== -->
+<!-- SCREEN-OFF APPLY MODAL -->
+<div class="modal screenoff-modal" id="screenoffModal" data-name="screenoff">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📱 Screen-Off Japs</h2>
+      <button class="close-btn" onclick="closeModal('screenoff')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <p style="font-size:12px;color:#ffcc80;text-align:center;">You chanted while screen was off:</p>
+        <div class="big-count" id="screenoffCount">0</div>
+        <p style="font-size:11px;color:#ffcc80;text-align:center;margin-bottom:10px;">
+          Trip has counted these. Apply to <b style="color:#ffcc00;">Permanent</b> too?
+        </p>
+        <div class="row">
+          <button class="main alert-btn" onclick="applyScreenoffJaps(true)">✓ Yes, Apply</button>
+          <button class="main danger" onclick="applyScreenoffJaps(false)">✕ Discard</button>
+        </div>
+        <p class="help-text" style="text-align:center;margin-top:8px;">"Apply" adds to Permanent + syncs to GitHub instantly</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MILESTONES MODAL -->
 <div class="modal" id="milestonesModal" data-name="milestones">
   <div class="modal-box" style="max-width: 500px;">
     <div class="modal-header">
@@ -554,7 +597,7 @@
   </div>
 </div>
 
-<!-- ========== CALCULATOR MODAL ========== -->
+<!-- CALCULATOR MODAL -->
 <div class="modal" id="searchModal" data-name="search">
   <div class="modal-box">
     <div class="modal-header">
@@ -580,13 +623,13 @@
           <input type="number" id="calcHours" min="0.1" max="24" step="0.5" value="2" oninput="runCalc()">
         </div>
         <div class="result-box" id="calcResult">Enter a value above.</div>
-        <p class="help-text">Speed: 1 jap ≈ 1.35 sec • ~2,666 japs/hour</p>
+        <p class="help-text">Speed: dynamic based on Advanced Settings</p>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ========== ALERTS MODAL ========== -->
+<!-- ALERTS MODAL -->
 <div class="modal" id="alertsModal" data-name="alerts">
   <div class="modal-box">
     <div class="modal-header">
@@ -598,7 +641,6 @@
         <div style="font-size:11px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">⚡ SAVED PRESETS (tap to activate)</div>
         <div id="presetChips"></div>
       </div>
-
       <div class="panel">
         <div style="font-size:11px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">➕ CREATE NEW ALERT</div>
         <div class="form-group">
@@ -624,7 +666,6 @@
         </div>
         <button class="main alert-btn" onclick="addAlert()">➕ Add Alert</button>
       </div>
-
       <div class="panel">
         <div style="font-size:11px;color:#ffcc00;margin-bottom:6px;font-weight:bold;">📋 ALL ALERTS</div>
         <div id="alertsList"></div>
@@ -633,7 +674,7 @@
   </div>
 </div>
 
-<!-- ========== SETTINGS MODAL ========== -->
+<!-- SETTINGS MODAL -->
 <div class="modal" id="settingsModal" data-name="settings">
   <div class="modal-box">
     <div class="modal-header">
@@ -642,7 +683,26 @@
     </div>
     <div class="modal-body">
       <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🐙 GITHUB BACKUP</div>
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">📿 CHANT MODE</div>
+        <div class="toggle-switch">
+          <label>📳 Vibration on Manual Tap</label>
+          <label class="switch">
+            <input type="checkbox" id="vibrationToggle" onchange="saveVibrationPref()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-switch">
+          <label>🔊 Background Audio (screen off)</label>
+          <label class="switch">
+            <input type="checkbox" id="bgAudioToggle" checked onchange="saveBgAudioPref()">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p class="help-text">3 Modes: 🎵 Audio (with chant) → 🖐 Manual (tap) → 🧘 Mansik (silent auto-count)</p>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🐙 GITHUB SYNC</div>
         <div class="form-group">
           <label>GitHub Username</label>
           <input type="text" id="ghOwner" placeholder="yourname">
@@ -653,12 +713,12 @@
         </div>
         <div class="form-group">
           <label>Personal Access Token</label>
-          <input type="password" id="ghToken" placeholder="github_pat_...">
+          <input type="password" id="ghToken" placeholder="ghp_...">
         </div>
         <div class="form-group">
           <label>
             <input type="checkbox" id="ghBackupAudio" checked style="width:auto;margin-right:5px;">
-            Also backup audio file (recommended)
+            Also backup audio file (once, reused)
           </label>
         </div>
         <button class="main gh" onclick="saveGhSettings()">💾 Save Settings</button>
@@ -671,10 +731,16 @@
       </div>
 
       <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🔧 ADVANCED</div>
+        <button class="main warn" onclick="openAdvancedProtected()">⚡ Advanced Settings <span class="lock-badge">🔒</span></button>
+        <p class="help-text" style="text-align:center;">Timings, intervals, chant speed — password protected</p>
+      </div>
+
+      <div class="panel">
         <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🔒 LIFETIME DATA PROTECTION</div>
         <div class="protected-badge">
-          🛡 Permanent count and milestone dates are LIFETIME data.<br>
-          No reset options exist — this is your lifetime spiritual record.<br>
+          🛡 Permanent count + milestone dates are LIFETIME data.<br>
+          No reset options. Adjust Trip is password-protected.<br>
           Har Har Mahadev! 🔱
         </div>
       </div>
@@ -682,7 +748,74 @@
   </div>
 </div>
 
-<!-- ========== ALERT POPUP ========== -->
+<!-- ADVANCED SETTINGS MODAL -->
+<div class="modal" id="advancedModal" data-name="advanced">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚡ Advanced Settings 🔒</h2>
+      <button class="close-btn" onclick="closeModal('advanced')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🎵 AUDIO TIMING</div>
+        <div class="form-group">
+          <label>Audio Duration (seconds)</label>
+          <input type="number" id="advAudioDuration" step="0.01" min="0.1">
+          <small>Duration of one full audio loop (default 5.4s)</small>
+        </div>
+        <div class="form-group">
+          <label>Japs per Audio Loop</label>
+          <input type="number" id="advJapsPerAudio" step="1" min="1">
+          <small>How many japs happen in one audio loop (default 4)</small>
+        </div>
+        <div class="form-group">
+          <label>Manual Tap Cooldown (ms)</label>
+          <input type="number" id="advTapCooldown" step="10" min="0">
+          <small>Min gap between taps to prevent double-count (default 150ms)</small>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">☁ SYNC TIMING</div>
+        <div class="form-group">
+          <label>Auto-backup every X japs</label>
+          <input type="number" id="advBackupEvery" step="1" min="1">
+          <small>How often to auto-push (default 20)</small>
+        </div>
+        <div class="form-group">
+          <label>Backup Debounce (ms)</label>
+          <input type="number" id="advBackupDebounce" step="100" min="0">
+          <small>Wait after last change before pushing (default 3000)</small>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🏆 MILESTONE ETA</div>
+        <div class="form-group">
+          <label>Chanting Hours/Day (for ETA)</label>
+          <input type="number" id="advChantHours" step="0.5" min="0.1" max="24">
+          <small>Used to calculate milestone forecasts (default 4)</small>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">📳 VIBRATION</div>
+        <div class="form-group">
+          <label>Vibration Duration (ms)</label>
+          <input type="number" id="advVibrationMs" step="5" min="5" max="500">
+          <small>How long each tap vibrates (default 30)</small>
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="main alert-btn" onclick="saveAdvancedSettings()">💾 Save</button>
+        <button class="main warn" onclick="resetAdvancedSettings()">↺ Reset Defaults</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ALERT POPUP -->
 <div class="alert-popup" id="alertPopup">
   <div class="alert-content">
     <div class="om">🕉</div>
@@ -691,12 +824,10 @@
     <div class="paused-info" id="alertPausedInfo" style="display:none;">
       ⏸ Chanting paused — will resume when you choose
     </div>
-
     <div class="new-input-box" id="newInputBox">
       <input type="text" id="newAlertInput" placeholder="e.g. 00:10:00">
       <p class="help-text" style="color:#ffcc80;text-align:center;" id="newAlertHint">HH:MM:SS format</p>
     </div>
-
     <div id="alertMainBtns">
       <button class="main alert-btn" onclick="alertContinue()">▶ Continue (same interval)</button>
       <div class="btn-row">
@@ -704,7 +835,6 @@
         <button class="main secondary" onclick="alertDismissOnly()">Dismiss</button>
       </div>
     </div>
-
     <div id="alertNewBtns" style="display:none;">
       <button class="main alert-btn" onclick="alertApplyNew()">✓ Apply & Resume</button>
       <button class="main secondary" onclick="alertCancelNew()">Back</button>
@@ -712,14 +842,37 @@
   </div>
 </div>
 
-<!-- ========== TOAST ========== -->
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============ CONFIG ============ */
-const AUDIO_DURATION = 5.4;
-const JAPS_PER_AUDIO = 4;
-const JAP_INTERVAL = AUDIO_DURATION / JAPS_PER_AUDIO * 1000;
+
+/* ============ ADVANCED SETTINGS ============ */
+const DEFAULT_SETTINGS = {
+  audioDuration: 5.4,
+  japsPerAudio: 4,
+  tapCooldown: 150,
+  backupEvery: 20,
+  backupDebounce: 3000,
+  chantHours: 4,
+  vibrationMs: 30
+};
+let SETTINGS = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem('advSettings') || '{}')) };
+function getJapInterval(){ return (SETTINGS.audioDuration / SETTINGS.japsPerAudio) * 1000; }
+
+/* ============ CONSTANTS ============ */
+const ADJUST_PASSWORD = 'niraj';
+const ADVANCED_PASSWORD = 'niraj';
+const MODES = ['audio', 'manual', 'mansik'];
+const MODE_LABELS = {
+  audio:  { icon: '🎵', name: 'Audio Mode',  hint: 'with chant sound' },
+  manual: { icon: '🖐', name: 'Manual Mode', hint: 'tap to count' },
+  mansik: { icon: '🧘', name: 'Mansik Mode', hint: 'silent auto-count' }
+};
+const DEVICE_ID = (function(){
+  let id = localStorage.getItem('deviceId');
+  if(!id){ id = 'dev_' + Math.random().toString(36).slice(2,10); localStorage.setItem('deviceId', id); }
+  return id;
+})();
 
 /* ============ EMBERS ============ */
 (function(){
@@ -741,13 +894,29 @@ let trip = parseInt(localStorage.getItem('tripCount') || '0');
 let milestoneDates = JSON.parse(localStorage.getItem('milestoneDates') || '{}');
 let alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
 let presets = JSON.parse(localStorage.getItem('presets') || '[]');
+let lastSyncTs = parseInt(localStorage.getItem('lastSyncTs') || '0');
+let localVersion = parseInt(localStorage.getItem('localVersion') || '0');
+let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') || '-1');
+
 let running = false, wakeLock = null;
 let elapsedMs = 0, sessionStart = null, firstStartTs = null;
 let currentAlert = null;
 let pendingStart = false;
 let editingAlertId = null;
+let backupInProgress = false;
+let backupDebounceTimer = null;
+let japsSinceBackup = 0;
+let japTimer = null;
 
-/* ============ TOAST ============ */
+let chantMode = localStorage.getItem('chantMode') || 'audio';
+if(!MODES.includes(chantMode)) chantMode = 'audio';
+let vibrationOn = localStorage.getItem('vibrationOn') === 'true';
+let bgAudioOn = localStorage.getItem('bgAudioOn') !== 'false';
+let lastTapTs = 0;
+let screenOffJapCount = 0;
+let screenWasOff = false;
+
+/* ============ TOAST + SYNC ============ */
 function showToast(msg, type='success', ms=2500){
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -755,15 +924,36 @@ function showToast(msg, type='success', ms=2500){
   clearTimeout(t._to);
   t._to = setTimeout(()=> t.classList.remove('show'), ms);
 }
+function setSyncStatus(state, text){
+  const dot = document.getElementById('syncDot');
+  const status = document.getElementById('syncStatus');
+  dot.className = 'sync-dot ' + state;
+  status.textContent = text;
+}
+function showStartup(msg, subMsg){
+  document.getElementById('startupMsg').textContent = msg;
+  if(subMsg) document.getElementById('startupSubMsg').textContent = subMsg;
+  document.getElementById('startupOverlay').classList.add('show');
+}
+function hideStartup(){ document.getElementById('startupOverlay').classList.remove('show'); }
+
+function updateModeBadge(){
+  const mb = document.getElementById('modeToggleBtn');
+  const mandala = document.getElementById('mandalaBox');
+  const info = MODE_LABELS[chantMode];
+  mb.textContent = `${info.icon} ${info.name} — tap to change`;
+  mb.classList.remove('audio', 'manual', 'mansik');
+  mb.classList.add(chantMode);
+  mandala.classList.remove('tappable', 'mansik');
+  if(chantMode === 'manual') mandala.classList.add('tappable');
+  if(chantMode === 'mansik') mandala.classList.add('mansik');
+}
 
 /* ============ INDEXEDDB ============ */
 function idbOpen(){
   return new Promise((res,rej)=>{
     const r = indexedDB.open('japDB', 1);
-    r.onupgradeneeded = e => {
-      const db = e.target.result;
-      if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
-    };
+    r.onupgradeneeded = e => { const db = e.target.result; if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
     r.onsuccess = e => res(e.target.result);
     r.onerror = e => rej(e);
   });
@@ -772,14 +962,16 @@ async function idbSet(k, v){ const db = await idbOpen(); return new Promise((res
 async function idbGet(k){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readonly'); const r=tx.objectStore('kv').get(k); r.onsuccess=()=>res(r.result); r.onerror=rej; }); }
 async function idbDel(k){ const db = await idbOpen(); return new Promise((res)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete=res; }); }
 
-/* ============ WEB AUDIO ============ */
+/* ============ AUDIO ============ */
 let audioCtx = null, audioBuffer = null, audioName = '';
 let scheduledSources = [], nextStartTime = 0, schedulerInterval = null;
+let silentAudioEl = null;
 
 async function ensureAudioCtx(){
   if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state === 'suspended') await audioCtx.resume();
 }
+
 async function loadAudioFromBlob(blob, name){
   await ensureAudioCtx();
   const arr = await blob.arrayBuffer();
@@ -790,12 +982,16 @@ async function loadAudioFromBlob(blob, name){
 async function loadAudioFromStorage(){
   try {
     const stored = await idbGet('chantAudio');
-    if(stored && stored.blob){
-      await loadAudioFromBlob(stored.blob, stored.name);
-      return true;
-    }
+    if(stored && stored.blob){ audioName = stored.name; updateAudioInfo(); return true; }
   } catch(e) {}
   return false;
+}
+async function decodeStoredAudio(){
+  if(audioBuffer) return true;
+  const stored = await idbGet('chantAudio').catch(()=>null);
+  if(!stored || !stored.blob) return false;
+  await loadAudioFromBlob(stored.blob, stored.name);
+  return true;
 }
 function pickAudio(){ document.getElementById('audioFile').click(); }
 async function handleAudioPick(e){
@@ -804,11 +1000,10 @@ async function handleAudioPick(e){
     await loadAudioFromBlob(file, file.name);
     await idbSet('chantAudio', { blob: file, name: file.name });
     showToast('✓ Chant loaded successfully');
-    // Also auto-upload to GitHub if configured
     if(localStorage.getItem('ghToken') && document.getElementById('ghBackupAudio')?.checked !== false){
       ghUploadAudio(file);
     }
-    if(pendingStart){ pendingStart = false; toggleJap(); }
+    if(pendingStart){ pendingStart = false; onStartClick(); }
   } catch(err){ showToast('❌ Audio load failed', 'error'); }
 }
 async function updateAudioInfo(){
@@ -819,20 +1014,48 @@ async function updateAudioInfo(){
   else info.innerHTML = '⚠ No audio saved';
 }
 async function clearStoredAudio(){
-  if(!confirm('Delete saved audio? (Will need to reload from GitHub or file)')) return;
+  if(!confirm('Delete saved audio?')) return;
   await idbDel('chantAudio');
   audioBuffer = null; audioName = '';
   updateAudioInfo();
   showToast('Audio cleared');
 }
+
+function startSilentKeepAlive(){
+  if(!bgAudioOn) return;
+  const el = document.getElementById('silentAudio');
+  if(!el.src){
+    el.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+    el.loop = true; el.volume = 0.001;
+  }
+  el.play().catch(()=>{});
+  silentAudioEl = el;
+}
+function stopSilentKeepAlive(){ if(silentAudioEl){ silentAudioEl.pause(); } }
+
+function setupMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: '🕉 Om Namah Shivay',
+    artist: 'Mahadev Jap Counter',
+    album: 'Sacred Chant'
+  });
+  navigator.mediaSession.setActionHandler('play', ()=>{ if(!running) onStartClick(); });
+  navigator.mediaSession.setActionHandler('pause', ()=>{ if(running) onStartClick(); });
+}
+
 function startSeamlessAudio(){
   if(!audioBuffer) return;
   ensureAudioCtx();
   nextStartTime = audioCtx.currentTime + 0.05;
   scheduleAhead();
   schedulerInterval = setInterval(scheduleAhead, 1000);
+  startSilentKeepAlive();
+  setupMediaSession();
+  if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
 }
 function scheduleAhead(){
+  if(!audioBuffer || !audioCtx) return;
   while(nextStartTime < audioCtx.currentTime + 3){
     const src = audioCtx.createBufferSource();
     src.buffer = audioBuffer;
@@ -847,6 +1070,8 @@ function stopSeamlessAudio(){
   clearInterval(schedulerInterval); schedulerInterval = null;
   scheduledSources.forEach(s => { try{ s.src.stop(); } catch(e){} });
   scheduledSources = [];
+  stopSilentKeepAlive();
+  if('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
 }
 
 /* ============ FORMATTERS ============ */
@@ -877,6 +1102,15 @@ function parseHMS(str){
   if(!m) return null;
   return (parseInt(m[1])*3600 + parseInt(m[2])*60 + parseInt(m[3])) * 1000;
 }
+function fmtRelative(ts){
+  if(!ts) return 'never';
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<10) return 'now';
+  if(s<60) return s+'s';
+  if(s<3600) return Math.floor(s/60)+'m';
+  if(s<86400) return Math.floor(s/3600)+'h';
+  return Math.floor(s/86400)+'d';
+}
 
 /* ============ MILESTONES ============ */
 function buildMilestones(){
@@ -903,77 +1137,49 @@ function buildMilestones(){
 const MILESTONES = buildMilestones();
 
 function checkMilestones(){
+  let hit = false;
   MILESTONES.forEach(g => g.targets.forEach(t => {
-    if(perm >= t && !milestoneDates[t]) milestoneDates[t] = new Date().toISOString();
+    if(perm >= t && !milestoneDates[t]){ milestoneDates[t] = new Date().toISOString(); hit = true; }
   }));
   localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+  return hit;
 }
-
 function findNextTarget(){
-  for(const g of MILESTONES){
-    for(const t of g.targets){
-      if(perm < t) return t;
-    }
-  }
+  for(const g of MILESTONES) for(const t of g.targets) if(perm < t) return t;
   return null;
 }
-
 function renderMilestones(){
   const wrap = document.getElementById('milestonesContent');
   const now = Date.now();
-  const chantHrs = 4;
+  const chantHrs = SETTINGS.chantHours;
   const nextT = findNextTarget();
   const totalDone = Object.keys(milestoneDates).length;
   const totalMilestones = MILESTONES.reduce((s,g)=>s+g.targets.length,0);
-
+  const japInterval = getJapInterval();
   let summaryHtml = `
     <div class="m-summary-cards">
-      <div class="m-card">
-        <div class="lbl">Current</div>
-        <div class="val">${fmtNum(perm)}</div>
-        <div class="sub">${perm.toLocaleString()} japs</div>
-      </div>
-      <div class="m-card">
-        <div class="lbl">Next Target</div>
-        <div class="val">${nextT?fmtNum(nextT):'✓ ALL DONE'}</div>
-        <div class="sub">${nextT?fmtNum(nextT-perm)+' japs to go':''}</div>
-      </div>
-      <div class="m-card">
-        <div class="lbl">Milestones Hit</div>
-        <div class="val">${totalDone} / ${totalMilestones}</div>
-        <div class="sub">${((totalDone/totalMilestones)*100).toFixed(1)}% journey</div>
-      </div>
-      <div class="m-card">
-        <div class="lbl">Malas (÷108)</div>
-        <div class="val">${fmtNum(Math.floor(perm/108))}</div>
-        <div class="sub">${(perm%108)}/108 in progress</div>
-      </div>
+      <div class="m-card"><div class="lbl">Current</div><div class="val">${fmtNum(perm)}</div><div class="sub">${perm.toLocaleString()} japs</div></div>
+      <div class="m-card"><div class="lbl">Next Target</div><div class="val">${nextT?fmtNum(nextT):'✓ ALL DONE'}</div><div class="sub">${nextT?fmtNum(nextT-perm)+' japs to go':''}</div></div>
+      <div class="m-card"><div class="lbl">Milestones Hit</div><div class="val">${totalDone} / ${totalMilestones}</div><div class="sub">${((totalDone/totalMilestones)*100).toFixed(1)}% journey</div></div>
+      <div class="m-card"><div class="lbl">Malas (÷108)</div><div class="val">${fmtNum(Math.floor(perm/108))}</div><div class="sub">${(perm%108)}/108 in progress</div></div>
     </div>
-    <p style="font-size:11px;color:#ffcc80;margin-bottom:8px;text-align:center;">
-      ETA at <b style="color:#ffcc00;">4 hrs/day</b> • 1 jap ≈ 1.35 sec
-    </p>
-  `;
-
+    <p style="font-size:11px;color:#ffcc80;margin-bottom:8px;text-align:center;">ETA at <b style="color:#ffcc00;">${chantHrs} hrs/day</b> • 1 jap ≈ ${(japInterval/1000).toFixed(2)} sec</p>`;
   let html = '';
   MILESTONES.forEach((g, gi) => {
     const total = g.targets.length;
     const done = g.targets.filter(t => perm >= t).length;
     const isCurrent = done < total && (gi===0 || MILESTONES[gi-1].targets.every(t=>perm>=t));
-
     html += `<details class="m-group" ${isCurrent?'open':''}>
       <summary><span>${g.title}</span><span class="progress-mini">${done}/${total}</span></summary>
       <div class="m-progress-bar"><div class="fill" style="width:${Math.min(100,(done/total)*100)}%"></div></div>
-      <div class="m-table-wrap">
-      <table class="m-table">
-        <thead><tr>
-          <th>Target</th><th>Malas</th><th>Progress</th><th>Left</th><th>Time</th><th>ETA</th><th>Done On</th>
-        </tr></thead><tbody>`;
-
+      <div class="m-table-wrap"><table class="m-table"><thead><tr>
+      <th>Target</th><th>Malas</th><th>Progress</th><th>Left</th><th>Time</th><th>ETA</th><th>Done On</th>
+      </tr></thead><tbody>`;
     g.targets.forEach((t) => {
       const isDone = perm >= t;
       const remaining = Math.max(0, t - perm);
       const pct = Math.min(100, (perm/t)*100).toFixed(1);
-      const secNeeded = remaining * (JAP_INTERVAL/1000);
+      const secNeeded = remaining * (japInterval/1000);
       const timeStr = isDone ? '✓' : fmtDuration(secNeeded);
       const daysNeeded = secNeeded / (chantHrs * 3600);
       const etaDate = isDone ? '—' : new Date(now + daysNeeded*86400000).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
@@ -981,37 +1187,45 @@ function renderMilestones(){
       const malas = Math.floor(t/108);
       const isNext = t === nextT;
       const rowClass = isDone ? 'done' : (isNext ? 'current' : '');
-
-      html += `<tr class="${rowClass}">
-        <td class="tgt">${fmtNum(t)}</td>
-        <td class="malas">${fmtNum(malas)}</td>
-        <td class="pct" style="--pct:${pct}%">${pct}%</td>
-        <td class="rem">${isDone?'0':fmtNum(remaining)}</td>
-        <td class="eta">${timeStr}</td>
-        <td class="date">${etaDate}</td>
-        <td class="date">${doneDate}</td>
-      </tr>`;
+      html += `<tr class="${rowClass}"><td class="tgt">${fmtNum(t)}</td><td class="malas">${fmtNum(malas)}</td><td class="pct" style="--pct:${pct}%">${pct}%</td><td class="rem">${isDone?'0':fmtNum(remaining)}</td><td class="eta">${timeStr}</td><td class="date">${etaDate}</td><td class="date">${doneDate}</td></tr>`;
     });
-
     html += `</tbody></table></div></details>`;
   });
-
   wrap.innerHTML = summaryHtml + html;
 }
 
 /* ============ UI UPDATE ============ */
-function updateUI(){
+function markDirty(){
+  localVersion++;
+  localStorage.setItem('localVersion', localVersion);
+}
+function updateUI(saveDirty=true){
   document.getElementById('permCount').textContent = fmtNum(perm);
   document.getElementById('tripCount').textContent = fmtNum(trip);
   const adjC = document.getElementById('adjCurrent'); if(adjC) adjC.textContent = fmtNum(trip);
   localStorage.setItem('permCount', perm);
   localStorage.setItem('tripCount', trip);
   checkMilestones();
+  if(saveDirty) markDirty();
   if(document.getElementById('milestonesModal').classList.contains('open')) renderMilestones();
   if(document.getElementById('alertsModal').classList.contains('open')) renderAlerts();
 }
-function resetTrip(){ if(confirm('Reset Trip to 0?')){ trip=0; updateUI(); } }
+function resetTrip(){ if(confirm('Reset Trip to 0?')){ trip=0; updateUI(); scheduleAutoBackup(); } }
 
+/* ============ PASSWORD ============ */
+function openAdjustProtected(){
+  const pass = prompt('🔒 Enter password to Adjust Trip:');
+  if(pass === null) return;
+  if(pass !== ADJUST_PASSWORD){ showToast('❌ Wrong password', 'error'); return; }
+  openModal('adjust');
+}
+function openAdvancedProtected(){
+  const pass = prompt('🔒 Enter password for Advanced Settings:');
+  if(pass === null) return;
+  if(pass !== ADVANCED_PASSWORD){ showToast('❌ Wrong password', 'error'); return; }
+  closeModal('settings');
+  setTimeout(()=> openModal('advanced'), 200);
+}
 function adjustTrip(){
   const inp = document.getElementById('adjustQty');
   const qty = parseInt(inp.value);
@@ -1021,10 +1235,74 @@ function adjustTrip(){
   closeModal('adjust');
   setTimeout(()=>{
     if(confirm(`Trip: ${action}ed.\n\nAlso ${action} to Permanent?`)){
-      perm = Math.max(0, perm + qty); updateUI(); autoBackup();
+      perm = Math.max(0, perm + qty); updateUI();
     }
     showToast(`✓ Trip ${qty>0?'+':''}${qty}`);
+    scheduleAutoBackup();
   }, 200);
+}
+
+/* ============ ADVANCED SETTINGS ============ */
+function loadAdvancedIntoForm(){
+  document.getElementById('advAudioDuration').value = SETTINGS.audioDuration;
+  document.getElementById('advJapsPerAudio').value = SETTINGS.japsPerAudio;
+  document.getElementById('advTapCooldown').value = SETTINGS.tapCooldown;
+  document.getElementById('advBackupEvery').value = SETTINGS.backupEvery;
+  document.getElementById('advBackupDebounce').value = SETTINGS.backupDebounce;
+  document.getElementById('advChantHours').value = SETTINGS.chantHours;
+  document.getElementById('advVibrationMs').value = SETTINGS.vibrationMs;
+}
+function saveAdvancedSettings(){
+  const s = {
+    audioDuration: parseFloat(document.getElementById('advAudioDuration').value) || DEFAULT_SETTINGS.audioDuration,
+    japsPerAudio: parseInt(document.getElementById('advJapsPerAudio').value) || DEFAULT_SETTINGS.japsPerAudio,
+    tapCooldown: parseInt(document.getElementById('advTapCooldown').value) || DEFAULT_SETTINGS.tapCooldown,
+    backupEvery: parseInt(document.getElementById('advBackupEvery').value) || DEFAULT_SETTINGS.backupEvery,
+    backupDebounce: parseInt(document.getElementById('advBackupDebounce').value) || DEFAULT_SETTINGS.backupDebounce,
+    chantHours: parseFloat(document.getElementById('advChantHours').value) || DEFAULT_SETTINGS.chantHours,
+    vibrationMs: parseInt(document.getElementById('advVibrationMs').value) || DEFAULT_SETTINGS.vibrationMs
+  };
+  SETTINGS = { ...SETTINGS, ...s };
+  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+  // Restart timer with new interval if running in audio/mansik mode
+  if(running && (chantMode === 'audio' || chantMode === 'mansik')){
+    if(japTimer) clearInterval(japTimer);
+    japTimer = setInterval(tickJap, getJapInterval());
+  }
+  showToast('✓ Advanced settings saved');
+  closeModal('advanced');
+}
+function resetAdvancedSettings(){
+  if(!confirm('Reset all advanced settings to defaults?')) return;
+  SETTINGS = { ...DEFAULT_SETTINGS };
+  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+  loadAdvancedIntoForm();
+  showToast('↺ Reset to defaults');
+}
+
+/* ============ MODE TOGGLE + VIBRATION + BG AUDIO ============ */
+function toggleMode(){
+  if(running){
+    showToast('⏸ Pause first to switch mode', 'error');
+    return;
+  }
+  const idx = MODES.indexOf(chantMode);
+  chantMode = MODES[(idx + 1) % MODES.length];
+  localStorage.setItem('chantMode', chantMode);
+  updateModeBadge();
+  const info = MODE_LABELS[chantMode];
+  showToast(`${info.icon} ${info.name} — ${info.hint}`);
+}
+function saveVibrationPref(){
+  vibrationOn = document.getElementById('vibrationToggle').checked;
+  localStorage.setItem('vibrationOn', vibrationOn);
+}
+function saveBgAudioPref(){
+  bgAudioOn = document.getElementById('bgAudioToggle').checked;
+  localStorage.setItem('bgAudioOn', bgAudioOn);
+}
+function doVibrate(){
+  if(vibrationOn && navigator.vibrate) navigator.vibrate(SETTINGS.vibrationMs);
 }
 
 /* ============ CLOCK ============ */
@@ -1033,35 +1311,71 @@ setInterval(()=>{
   document.getElementById('nowTime').textContent = fmtTime(new Date());
   if(firstStartTs) document.getElementById('elapsed').textContent = fmtDur(getElapsedMs());
   if(running) checkTimeAlerts();
+  updateSyncBar();
 },500);
+function updateSyncBar(){
+  if(backupInProgress) return;
+  const rel = fmtRelative(lastSyncTs);
+  const pending = localVersion > lastBackedUpVersion;
+  if(!ghConfigured()){
+    setSyncStatus('offline', 'offline');
+  } else if(pending){
+    setSyncStatus('syncing', `pending ${rel}`);
+  } else if(lastSyncTs){
+    setSyncStatus('synced', rel);
+  }
+}
 
-/* ============ JAP LOOP ============ */
-let japTimer = null;
+/* ============ JAP CORE — FIXED ============ */
+function tickJap(){
+  perm++; trip++; japsSinceBackup++;
+  updateUI();
+  checkCountAlerts();
+  if(japsSinceBackup >= SETTINGS.backupEvery){
+    japsSinceBackup = 0;
+    scheduleAutoBackup();
+  }
+}
 
-async function toggleJap(){
-  if(!audioBuffer){
-    const loaded = await loadAudioFromStorage();
-    if(!loaded){
-      // Try to auto-download from GitHub if configured
-      if(localStorage.getItem('ghToken')){
-        showToast('☁ Fetching chant from GitHub...', 'info');
-        const ok = await ghDownloadAudio();
-        if(!ok){
-          showToast('📂 Select your chant audio...');
-          pendingStart = true;
-          pickAudio();
-          return;
-        }
-      } else {
-        showToast('📂 Select your chant audio...');
-        pendingStart = true;
-        pickAudio();
-        return;
+async function onStartClick(){
+  // TOGGLE: if running, pause
+  if(running){
+    running = false;
+    applyRunningState();
+    scheduleAutoBackup(true);
+    return;
+  }
+  // STARTING
+  if(ghConfigured()){
+    const btn = document.getElementById('startBtn');
+    btn.disabled = true;
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ SYNCING...';
+    try{ await pullFromGitHub(false); }catch(e){ console.warn('Pre-start sync failed:', e); }
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+  // Audio mode needs audio; manual & mansik don't
+  if(chantMode === 'audio'){
+    if(!audioBuffer){
+      const ok = await decodeStoredAudio();
+      if(!ok){
+        if(ghConfigured()){
+          showToast('☁ Fetching chant from GitHub...', 'info');
+          const gh = await ghDownloadAudio();
+          if(!gh){ showToast('📂 Select chant audio'); pendingStart = true; pickAudio(); resetStartBtn(); return; }
+        } else { showToast('📂 Select chant audio'); pendingStart = true; pickAudio(); resetStartBtn(); return; }
       }
     }
   }
-  running = !running;
+  running = true;
   applyRunningState();
+}
+function resetStartBtn(){
+  const btn = document.getElementById('startBtn');
+  btn.disabled = false;
+  btn.textContent = '▶ START JAP';
+  btn.classList.remove('running','manual','mansik');
 }
 
 function applyRunningState(){
@@ -1070,41 +1384,85 @@ function applyRunningState(){
   const elBlock = document.getElementById('elapsedBlock');
   const pauseTag = document.getElementById('pauseTag');
 
+  // Clear existing timers first — CRITICAL FIX
+  if(japTimer){ clearInterval(japTimer); japTimer = null; }
+  stopSeamlessAudio();
+
+  btn.classList.remove('running','manual','mansik');
+
   if(running){
-    btn.textContent = '⏸ PAUSE JAP';
+    // === STARTING / RESUMING ===
+    const info = MODE_LABELS[chantMode];
+    btn.textContent = `⏸ PAUSE (${info.icon} ${info.name.split(' ')[0]})`;
     btn.classList.add('running');
+    if(chantMode === 'manual') btn.classList.add('manual');
+    if(chantMode === 'mansik') btn.classList.add('mansik');
     mandala.classList.remove('paused');
     elBlock.classList.remove('paused');
+    document.querySelector('.counters').parentElement.classList.remove('paused');
+    // Remove paused class from body-level
+    document.body.classList.remove('paused');
     pauseTag.style.display = 'none';
+
     if(!firstStartTs){
       firstStartTs = Date.now();
       document.getElementById('startTime').textContent = fmtTime(new Date());
     }
     sessionStart = Date.now();
     requestWakeLock(); startWakeVideo();
-    ensureAudioCtx().then(()=>{
-      startSeamlessAudio();
+
+    if(chantMode === 'audio'){
+      ensureAudioCtx().then(()=>{
+        startSeamlessAudio();
+        tickJap();
+        japTimer = setInterval(tickJap, getJapInterval());
+      });
+    } else if(chantMode === 'manual'){
+      showToast('🖐 Tap the mandala to count', 'info', 3000);
+    } else if(chantMode === 'mansik'){
+      // Silent auto-count — no audio, no tap required
+      startSilentKeepAlive();
+      setupMediaSession();
       tickJap();
-      japTimer = setInterval(tickJap, JAP_INTERVAL);
-    });
+      japTimer = setInterval(tickJap, getJapInterval());
+      showToast('🧘 Mansik jap — silent auto-count active', 'info', 3000);
+    }
   } else {
+    // === PAUSING ===
     btn.textContent = '▶ RESUME JAP';
-    btn.classList.remove('running');
     mandala.classList.add('paused');
     elBlock.classList.add('paused');
+    document.body.classList.add('paused');
     pauseTag.style.display = 'inline-block';
     if(sessionStart){ elapsedMs += Date.now() - sessionStart; sessionStart = null; }
-    clearInterval(japTimer);
-    stopSeamlessAudio();
     releaseWakeLock(); stopWakeVideo();
   }
 }
-function tickJap(){
-  perm++; trip++; updateUI();
-  checkCountAlerts();
-  if(perm % 108 === 0) autoBackup();
+
+/* Manual tap handler */
+function onMandalaTap(e){
+  if(chantMode !== 'manual' || !running) return;
+  if(e.target.classList.contains('reset-btn')) return;
+  const now = Date.now();
+  if(now - lastTapTs < SETTINGS.tapCooldown) return;
+  lastTapTs = now;
+  const c = document.getElementById('permCircle');
+  c.classList.remove('tap-flash');
+  void c.offsetWidth;
+  c.classList.add('tap-flash');
+  setTimeout(()=> c.classList.remove('tap-flash'), 150);
+  doVibrate();
+  if(screenWasOff){
+    trip++; screenOffJapCount++;
+    localStorage.setItem('tripCount', trip);
+    markDirty();
+    updateUI(false);
+  } else {
+    tickJap();
+  }
 }
-function forcePause(){ if(running){ running = false; applyRunningState(); } }
+
+function forcePause(){ if(running){ running = false; applyRunningState(); scheduleAutoBackup(true); } }
 function forceResume(){ if(!running){ running = true; applyRunningState(); } }
 
 /* ============ WAKE LOCK ============ */
@@ -1112,16 +1470,54 @@ async function requestWakeLock(){
   try{
     if('wakeLock' in navigator){
       wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', ()=>{
-        if(running && document.visibilityState==='visible') requestWakeLock();
-      });
+      wakeLock.addEventListener('release', ()=>{ if(running && document.visibilityState==='visible') requestWakeLock(); });
     }
   }catch(e){}
 }
 function releaseWakeLock(){ if(wakeLock){wakeLock.release(); wakeLock=null;} }
+
 document.addEventListener('visibilitychange',()=>{
-  if(running && document.visibilityState==='visible'){ requestWakeLock(); startWakeVideo(); }
+  if(document.visibilityState === 'hidden'){
+    if(running){
+      screenWasOff = true;
+      screenOffJapCount = 0;
+    }
+    if(localVersion > lastBackedUpVersion) scheduleAutoBackup(true);
+  } else if(document.visibilityState === 'visible'){
+    if(running){ requestWakeLock(); startWakeVideo(); }
+    if(screenWasOff && chantMode === 'manual' && screenOffJapCount > 0){
+      showScreenoffPrompt();
+    }
+    screenWasOff = false;
+  }
 });
+window.addEventListener('beforeunload', ()=>{
+  if(localVersion > lastBackedUpVersion && ghConfigured()){
+    try{ pushToGitHub(true); }catch(e){}
+  }
+});
+
+function showScreenoffPrompt(){
+  document.getElementById('screenoffCount').textContent = fmtNum(screenOffJapCount);
+  openModal('screenoff');
+}
+function applyScreenoffJaps(applyToPerm){
+  if(applyToPerm){
+    perm += screenOffJapCount;
+    localStorage.setItem('permCount', perm);
+    updateUI();
+    showToast(`✓ ${fmtNum(screenOffJapCount)} japs added to Permanent`);
+    scheduleAutoBackup(true);
+  } else {
+    trip = Math.max(0, trip - screenOffJapCount);
+    localStorage.setItem('tripCount', trip);
+    updateUI();
+    showToast('Discarded — Trip rolled back');
+  }
+  screenOffJapCount = 0;
+  closeModal('screenoff');
+}
+
 function startWakeVideo(){
   const v=document.getElementById('wakeVideo');
   if(!v.src) v.src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAA/G1kYXQAAAKtBgX//6ncRem95tlIt5Ys2CDZI+7veDI2NAAAAAA=";
@@ -1135,8 +1531,8 @@ function toggleAlertInputs(){
   document.getElementById('countInputGroup').style.display = t==='count' ? 'block' : 'none';
   document.getElementById('timeInputGroup').style.display = t==='time' ? 'block' : 'none';
 }
-function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); }
-function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); }
+function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); markDirty(); }
+function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); markDirty(); }
 
 function addAlert(){
   const type = document.getElementById('alertType').value;
@@ -1165,13 +1561,8 @@ function addAlert(){
 }
 function activatePreset(idx){
   const p = presets[idx];
-  const a = {
-    id: Date.now(), type: p.type, delta: p.delta,
-    target: p.type==='count' ? trip + p.delta : getElapsedMs() + p.delta,
-    label: p.label, triggered: false
-  };
-  alerts.push(a);
-  saveAlertsLocal(); renderAlerts();
+  const a = { id: Date.now(), type: p.type, delta: p.delta, target: p.type==='count' ? trip + p.delta : getElapsedMs() + p.delta, label: p.label, triggered: false };
+  alerts.push(a); saveAlertsLocal(); renderAlerts();
   showToast('🔔 Alert active: '+p.label);
 }
 function deletePreset(idx){
@@ -1186,17 +1577,12 @@ function renderPresets(){
     return `<span class="preset-chip" onclick="activatePreset(${i})">${icon} ${p.label}<span class="x" onclick="event.stopPropagation();deletePreset(${i})">✕</span></span>`;
   }).join('');
 }
-function removeAlert(id){
-  alerts = alerts.filter(a=>a.id!==id);
-  saveAlertsLocal(); renderAlerts();
-  showToast('Alert removed');
-}
+function removeAlert(id){ alerts = alerts.filter(a=>a.id!==id); saveAlertsLocal(); renderAlerts(); showToast('Alert removed'); }
 function reactivateAlert(id){
   const a = alerts.find(x=>x.id===id); if(!a) return;
   a.triggered = false;
   a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
-  saveAlertsLocal(); renderAlerts();
-  showToast('🔔 Re-activated');
+  saveAlertsLocal(); renderAlerts(); showToast('🔔 Re-activated');
 }
 function startEditAlert(id){ editingAlertId = id; renderAlerts(); }
 function cancelEditAlert(){ editingAlertId = null; renderAlerts(); }
@@ -1204,18 +1590,14 @@ function saveEditAlert(id){
   const a = alerts.find(x=>x.id===id); if(!a) return;
   const val = document.getElementById('editAlertInput_'+id).value;
   if(a.type==='count'){
-    const n = parseInt(val);
-    if(!n || n<1){ showToast('Invalid','error'); return; }
+    const n = parseInt(val); if(!n || n<1){ showToast('Invalid','error'); return; }
     a.delta = n; a.target = trip + n; a.label = `${fmtNum(n)} japs`;
   } else {
-    const ms = parseHMS(val);
-    if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
+    const ms = parseHMS(val); if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
     a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${val}`;
   }
-  a.triggered = false;
-  editingAlertId = null;
-  saveAlertsLocal(); renderAlerts();
-  showToast('✓ Updated');
+  a.triggered = false; editingAlertId = null;
+  saveAlertsLocal(); renderAlerts(); showToast('✓ Updated');
 }
 function renderAlerts(){
   const box = document.getElementById('alertsList');
@@ -1223,15 +1605,12 @@ function renderAlerts(){
   box.innerHTML = alerts.map(a => {
     const icon = a.type==='count' ? '📿' : '⏰';
     let status = '';
-    if(a.triggered) status = '✓ Triggered — click Re-activate to reuse';
+    if(a.triggered) status = '✓ Triggered — click Re-activate';
     else if(a.type==='count') status = `Fire at ${fmtNum(a.target)} • ${fmtNum(Math.max(0,a.target-trip))} japs left`;
     else status = `Fire at ${fmtDur(a.target)} • ${fmtDur(Math.max(0,a.target-getElapsedMs()))} left`;
     const isEditing = editingAlertId === a.id;
     return `<div class="alert-row ${a.triggered?'triggered':''}">
-      <div class="info">
-        <b>${icon} ${a.label}</b>
-        <small>${status}</small>
-      </div>
+      <div class="info"><b>${icon} ${a.label}</b><small>${status}</small></div>
       <div class="btns">
         <button class="b-react" onclick="reactivateAlert(${a.id})">${a.triggered?'♻ Re-activate':'↻ Reset'}</button>
         <button class="b-edit" onclick="startEditAlert(${a.id})">✏ Edit</button>
@@ -1239,28 +1618,17 @@ function renderAlerts(){
       </div>
       <div class="alert-edit-inline" style="display:${isEditing?'block':'none'};">
         <input type="text" id="editAlertInput_${a.id}" value="${a.type==='count'?a.delta:fmtDur(a.delta)}">
-        <div class="btns">
-          <button class="save" onclick="saveEditAlert(${a.id})">Save</button>
-          <button class="cancel" onclick="cancelEditAlert()">Cancel</button>
-        </div>
+        <div class="btns"><button class="save" onclick="saveEditAlert(${a.id})">Save</button><button class="cancel" onclick="cancelEditAlert()">Cancel</button></div>
       </div>
     </div>`;
   }).join('');
 }
 function checkCountAlerts(){
-  alerts.forEach(a => {
-    if(a.type==='count' && !a.triggered && trip >= a.target){
-      a.triggered = true; saveAlertsLocal(); triggerAlert(a);
-    }
-  });
+  alerts.forEach(a => { if(a.type==='count' && !a.triggered && trip >= a.target){ a.triggered = true; saveAlertsLocal(); triggerAlert(a); } });
 }
 function checkTimeAlerts(){
   const cur = getElapsedMs();
-  alerts.forEach(a => {
-    if(a.type==='time' && !a.triggered && cur >= a.target){
-      a.triggered = true; saveAlertsLocal(); triggerAlert(a);
-    }
-  });
+  alerts.forEach(a => { if(a.type==='time' && !a.triggered && cur >= a.target){ a.triggered = true; saveAlertsLocal(); triggerAlert(a); } });
 }
 function triggerAlert(a){
   currentAlert = a;
@@ -1281,9 +1649,7 @@ function alertContinue(){
   const a = currentAlert;
   a.triggered = false;
   a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
-  saveAlertsLocal();
-  closeAlertPopup();
-  forceResume();
+  saveAlertsLocal(); closeAlertPopup(); forceResume();
   showToast('▶ Continuing: '+a.label);
 }
 function alertShowNewInput(){
@@ -1307,25 +1673,19 @@ function alertApplyNew(){
   if(!val){ showToast('Enter value', 'error'); return; }
   const a = currentAlert;
   if(a.type==='count'){
-    const n = parseInt(val);
-    if(!n || n<1){ showToast('Invalid','error'); return; }
+    const n = parseInt(val); if(!n || n<1){ showToast('Invalid','error'); return; }
     a.delta = n; a.target = trip + n; a.label = `${fmtNum(n)} japs`;
   } else {
-    const ms = parseHMS(val);
-    if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
+    const ms = parseHMS(val); if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
     a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${val}`;
   }
-  a.triggered = false;
-  saveAlertsLocal();
-  closeAlertPopup();
-  forceResume();
+  a.triggered = false; saveAlertsLocal(); closeAlertPopup(); forceResume();
   showToast('✓ New alert set');
 }
 function alertDismissOnly(){ closeAlertPopup(); showToast('Dismissed — chanting paused'); }
 function closeAlertPopup(){
   document.getElementById('alertPopup').classList.remove('show');
-  stopBeep();
-  currentAlert = null;
+  stopBeep(); currentAlert = null;
   if(document.getElementById('alertsModal').classList.contains('open')) renderAlerts();
 }
 
@@ -1342,16 +1702,12 @@ function playBeep(){
       o.connect(g); g.connect(beepCtx.destination);
       o.start(); o.stop(beepCtx.currentTime + 0.3);
     }
-    beep();
-    beepInterval = setInterval(beep, 600);
+    beep(); beepInterval = setInterval(beep, 600);
   }catch(e){}
 }
-function stopBeep(){
-  if(beepInterval){ clearInterval(beepInterval); beepInterval=null; }
-  if(beepCtx){ beepCtx.close(); beepCtx=null; }
-}
+function stopBeep(){ if(beepInterval){ clearInterval(beepInterval); beepInterval=null; } if(beepCtx){ beepCtx.close(); beepCtx=null; } }
 
-/* ============ MODALS (with click-outside-to-close) ============ */
+/* ============ MODALS ============ */
 function openModal(name){
   document.getElementById(name+'Modal').classList.add('open');
   if(name==='milestones') renderMilestones();
@@ -1360,8 +1716,11 @@ function openModal(name){
     document.getElementById('ghRepo').value = localStorage.getItem('ghRepo') || '';
     document.getElementById('ghToken').value = localStorage.getItem('ghToken') || '';
     document.getElementById('ghBackupAudio').checked = localStorage.getItem('ghBackupAudio') !== 'false';
+    document.getElementById('vibrationToggle').checked = vibrationOn;
+    document.getElementById('bgAudioToggle').checked = bgAudioOn;
     updateAudioInfo();
   }
+  if(name==='advanced') loadAdvancedIntoForm();
   if(name==='search') runCalc();
   if(name==='alerts'){ toggleAlertInputs(); renderAlerts(); renderPresets(); }
   if(name==='adjust'){ document.getElementById('adjCurrent').textContent = fmtNum(trip); }
@@ -1370,22 +1729,14 @@ function closeModal(name){
   document.getElementById(name+'Modal').classList.remove('open');
   if(name==='alerts') editingAlertId = null;
 }
-// Click backdrop to close
 document.querySelectorAll('.modal').forEach(m => {
   m.addEventListener('click', e => {
-    if(e.target === m){
-      const name = m.getAttribute('data-name');
-      if(name) closeModal(name);
-    }
+    if(e.target === m){ const name = m.getAttribute('data-name'); if(name) closeModal(name); }
   });
 });
-// ESC key to close all modals
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
-    document.querySelectorAll('.modal.open').forEach(m => {
-      const name = m.getAttribute('data-name');
-      if(name) closeModal(name);
-    });
+    document.querySelectorAll('.modal.open').forEach(m => { const name = m.getAttribute('data-name'); if(name) closeModal(name); });
   }
 });
 
@@ -1396,41 +1747,34 @@ function runCalc(){
   const hoursGroup = document.getElementById('hoursGroup');
   const label = document.getElementById('calcLabel');
   const res = document.getElementById('calcResult');
+  const japInterval = getJapInterval();
   hoursGroup.style.display = 'none';
   if(mode==='days2japs'){
-    label.textContent = 'Enter days';
-    hoursGroup.style.display = 'block';
-    if(!val){ res.innerHTML='Enter days above.'; return; }
-    const hrs = parseFloat(document.getElementById('calcHours').value) || 2;
-    const jph = 3600 / (JAP_INTERVAL/1000);
+    label.textContent = 'Enter days'; hoursGroup.style.display = 'block';
+    if(!val){ res.innerHTML='Enter days.'; return; }
+    const hrs = parseFloat(document.getElementById('calcHours').value) || SETTINGS.chantHours;
+    const jph = 3600 / (japInterval/1000);
     const total = Math.round(val * hrs * jph);
-    res.innerHTML = `In <b>${val} days</b> at <b>${hrs} hrs/day</b>:<br>
-      🕉 Total: <b>${fmtNum(total)}</b><br>📅 Daily: <b>${fmtNum(Math.round(hrs*jph))}</b>`;
+    res.innerHTML = `In <b>${val} days</b> at <b>${hrs} hrs/day</b>:<br>🕉 Total: <b>${fmtNum(total)}</b><br>📅 Daily: <b>${fmtNum(Math.round(hrs*jph))}</b>`;
   } else if(mode==='japs2days'){
-    label.textContent = 'Enter jap target';
-    hoursGroup.style.display = 'block';
+    label.textContent = 'Enter jap target'; hoursGroup.style.display = 'block';
     if(!val){ res.innerHTML='Enter target.'; return; }
-    const hrs = parseFloat(document.getElementById('calcHours').value) || 2;
-    const secondsNeeded = val * (JAP_INTERVAL/1000);
+    const hrs = parseFloat(document.getElementById('calcHours').value) || SETTINGS.chantHours;
+    const secondsNeeded = val * (japInterval/1000);
     const daysNeeded = secondsNeeded / (hrs * 3600);
     const remaining = Math.max(0, val - perm);
-    const remainingDays = remaining * (JAP_INTERVAL/1000) / (hrs * 3600);
-    res.innerHTML = `Target: <b>${fmtNum(val)}</b><br>
-      ⏳ From zero: <b>${daysNeeded.toFixed(1)} days</b><br>
-      🎯 From current: <b>${remainingDays.toFixed(1)} days</b><br>
-      📅 Finish: <b>${new Date(Date.now()+remainingDays*86400000).toLocaleDateString('en-GB')}</b>`;
+    const remainingDays = remaining * (japInterval/1000) / (hrs * 3600);
+    res.innerHTML = `Target: <b>${fmtNum(val)}</b><br>⏳ From zero: <b>${daysNeeded.toFixed(1)} days</b><br>🎯 From current: <b>${remainingDays.toFixed(1)} days</b><br>📅 Finish: <b>${new Date(Date.now()+remainingDays*86400000).toLocaleDateString('en-GB')}</b>`;
   } else {
     label.textContent = 'Enter hours per day';
     if(!val){ res.innerHTML='Enter hours.'; return; }
-    const jph = 3600 / (JAP_INTERVAL/1000);
+    const jph = 3600 / (japInterval/1000);
     const daily = Math.round(val * jph);
-    res.innerHTML = `At <b>${val} hrs/day</b>:<br>
-      🕉 Daily: <b>${fmtNum(daily)}</b><br>📅 Weekly: <b>${fmtNum(daily*7)}</b><br>
-      📆 Monthly: <b>${fmtNum(daily*30)}</b><br>🎯 Yearly: <b>${fmtNum(daily*365)}</b>`;
+    res.innerHTML = `At <b>${val} hrs/day</b>:<br>🕉 Daily: <b>${fmtNum(daily)}</b><br>📅 Weekly: <b>${fmtNum(daily*7)}</b><br>📆 Monthly: <b>${fmtNum(daily*30)}</b><br>🎯 Yearly: <b>${fmtNum(daily*365)}</b>`;
   }
 }
 
-/* ============ GITHUB (v8.1 - large file support) ============ */
+/* ============ GITHUB SYNC ============ */
 const GH_DATA_PATH = 'data/jap_data.json';
 const GH_AUDIO_PATH = 'data/chant_audio.bin';
 const GH_AUDIO_META_PATH = 'data/chant_audio_meta.json';
@@ -1439,9 +1783,8 @@ function ghHeaders(extra={}){
   const t = localStorage.getItem('ghToken');
   return { Authorization: `Bearer ${t}`, Accept: 'application/vnd.github+json', ...extra };
 }
-function ghRepo(){
-  return { o: localStorage.getItem('ghOwner'), r: localStorage.getItem('ghRepo') };
-}
+function ghRepo(){ return { o: localStorage.getItem('ghOwner'), r: localStorage.getItem('ghRepo') }; }
+function ghConfigured(){ return !!(localStorage.getItem('ghToken') && localStorage.getItem('ghOwner') && localStorage.getItem('ghRepo')); }
 
 function saveGhSettings(){
   const o = document.getElementById('ghOwner').value.trim();
@@ -1456,11 +1799,11 @@ function saveGhSettings(){
   showToast('✓ Settings saved');
 }
 
-async function ghGetFileSha(path){
+async function ghGetFileInfo(path){
   const {o,r} = ghRepo();
   try{
     const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, { headers: ghHeaders() });
-    if(res.ok) return (await res.json()).sha;
+    if(res.ok) return await res.json();
   }catch(e){}
   return null;
 }
@@ -1476,9 +1819,9 @@ function blobToBase64(blob){
 
 async function ghPutFile(path, base64Content, message){
   const {o,r} = ghRepo();
-  const sha = await ghGetFileSha(path);
+  const existing = await ghGetFileInfo(path);
   const body = { message, content: base64Content };
-  if(sha) body.sha = sha;
+  if(existing) body.sha = existing.sha;
   const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, {
     method: 'PUT',
     headers: ghHeaders({'Content-Type':'application/json'}),
@@ -1495,15 +1838,12 @@ async function ghGetDefaultBranch(){
   const {o,r} = ghRepo();
   const res = await fetch(`https://api.github.com/repos/${o}/${r}`, { headers: ghHeaders() });
   if(!res.ok) throw new Error('Cannot read repo info');
-  const j = await res.json();
-  return j.default_branch || 'main';
+  return (await res.json()).default_branch || 'main';
 }
 
 async function ghPutLargeFile(path, blob, message){
   const {o,r} = ghRepo();
   const branch = await ghGetDefaultBranch();
-
-  showToast('☁ Uploading audio (1/4)...', 'info', 3000);
   const b64 = await blobToBase64(blob);
   let res = await fetch(`https://api.github.com/repos/${o}/${r}/git/blobs`, {
     method:'POST', headers: ghHeaders({'Content-Type':'application/json'}),
@@ -1511,35 +1851,24 @@ async function ghPutLargeFile(path, blob, message){
   });
   if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(`Blob: ${res.status} ${e.message||''}`); }
   const blobSha = (await res.json()).sha;
-
-  showToast('☁ Uploading audio (2/4)...', 'info', 3000);
   res = await fetch(`https://api.github.com/repos/${o}/${r}/git/ref/heads/${branch}`, { headers: ghHeaders() });
   if(!res.ok) throw new Error('Cannot get branch ref');
   const refSha = (await res.json()).object.sha;
-
   res = await fetch(`https://api.github.com/repos/${o}/${r}/git/commits/${refSha}`, { headers: ghHeaders() });
   if(!res.ok) throw new Error('Cannot get commit');
   const treeSha = (await res.json()).tree.sha;
-
-  showToast('☁ Uploading audio (3/4)...', 'info', 3000);
   res = await fetch(`https://api.github.com/repos/${o}/${r}/git/trees`, {
     method:'POST', headers: ghHeaders({'Content-Type':'application/json'}),
-    body: JSON.stringify({
-      base_tree: treeSha,
-      tree: [{ path, mode:'100644', type:'blob', sha: blobSha }]
-    })
+    body: JSON.stringify({ base_tree: treeSha, tree: [{ path, mode:'100644', type:'blob', sha: blobSha }] })
   });
   if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(`Tree: ${res.status} ${e.message||''}`); }
   const newTreeSha = (await res.json()).sha;
-
-  showToast('☁ Uploading audio (4/4)...', 'info', 3000);
   res = await fetch(`https://api.github.com/repos/${o}/${r}/git/commits`, {
     method:'POST', headers: ghHeaders({'Content-Type':'application/json'}),
     body: JSON.stringify({ message, tree: newTreeSha, parents: [refSha] })
   });
   if(!res.ok){ const e=await res.json().catch(()=>({})); throw new Error(`Commit: ${res.status} ${e.message||''}`); }
   const newCommitSha = (await res.json()).sha;
-
   res = await fetch(`https://api.github.com/repos/${o}/${r}/git/refs/heads/${branch}`, {
     method:'PATCH', headers: ghHeaders({'Content-Type':'application/json'}),
     body: JSON.stringify({ sha: newCommitSha })
@@ -1549,7 +1878,7 @@ async function ghPutLargeFile(path, blob, message){
 }
 
 async function ghUploadAudio(blob){
-  const {o} = ghRepo(); if(!o) return false;
+  if(!ghConfigured()) return false;
   try{
     const sizeMB = (blob.size / (1024*1024)).toFixed(2);
     if(blob.size < 900*1024){
@@ -1571,31 +1900,23 @@ async function ghUploadAudio(blob){
 }
 
 async function ghDownloadAudio(){
-  const {o,r} = ghRepo();
-  const t = localStorage.getItem('ghToken');
-  if(!o||!r||!t) return false;
+  if(!ghConfigured()) return false;
   try{
-    const metaRes = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${GH_AUDIO_META_PATH}`, { headers: ghHeaders() });
-    if(!metaRes.ok) return false;
-    const metaJson = await metaRes.json();
-    const meta = JSON.parse(decodeURIComponent(escape(atob(metaJson.content.replace(/\n/g,'')))));
-
-    const audioMetaRes = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${GH_AUDIO_PATH}`, { headers: ghHeaders() });
-    if(!audioMetaRes.ok) return false;
-    const audioMeta = await audioMetaRes.json();
-
+    const metaInfo = await ghGetFileInfo(GH_AUDIO_META_PATH);
+    if(!metaInfo) return false;
+    const meta = JSON.parse(decodeURIComponent(escape(atob(metaInfo.content.replace(/\n/g,'')))));
+    const audioInfo = await ghGetFileInfo(GH_AUDIO_PATH);
+    if(!audioInfo) return false;
     let blob;
-    if(audioMeta.download_url){
-      const dlRes = await fetch(audioMeta.download_url);
+    if(audioInfo.download_url){
+      const dlRes = await fetch(audioInfo.download_url);
       blob = await dlRes.blob();
-    } else if(audioMeta.content){
-      const bin = atob(audioMeta.content.replace(/\n/g,''));
+    } else if(audioInfo.content){
+      const bin = atob(audioInfo.content.replace(/\n/g,''));
       const arr = new Uint8Array(bin.length);
       for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
       blob = new Blob([arr]);
-    } else {
-      return false;
-    }
+    } else return false;
     const typedBlob = new Blob([blob], { type: meta.type || 'audio/mpeg' });
     await loadAudioFromBlob(typedBlob, meta.name);
     await idbSet('chantAudio', { blob: typedBlob, name: meta.name });
@@ -1604,72 +1925,173 @@ async function ghDownloadAudio(){
   }catch(e){ console.error(e); showToast('❌ Audio download: '+e.message,'error'); return false; }
 }
 
-async function ghBackup(){
-  const {o,r} = ghRepo();
-  const t = localStorage.getItem('ghToken');
-  if(!o||!r||!t){ showToast('Set GitHub creds first', 'error'); openModal('settings'); return; }
+/* ============ SYNC CORE ============ */
+function buildPayload(){
+  return {
+    version: localVersion,
+    deviceId: DEVICE_ID,
+    updatedAt: new Date().toISOString(),
+    perm, trip, milestoneDates, alerts, presets,
+    settings: SETTINGS
+  };
+}
+function mergeRemote(remote){
+  const newPerm = Math.max(perm, remote.perm || 0);
+  const newTrip = Math.max(trip, remote.trip || 0);
+  const merged = { ...(remote.milestoneDates || {}) };
+  Object.keys(milestoneDates).forEach(k => {
+    if(!merged[k] || new Date(milestoneDates[k]) < new Date(merged[k])) merged[k] = milestoneDates[k];
+  });
+  const changed = newPerm !== perm || newTrip !== trip || JSON.stringify(merged) !== JSON.stringify(milestoneDates);
+  perm = newPerm; trip = newTrip; milestoneDates = merged;
+  if(!alerts.length && remote.alerts) alerts = remote.alerts;
+  if(!presets.length && remote.presets) presets = remote.presets;
+  if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
+  localStorage.setItem('permCount', perm);
+  localStorage.setItem('tripCount', trip);
+  localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+  saveAlertsLocal(); savePresets();
+  return changed;
+}
+
+async function pullFromGitHub(showUI=true){
+  if(!ghConfigured()) return { ok:false, reason:'not_configured' };
+  if(showUI) setSyncStatus('syncing', 'pulling');
   try{
-    const data = {perm, trip, milestoneDates, alerts, presets, date: new Date().toISOString()};
-    const jsonStr = JSON.stringify(data, null, 2);
-    const content = btoa(unescape(encodeURIComponent(jsonStr)));
-    await ghPutFile(GH_DATA_PATH, content, `Backup • ${fmtNum(perm)} japs • ${Object.keys(milestoneDates).length} milestones`);
-    showToast('☁ Data + milestones saved');
+    const info = await ghGetFileInfo(GH_DATA_PATH);
+    if(!info){
+      if(showUI) setSyncStatus('synced', 'no backup');
+      return { ok:true, empty:true };
+    }
+    const jsonStr = decodeURIComponent(escape(atob(info.content.replace(/\n/g,''))));
+    const remote = JSON.parse(jsonStr);
+    const remoteVer = remote.version || 0;
+    if(remoteVer > localVersion || (remote.deviceId !== DEVICE_ID && remoteVer >= localVersion)){
+      const changed = mergeRemote(remote);
+      localVersion = Math.max(localVersion, remoteVer);
+      localStorage.setItem('localVersion', localVersion);
+      lastBackedUpVersion = localVersion;
+      localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
+      lastSyncTs = Date.now();
+      localStorage.setItem('lastSyncTs', lastSyncTs);
+      updateUI(false);
+      if(showUI){
+        setSyncStatus('synced', 'now');
+        if(changed) showToast(`⬇ Pulled: ${fmtNum(perm)} japs`);
+      }
+      return { ok:true, changed };
+    }
+    if(showUI) setSyncStatus('synced', 'up to date');
+    lastSyncTs = Date.now();
+    localStorage.setItem('lastSyncTs', lastSyncTs);
+    return { ok:true, changed:false };
   }catch(e){
-    showToast('❌ Data backup: '+e.message, 'error', 5000);
-    return;
+    console.error('Pull error:', e);
+    if(showUI) setSyncStatus('error', 'failed');
+    return { ok:false, error:e.message };
   }
-  if(localStorage.getItem('ghBackupAudio') !== 'false'){
-    const stored = await idbGet('chantAudio').catch(()=>null);
-    if(stored && stored.blob){
-      const existingSha = await ghGetFileSha(GH_AUDIO_PATH);
-      if(!existingSha){
-        await ghUploadAudio(stored.blob);
+}
+
+async function pushToGitHub(silent=false){
+  if(!ghConfigured()) return false;
+  if(backupInProgress) return false;
+  if(localVersion <= lastBackedUpVersion){
+    if(!silent) setSyncStatus('synced', 'up to date');
+    return true;
+  }
+  backupInProgress = true;
+  setSyncStatus('syncing', 'pushing');
+  const versionAtStart = localVersion;
+  try{
+    const payload = buildPayload();
+    const jsonStr = JSON.stringify(payload, null, 2);
+    const content = btoa(unescape(encodeURIComponent(jsonStr)));
+    await ghPutFile(GH_DATA_PATH, content, `v${payload.version} • ${fmtNum(perm)} japs • ${DEVICE_ID}`);
+    lastBackedUpVersion = versionAtStart;
+    localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
+    lastSyncTs = Date.now();
+    localStorage.setItem('lastSyncTs', lastSyncTs);
+    setSyncStatus('synced', 'now');
+    if(!silent) showToast('☁ Synced');
+    if(localStorage.getItem('ghBackupAudio') !== 'false'){
+      const stored = await idbGet('chantAudio').catch(()=>null);
+      if(stored && stored.blob){
+        const existing = await ghGetFileInfo(GH_AUDIO_PATH);
+        if(!existing) await ghUploadAudio(stored.blob);
       }
     }
+    return true;
+  }catch(e){
+    console.error('Push error:', e);
+    setSyncStatus('error', 'failed');
+    if(!silent) showToast('❌ Sync: '+e.message, 'error', 5000);
+    return false;
+  }finally{
+    backupInProgress = false;
   }
 }
 
-async function ghRestore(){
-  const {o,r} = ghRepo();
-  const t = localStorage.getItem('ghToken');
-  if(!o||!r||!t){ showToast('Set creds first', 'error'); openModal('settings'); return; }
-  try{
-    showToast('⬇ Restoring...', 'info');
-    const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${GH_DATA_PATH}`, { headers: ghHeaders() });
-    if(!res.ok){ showToast('❌ No backup found', 'error'); return; }
-    const meta = await res.json();
-    const jsonStr = decodeURIComponent(escape(atob(meta.content.replace(/\n/g,''))));
-    const d = JSON.parse(jsonStr);
+function scheduleAutoBackup(immediate=false){
+  if(!ghConfigured()) return;
+  clearTimeout(backupDebounceTimer);
+  const delay = immediate ? 100 : SETTINGS.backupDebounce;
+  backupDebounceTimer = setTimeout(()=>{ pushToGitHub(true); }, delay);
+}
 
-    if((d.perm||0) > perm) perm = d.perm;
-    trip = d.trip || 0;
-    milestoneDates = { ...(d.milestoneDates || {}), ...milestoneDates };
-    alerts = d.alerts || [];
-    presets = d.presets || [];
-    localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-    saveAlertsLocal(); savePresets();
-    updateUI();
-    showToast('✓ Data restored: '+fmtNum(perm));
-
+async function manualBackup(){
+  if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
+  const ok = await pushToGitHub(false);
+  if(ok && localVersion === lastBackedUpVersion) showToast('✓ All data on GitHub');
+}
+async function manualRestore(){
+  if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
+  if(localVersion > lastBackedUpVersion){
+    if(!confirm('You have unsynced local changes. Restore will merge (keep max counters). Continue?')) return;
+  }
+  const res = await pullFromGitHub(true);
+  if(res.ok){
     const stored = await idbGet('chantAudio').catch(()=>null);
     if(!stored) await ghDownloadAudio();
-  }catch(e){ showToast('❌ '+e.message, 'error'); }
+  }
+}
+async function manualSync(){
+  if(!ghConfigured()){ openModal('settings'); return; }
+  await pullFromGitHub(true);
+  await pushToGitHub(false);
 }
 
-function autoBackup(){ if(localStorage.getItem('ghToken')) ghBackup(); }
-
-
 /* ============ INIT ============ */
-(async function init(){
-  updateUI();
-  // Try local audio first
-  const loaded = await loadAudioFromStorage();
-  // If no local audio and GH configured, auto-fetch
-  if(!loaded && localStorage.getItem('ghToken')){
-    showToast('☁ Auto-fetching chant from GitHub...', 'info', 3000);
-    await ghDownloadAudio();
+async function init(){
+  updateUI(false);
+  updateModeBadge();
+  renderPresets();
+  document.getElementById('nowTime').textContent = fmtTime(new Date());
+  await loadAudioFromStorage();
+
+  if(ghConfigured()){
+    showStartup('Syncing with GitHub...', 'Har Har Mahadev 🔱');
+    setSyncStatus('syncing', 'pulling');
+    try{
+      await pullFromGitHub(true);
+      const stored = await idbGet('chantAudio').catch(()=>null);
+      if(!stored){
+        showStartup('Downloading chant audio...', 'One-time only');
+        await ghDownloadAudio();
+      }
+      if(localVersion > lastBackedUpVersion){
+        showStartup('Uploading local changes...', '');
+        await pushToGitHub(true);
+      }
+    }catch(e){ console.warn('Startup sync error:', e); }
+    hideStartup();
+  } else {
+    setSyncStatus('offline', 'offline');
   }
-})();
+}
+
+window.addEventListener('load', ()=>{ init(); });
+
 </script>
 </body>
 </html>
