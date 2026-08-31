@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🔱 Mahadev Jap Counter Pro v8</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #ffd97a; min-height: 100vh; padding: 8px;
+    text-align: center; user-select: none; background: #000;
+  }
+  .bg-layer {
+    position: fixed; inset: 0; z-index: -3;
+    background:
+      radial-gradient(ellipse at center, rgba(80,10,0,0.4), rgba(0,0,0,0.95)),
+      url('https://images.unsplash.com/photo-1567878577863-8de91e8862f8?auto=format&fit=crop&w=1000&q=60');
+    background-size: cover; background-position: center;
+    filter: blur(6px) brightness(0.55) saturate(1.4);
+    transform: scale(1.1);
+  }
+  .fire-layer {
+    position: fixed; inset:0; z-index:-2; pointer-events:none;
+    background:
+      radial-gradient(circle at 20% 90%, rgba(255,80,0,0.5), transparent 40%),
+      radial-gradient(circle at 80% 95%, rgba(255,140,0,0.5), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(255,50,0,0.6), transparent 50%);
+    animation: fireFlicker 3s ease-in-out infinite alternate;
+  }
+  @keyframes fireFlicker { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.8} }
+  .embers { position: fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; }
+  .ember {
+    position:absolute; bottom:-10px; width:4px; height:4px;
+    background: radial-gradient(circle, #ffcc00, #ff3300);
+    border-radius:50%; box-shadow: 0 0 8px #ff6600;
+    animation: rise linear infinite;
+  }
+  @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
+
+  .top-bar {
+    display:flex; justify-content:space-between; align-items:center;
+    padding: 6px 10px; background: rgba(0,0,0,0.4);
+    border-radius: 12px; backdrop-filter: blur(6px);
+    border: 1px solid rgba(255,140,0,0.3);
+  }
+  .om-corner { font-size: 26px; color:#ff9933; animation: glow 1.5s infinite alternate; }
+  @keyframes glow {
+    from{ text-shadow: 0 0 8px #ff6600; }
+    to  { text-shadow: 0 0 25px #ffcc00, 0 0 40px #ff3300; }
+  }
+  h1 {
+    font-size: 15px;
+    background: linear-gradient(90deg,#ffcc00,#ff6600,#ffcc00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    font-weight: 900; letter-spacing: 1px;
+  }
+  .icon-btn {
+    background: rgba(255,140,0,0.2); border: 1px solid #ffcc00;
+    color: #ffcc00; width: 32px; height: 32px; border-radius: 50%;
+    font-size: 14px; cursor: pointer;
+  }
+
+  .panel {
+    margin: 8px auto; max-width: 420px;
+    background: rgba(20,0,0,0.65);
+    border: 1px solid rgba(255,140,0,0.4);
+    border-radius: 12px; padding: 10px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 0 20px rgba(255,80,0,0.3);
+  }
+  .timer-panel { display:flex; justify-content:space-around; }
+  .timer-block { flex:1; }
+  .timer-block .lbl { font-size:10px; color:#ffcc80; letter-spacing:1px; text-transform:uppercase; }
+  .timer-block .val { font-size:14px; color:#fff; font-weight:bold; text-shadow: 0 0 5px #ff6600; }
+  .timer-block.paused .val { animation: flashPause 0.8s ease-in-out infinite; color: #ff6666; }
+  @keyframes flashPause {
+    0%,100% { opacity: 1; text-shadow: 0 0 8px #ff0000; }
+    50% { opacity: 0.3; }
+  }
+  .paused-tag {
+    display: inline-block; font-size: 8px; color: #ff3300;
+    background: #ffcc00; padding: 1px 4px; border-radius: 3px;
+    margin-left: 3px; vertical-align: middle;
+  }
+
+  .mandala { position: relative; width: 92vw; max-width: 400px; aspect-ratio: 1/1; margin: 5px auto; }
+  .mandala svg { position:absolute; top:0; left:0; width:100%; height:100%; }
+  .ring1 { animation: spin 25s linear infinite; filter: drop-shadow(0 0 6px #ff6600); }
+  .ring2 { animation: spinRev 30s linear infinite; filter: drop-shadow(0 0 5px #ffcc00); }
+  .ring3 { animation: spin 35s linear infinite; filter: drop-shadow(0 0 5px #ff9933); }
+  .ring4 { animation: spinRev 40s linear infinite; filter: drop-shadow(0 0 5px #ffb347); }
+  .ring5 { animation: spin 45s linear infinite; filter: drop-shadow(0 0 4px #ffcc00); }
+  /* Only outer rings pause - inner Om ring keeps rotating */
+  .paused .ring1, .paused .ring2, .paused .ring3, .paused .ring4 { animation-play-state: paused; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spinRev { to { transform: rotate(-360deg); } }
+  .ring-text  { font-size: 17px; font-weight: bold; fill: #ffd700; letter-spacing: 3px; }
+  .ring-text.r2 { fill:#ff9933; font-size:15px; }
+  .ring-text.r3 { fill:#ffb347; font-size:13px; }
+  .ring-text.r4 { fill:#ffcc00; font-size:12px; }
+  .ring-text.r5 { fill:#ffd700; font-size:11px; letter-spacing: 5px; }
+
+  .trishul { position:absolute; font-size: 22px; color:#ffcc00; text-shadow: 0 0 10px #ff6600; z-index:2; }
+  .trishul.tl{top:2%;left:2%} .trishul.tr{top:2%;right:2%;transform:scaleX(-1)}
+  .trishul.bl{bottom:2%;left:2%;transform:scaleY(-1)} .trishul.br{bottom:2%;right:2%;transform:scale(-1,-1)}
+
+  .counters {
+    position:absolute; top:50%; left:50%;
+    transform: translate(-50%, -50%);
+    display:flex; gap: 8px; width: 55%;
+  }
+  .circle {
+    flex:1; aspect-ratio:1/1; border-radius:50%;
+    background: radial-gradient(circle, rgba(255,100,0,0.4), rgba(0,0,0,0.9));
+    border: 2px solid #ffb347;
+    box-shadow: 0 0 25px rgba(255,140,0,.6), inset 0 0 20px rgba(255,200,0,.25);
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding: 4px;
+    animation: pulseGlow 2s ease-in-out infinite alternate;
+  }
+  .paused .circle { animation-play-state: paused; }
+  @keyframes pulseGlow {
+    from{ box-shadow: 0 0 20px rgba(255,140,0,.5), inset 0 0 15px rgba(255,200,0,.2);}
+    to  { box-shadow: 0 0 40px rgba(255,80,0,.9), inset 0 0 25px rgba(255,220,0,.4);}
+  }
+  .circle .label { font-size: 9px; color:#ffcc80; letter-spacing:1px; font-weight:bold; text-transform:uppercase; }
+  .circle .value {
+    font-size: 15px; font-weight:bold; color:#fff; margin: 2px 0; line-height:1.1;
+    text-shadow: 0 0 8px #ff9933; word-break: break-word;
+  }
+  .circle .reset-btn {
+    background: linear-gradient(135deg,#ff3300,#660000);
+    color:white; border:2px solid #ffcc00; border-radius:50%;
+    width:22px; height:22px; font-weight:bold; font-size:10px;
+    cursor:pointer; margin-top:2px;
+  }
+
+  .big-start {
+    background: linear-gradient(135deg, #ff6600, #cc0000);
+    color: white; border: 2px solid #ffcc00;
+    padding: 14px 30px; border-radius: 50px;
+    font-size: 16px; font-weight: bold; letter-spacing: 1px;
+    margin: 10px 3px; cursor: pointer; min-width: 180px;
+    box-shadow: 0 3px 20px rgba(255,80,0,.7);
+    text-transform: uppercase;
+  }
+  .big-start:active { transform: scale(0.95); }
+  .big-start.running { background: linear-gradient(135deg, #666, #222); }
+
+  button.main {
+    background: linear-gradient(135deg, #ff6600, #cc0000);
+    color: white; border: 1px solid #ffcc00;
+    padding: 10px 14px;
+    border-radius: 10px; font-size: 13px; font-weight: bold;
+    margin: 3px; cursor: pointer; min-width: 100px;
+    box-shadow: 0 3px 12px rgba(255,80,0,.5);
+  }
+  button.main:active { transform: scale(0.95); }
+  button.secondary { background: linear-gradient(135deg, #444, #111); }
+  button.gh { background: linear-gradient(135deg, #2ea043, #1a7f37); }
+  button.view { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+  button.alert-btn { background: linear-gradient(135deg, #10b981, #059669); }
+  button.warn { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+  .status {
+    font-size: 12px; color: #ffcc80; margin-top: 6px; min-height: 16px;
+    background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 6px;
+    display: inline-block; max-width: 100%; word-break: break-word;
+  }
+  input[type=file] { display:none; }
+  .row { display:flex; justify-content:center; flex-wrap:wrap; }
+  #wakeVideo { position: fixed; width:1px; height:1px; opacity:0.01; pointer-events:none; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-100px);
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white; padding: 12px 20px; border-radius: 30px;
+    box-shadow: 0 6px 20px rgba(16,185,129,0.5);
+    font-size: 14px; font-weight: bold;
+    z-index: 500; opacity: 0; transition: all 0.3s ease;
+    border: 2px solid #34d399; max-width: 90%;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.error { background: linear-gradient(135deg, #dc2626, #991b1b); border-color: #ef4444; }
+  .toast.info  { background: linear-gradient(135deg, #3b82f6, #1e40af); border-color: #60a5fa; }
+
+  /* ===== ADVANCED CENTERED POPUP MODAL ===== */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(6px);
+    z-index: 100; display: none;
+    align-items: flex-start; justify-content: center;
+    padding: 20px 12px;
+    overflow-y: auto;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal.open { display: flex; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  .modal-box {
+    background: linear-gradient(135deg, rgba(45,10,5,0.98), rgba(20,0,0,0.98));
+    border: 2px solid #ffcc00;
+    border-radius: 16px;
+    width: 100%; max-width: 380px;
+    box-shadow: 0 10px 50px rgba(255,80,0,0.5);
+    animation: popIn 0.25s ease;
+    margin: auto;
+    overflow: hidden;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 15px;
+    background: linear-gradient(90deg, rgba(255,100,0,0.3), rgba(255,140,0,0.15));
+    border-bottom: 1px solid rgba(255,140,0,0.4);
+  }
+  .modal-header h2 {
+    font-size: 16px;
+    background: linear-gradient(90deg,#ffcc00,#ff6600);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .close-btn {
+    background: #ff3300; color:white; border:none;
+    width:30px; height:30px; border-radius:50%;
+    font-size:14px; cursor:pointer; font-weight:bold;
+    box-shadow: 0 2px 8px rgba(255,50,0,0.5);
+  }
+  .modal-body { padding: 12px; }
+  .modal-body .panel {
+    margin: 0 0 10px; max-width: 100%;
+    background: rgba(0,0,0,0.4);
+  }
+  .modal-body .panel:last-child { margin-bottom: 0; }
+
+  /* ===== COMPACT ALERT POPUP ===== */
+  .alert-popup {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+    display: none; align-items: center; justify-content: center;
+    padding: 15px;
+  }
+  .alert-popup.show { display: flex; }
+  .alert-content {
+    background: linear-gradient(135deg, #660000, #2d0000);
+    border: 2px solid #ffcc00; border-radius: 16px;
+    padding: 20px; max-width: 320px; width: 100%;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,80,0,0.7);
+    animation: alertShake 0.5s ease-in-out infinite;
+  }
+  @keyframes alertShake {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.02); }
+  }
+  .alert-content .om {
+    font-size: 42px; color: #ffcc00;
+    text-shadow: 0 0 15px #ff6600;
+    animation: glow 1s infinite alternate;
+  }
+  .alert-content h3 { font-size: 16px; color: #ffcc00; margin: 6px 0; }
+  .alert-content p { font-size: 12px; color: #fff; margin-bottom: 10px; }
+  .alert-content .paused-info {
+    background: rgba(255,204,0,0.15); border: 1px dashed #ffcc00;
+    padding: 6px; border-radius: 6px; margin: 8px 0;
+    font-size: 11px; color: #ffcc80;
+  }
+  .alert-content .new-input-box { display: none; margin: 8px 0; }
+  .alert-content .new-input-box input {
+    width: 100%; background: rgba(0,0,0,0.6); color: #fff;
+    border: 1px solid #ffcc00; border-radius: 6px;
+    padding: 8px; font-size: 14px; text-align: center;
+  }
+  .alert-content button { width: 100%; margin: 3px 0; padding: 9px; font-size: 13px; }
+  .alert-content .btn-row { display: flex; gap: 4px; }
+  .alert-content .btn-row button { flex: 1; margin: 0; }
+
+  /* Alerts */
+  .alert-row {
+    background: rgba(0,60,30,0.3); border: 1px solid #10b981;
+    border-radius: 8px; padding: 8px 10px; margin: 6px 0;
+    font-size: 12px; color: #fff; text-align: left;
+  }
+  .alert-row.triggered { background: rgba(80,40,0,0.3); border-color: #f59e0b; }
+  .alert-row .info { margin-bottom: 6px; }
+  .alert-row .info small { color: #aaa; display: block; margin-top: 2px; }
+  .alert-row .btns { display: flex; gap: 4px; }
+  .alert-row .btns button {
+    flex: 1; padding: 5px 8px; font-size: 11px;
+    border: none; border-radius: 5px; color: white; font-weight: bold; cursor: pointer;
+  }
+  .alert-row .btns .b-edit { background: #8b5cf6; }
+  .alert-row .btns .b-react { background: #10b981; }
+  .alert-row .btns .b-del { background: #dc2626; }
+
+  .alert-edit-inline {
+    display: none; margin-top: 6px; padding: 6px;
+    background: rgba(0,0,0,0.4); border-radius: 6px;
+  }
+  .alert-edit-inline input {
+    width: 100%; background: rgba(0,0,0,0.6); color: #fff;
+    border: 1px solid #ffcc00; border-radius: 4px;
+    padding: 6px; font-size: 13px; text-align: center; margin-bottom: 4px;
+  }
+  .alert-edit-inline .btns { display: flex; gap: 4px; }
+  .alert-edit-inline button { flex:1; padding: 5px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; }
+  .alert-edit-inline .save { background: #10b981; color: white; }
+  .alert-edit-inline .cancel { background: #666; color: white; }
+
+  .preset-chip {
+    display: inline-block; margin: 3px; padding: 6px 10px;
+    background: rgba(139, 92, 246, 0.25); border: 1px solid #8b5cf6;
+    color: #fff; border-radius: 15px; font-size: 12px; cursor: pointer;
+  }
+  .preset-chip:hover { background: rgba(139, 92, 246, 0.45); }
+  .preset-chip .x { color:#ff6666; margin-left:4px; padding-left: 4px; border-left: 1px solid #555; }
+
+  /* Milestones */
+  .m-summary-cards {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+    margin-bottom: 10px;
+  }
+  .m-card {
+    background: rgba(30,10,0,0.7); border: 1px solid rgba(255,140,0,0.4);
+    border-radius: 8px; padding: 8px; text-align: center;
+  }
+  .m-card .lbl { font-size: 9px; color: #ffcc80; text-transform: uppercase; letter-spacing: 1px; }
+  .m-card .val { font-size: 14px; color: #ffcc00; font-weight: bold; margin-top: 2px; }
+  .m-card .sub { font-size: 9px; color: #aaa; margin-top: 1px; }
+
+  .m-group {
+    background: rgba(30,10,0,0.6);
+    border: 1px solid rgba(255,140,0,0.3);
+    border-radius: 8px; margin-bottom: 6px; overflow: hidden;
+  }
+  .m-group summary {
+    padding: 8px 12px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(90deg, rgba(255,100,0,0.2), transparent);
+    font-weight: bold; color: #ffcc00; font-size: 13px;
+    list-style: none;
+  }
+  .m-group summary::-webkit-details-marker { display:none; }
+  .m-group summary::after { content: '▼'; font-size: 10px; color: #ff9933; }
+  .m-group[open] summary::after { content: '▲'; }
+  .m-group .progress-mini {
+    font-size: 10px; color: #66ff99; font-weight: normal;
+    background: rgba(0,80,0,0.4); padding: 2px 6px; border-radius: 4px;
+  }
+  .m-progress-bar {
+    height: 4px; background: rgba(255,255,255,0.1);
+    position: relative; border-radius: 2px; margin: 0 12px 6px;
+  }
+  .m-progress-bar .fill {
+    position: absolute; left:0; top:0; height:100%;
+    background: linear-gradient(90deg, #ff6600, #ffcc00); border-radius: 2px;
+  }
+
+  .m-table-wrap { overflow-x: auto; padding: 0 4px 8px; }
+  .m-table { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 520px; }
+  .m-table th {
+    background: rgba(255,100,0,0.2); color: #ffcc00;
+    padding: 5px 3px; text-align: center; border-bottom: 1px solid #ff6600;
+    font-size: 9px;
+  }
+  .m-table td {
+    padding: 5px 3px; text-align: center;
+    border-bottom: 1px solid rgba(255,140,0,0.15);
+    font-size: 10px; color: #fff;
+  }
+  .m-table td.tgt { color: #ffcc00; font-weight: bold; text-align: left; }
+  .m-table td.pct {
+    background: linear-gradient(90deg, rgba(0,180,0,0.35) var(--pct), transparent var(--pct));
+    color: #fff; font-weight: bold;
+  }
+  .m-table td.rem { color: #ffcc80; }
+  .m-table td.eta { color: #ff9933; }
+  .m-table td.date { color: #66ff99; }
+  .m-table td.malas { color: #a78bfa; font-weight: bold; }
+  .m-table tr.done td { color: #66ff66; opacity: 0.55; }
+  .m-table tr.done td.tgt { text-decoration: line-through; }
+  .m-table tr.current td { background: rgba(255,204,0,0.12); }
+  .m-table tr.current td.tgt::before { content: '▶ '; color: #ffcc00; }
+
+  .form-group { margin-bottom: 10px; text-align: left; }
+  .form-group label {
+    display: block; font-size: 12px; color: #ffcc00;
+    margin-bottom: 4px; font-weight: bold;
+  }
+  .form-group input, .form-group select {
+    width: 100%; background: rgba(0,0,0,0.6); color: #fff;
+    border: 1px solid #ffb347; border-radius: 6px;
+    padding: 8px 10px; font-size: 14px;
+  }
+  .result-box {
+    background: rgba(255,140,0,0.15); border: 1px solid #ffcc00;
+    border-radius: 8px; padding: 10px; margin-top: 10px;
+    font-size: 13px; color: #fff; text-align: left;
+  }
+  .result-box b { color: #ffcc00; }
+  .help-text { font-size: 11px; color: #aaa; margin-top: 4px; }
+  .protected-badge {
+    background: rgba(220,38,38,0.2); border: 1px dashed #ef4444;
+    color: #fca5a5; padding: 8px 10px; border-radius: 6px;
+    font-size: 11px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="fire-layer"></div>
+<div class="embers" id="embers"></div>
+<video id="wakeVideo" loop muted playsinline></video>
+
+<div class="top-bar">
+  <div class="om-corner">🔱</div>
+  <h1>॥ Om Namah Shivay ॥</h1>
+  <button class="icon-btn" onclick="openModal('settings')">⚙</button>
+</div>
+
+<div class="panel timer-panel">
+  <div class="timer-block">
+    <div class="lbl">Started</div>
+    <div class="val" id="startTime">--:--</div>
+  </div>
+  <div class="timer-block" id="elapsedBlock">
+    <div class="lbl">Elapsed <span class="paused-tag" id="pauseTag" style="display:none;">PAUSED</span></div>
+    <div class="val" id="elapsed">00:00:00</div>
+  </div>
+  <div class="timer-block">
+    <div class="lbl">Now</div>
+    <div class="val" id="nowTime">--:--</div>
+  </div>
+</div>
+
+<div class="mandala" id="mandalaBox">
+  <span class="trishul tl">🔱</span><span class="trishul tr">🔱</span>
+  <span class="trishul bl">🔱</span><span class="trishul br">🔱</span>
+
+  <!-- Ring 1 (outer) - Om Namah Shivay -->
+  <svg viewBox="0 0 400 400" class="ring1">
+    <defs><path id="c1" d="M 200,200 m -185,0 a 185,185 0 1,1 370,0 a 185,185 0 1,1 -370,0"/></defs>
+    <text class="ring-text"><textPath href="#c1" startOffset="0">
+      ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय •
+    </textPath></text>
+  </svg>
+
+  <!-- Ring 2 - Har Har Mahadev -->
+  <svg viewBox="0 0 400 400" class="ring2">
+    <defs><path id="c2" d="M 200,200 m -160,0 a 160,160 0 1,1 320,0 a 160,160 0 1,1 -320,0"/></defs>
+    <text class="ring-text r2"><textPath href="#c2" startOffset="0">
+      हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦
+    </textPath></text>
+  </svg>
+
+  <!-- Ring 3 - Shri Shivay Namastubhyam (NEW) -->
+  <svg viewBox="0 0 400 400" class="ring3">
+    <defs><path id="c3" d="M 200,200 m -136,0 a 136,136 0 1,1 272,0 a 136,136 0 1,1 -272,0"/></defs>
+    <text class="ring-text r3"><textPath href="#c3" startOffset="0">
+      श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥
+    </textPath></text>
+  </svg>
+
+  <!-- Ring 4 - Jai Shri Mahakal (NEW) -->
+  <svg viewBox="0 0 400 400" class="ring4">
+    <defs><path id="c4" d="M 200,200 m -112,0 a 112,112 0 1,1 224,0 a 112,112 0 1,1 -224,0"/></defs>
+    <text class="ring-text r4"><textPath href="#c4" startOffset="0">
+      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥
+    </textPath></text>
+  </svg>
+
+  <!-- Ring 5 (innermost, keeps spinning) - Om -->
+  <svg viewBox="0 0 400 400" class="ring5">
+    <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
+    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
+      ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
+    </textPath></text>
+  </svg>
+
+  <div class="counters">
+    <div class="circle">
+      <div class="label">Permanent</div>
+      <div class="value" id="permCount">0</div>
+    </div>
+    <div class="circle">
+      <div class="label">Trip</div>
+      <div class="value" id="tripCount">0</div>
+      <button class="reset-btn" onclick="resetTrip()">R</button>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <button class="big-start" id="startBtn" onclick="toggleJap()">▶ START JAP</button>
+</div>
+
+<div class="row">
+  <button class="main view" onclick="openModal('milestones')">🏆 Milestones</button>
+  <button class="main view" onclick="openModal('search')">🔍 Calculator</button>
+  <button class="main alert-btn" onclick="openModal('alerts')">🔔 Alerts</button>
+</div>
+<div class="row">
+  <button class="main secondary" onclick="pickAudio()">🎵 Load Chant</button>
+  <button class="main warn" onclick="openModal('adjust')">✏ Adjust Trip</button>
+  <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioPick(event)">
+</div>
+<div class="row">
+  <button class="main gh" onclick="ghBackup()">💾 GitHub Backup</button>
+  <button class="main gh" onclick="ghRestore()">⬇ GitHub Restore</button>
+</div>
+
+<div class="row"><div class="status" id="status">🙏 Har Har Mahadev.</div></div>
+
+<!-- ========== ADJUST TRIP MODAL ========== -->
+<div class="modal" id="adjustModal" data-name="adjust">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>✏ Adjust Trip Count</h2>
+      <button class="close-btn" onclick="closeModal('adjust')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <div class="form-group">
+          <label>Current Trip: <span id="adjCurrent" style="color:#fff;">0</span></label>
+          <input type="number" id="adjustQty" placeholder="e.g. 60 or -60">
+        </div>
+        <p class="help-text" style="text-align:center;">
+          Positive = add, Negative = subtract.<br>
+          You'll be asked if to also apply to Permanent.
+        </p>
+        <div class="row">
+          <button class="main" onclick="adjustTrip()">✓ Apply</button>
+          <button class="main secondary" onclick="closeModal('adjust')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MILESTONES MODAL ========== -->
+<div class="modal" id="milestonesModal" data-name="milestones">
+  <div class="modal-box" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>🏆 Milestone Journey</h2>
+      <button class="close-btn" onclick="closeModal('milestones')">✕</button>
+    </div>
+    <div class="modal-body" id="milestonesContent"></div>
+  </div>
+</div>
+
+<!-- ========== CALCULATOR MODAL ========== -->
+<div class="modal" id="searchModal" data-name="search">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🔍 Jap Calculator</h2>
+      <button class="close-btn" onclick="closeModal('search')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <div class="form-group">
+          <label>Mode</label>
+          <select id="calcMode" onchange="runCalc()">
+            <option value="days2japs">If I chant for X days → how many japs?</option>
+            <option value="japs2days">To reach X japs → how many days?</option>
+            <option value="hours2japs">If I chant X hours daily → daily count</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label id="calcLabel">Enter days</label>
+          <input type="number" id="calcInput" min="0.1" step="0.1" oninput="runCalc()" placeholder="e.g. 30">
+        </div>
+        <div class="form-group" id="hoursGroup" style="display:none;">
+          <label>Hours per day</label>
+          <input type="number" id="calcHours" min="0.1" max="24" step="0.5" value="2" oninput="runCalc()">
+        </div>
+        <div class="result-box" id="calcResult">Enter a value above.</div>
+        <p class="help-text">Speed: 1 jap ≈ 1.35 sec • ~2,666 japs/hour</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ALERTS MODAL ========== -->
+<div class="modal" id="alertsModal" data-name="alerts">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🔔 Alerts Manager</h2>
+      <button class="close-btn" onclick="closeModal('alerts')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <div style="font-size:11px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">⚡ SAVED PRESETS (tap to activate)</div>
+        <div id="presetChips"></div>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:11px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">➕ CREATE NEW ALERT</div>
+        <div class="form-group">
+          <label>Alert Type</label>
+          <select id="alertType" onchange="toggleAlertInputs()">
+            <option value="count">Mala Count (japs)</option>
+            <option value="time">Time Alert (duration)</option>
+          </select>
+        </div>
+        <div class="form-group" id="countInputGroup">
+          <label>Alert at how many japs (from now)?</label>
+          <input type="number" id="alertCount" placeholder="e.g. 108, 1008, 10000" min="1">
+        </div>
+        <div class="form-group" id="timeInputGroup" style="display:none;">
+          <label>Alert after (HH:MM:SS)</label>
+          <input type="text" id="alertTime" placeholder="00:30:00">
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="saveAsPreset" checked style="width:auto;margin-right:5px;">
+            Save as preset (reusable)
+          </label>
+        </div>
+        <button class="main alert-btn" onclick="addAlert()">➕ Add Alert</button>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:11px;color:#ffcc00;margin-bottom:6px;font-weight:bold;">📋 ALL ALERTS</div>
+        <div id="alertsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SETTINGS MODAL ========== -->
+<div class="modal" id="settingsModal" data-name="settings">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚙ Settings</h2>
+      <button class="close-btn" onclick="closeModal('settings')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🐙 GITHUB BACKUP</div>
+        <div class="form-group">
+          <label>GitHub Username</label>
+          <input type="text" id="ghOwner" placeholder="yourname">
+        </div>
+        <div class="form-group">
+          <label>Repository Name</label>
+          <input type="text" id="ghRepo" placeholder="jap-counter">
+        </div>
+        <div class="form-group">
+          <label>Personal Access Token</label>
+          <input type="password" id="ghToken" placeholder="github_pat_...">
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="ghBackupAudio" checked style="width:auto;margin-right:5px;">
+            Also backup audio file (recommended)
+          </label>
+        </div>
+        <button class="main gh" onclick="saveGhSettings()">💾 Save Settings</button>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🎵 AUDIO</div>
+        <div id="audioInfo" style="font-size:12px;color:#fff;text-align:left;">Loading...</div>
+        <button class="main secondary" onclick="clearStoredAudio()" style="margin-top:8px;">🗑 Clear Saved Audio</button>
+      </div>
+
+      <div class="panel">
+        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🔒 LIFETIME DATA PROTECTION</div>
+        <div class="protected-badge">
+          🛡 Permanent count and milestone dates are LIFETIME data.<br>
+          No reset options exist — this is your lifetime spiritual record.<br>
+          Har Har Mahadev! 🔱
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ALERT POPUP ========== -->
+<div class="alert-popup" id="alertPopup">
+  <div class="alert-content">
+    <div class="om">🕉</div>
+    <h3 id="alertTitle">Target Reached!</h3>
+    <p id="alertMsg">Your target is complete.</p>
+    <div class="paused-info" id="alertPausedInfo" style="display:none;">
+      ⏸ Chanting paused — will resume when you choose
+    </div>
+
+    <div class="new-input-box" id="newInputBox">
+      <input type="text" id="newAlertInput" placeholder="e.g. 00:10:00">
+      <p class="help-text" style="color:#ffcc80;text-align:center;" id="newAlertHint">HH:MM:SS format</p>
+    </div>
+
+    <div id="alertMainBtns">
+      <button class="main alert-btn" onclick="alertContinue()">▶ Continue (same interval)</button>
+      <div class="btn-row">
+        <button class="main view" onclick="alertShowNewInput()">✏ New Time</button>
+        <button class="main secondary" onclick="alertDismissOnly()">Dismiss</button>
+      </div>
+    </div>
+
+    <div id="alertNewBtns" style="display:none;">
+      <button class="main alert-btn" onclick="alertApplyNew()">✓ Apply & Resume</button>
+      <button class="main secondary" onclick="alertCancelNew()">Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== TOAST ========== -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ CONFIG ============ */
+const AUDIO_DURATION = 5.4;
+const JAPS_PER_AUDIO = 4;
+const JAP_INTERVAL = AUDIO_DURATION / JAPS_PER_AUDIO * 1000;
+
+/* ============ EMBERS ============ */
+(function(){
+  const box=document.getElementById('embers');
+  for(let i=0;i<25;i++){
+    const e=document.createElement('div'); e.className='ember';
+    e.style.left=Math.random()*100+'%';
+    e.style.animationDuration=(5+Math.random()*8)+'s';
+    e.style.animationDelay=(Math.random()*8)+'s';
+    e.style.setProperty('--drift',(Math.random()*80-40)+'px');
+    e.style.width=e.style.height=(2+Math.random()*4)+'px';
+    box.appendChild(e);
+  }
+})();
+
+/* ============ STATE ============ */
+let perm = parseInt(localStorage.getItem('permCount') || '0');
+let trip = parseInt(localStorage.getItem('tripCount') || '0');
+let milestoneDates = JSON.parse(localStorage.getItem('milestoneDates') || '{}');
+let alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
+let presets = JSON.parse(localStorage.getItem('presets') || '[]');
+let running = false, wakeLock = null;
+let elapsedMs = 0, sessionStart = null, firstStartTs = null;
+let currentAlert = null;
+let pendingStart = false;
+let editingAlertId = null;
+
+/* ============ TOAST ============ */
+function showToast(msg, type='success', ms=2500){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + (type==='error'?'error':type==='info'?'info':'') + ' show';
+  clearTimeout(t._to);
+  t._to = setTimeout(()=> t.classList.remove('show'), ms);
+}
+
+/* ============ INDEXEDDB ============ */
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r = indexedDB.open('japDB', 1);
+    r.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+    };
+    r.onsuccess = e => res(e.target.result);
+    r.onerror = e => rej(e);
+  });
+}
+async function idbSet(k, v){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=res; tx.onerror=rej; }); }
+async function idbGet(k){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readonly'); const r=tx.objectStore('kv').get(k); r.onsuccess=()=>res(r.result); r.onerror=rej; }); }
+async function idbDel(k){ const db = await idbOpen(); return new Promise((res)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete=res; }); }
+
+/* ============ WEB AUDIO ============ */
+let audioCtx = null, audioBuffer = null, audioName = '';
+let scheduledSources = [], nextStartTime = 0, schedulerInterval = null;
+
+async function ensureAudioCtx(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state === 'suspended') await audioCtx.resume();
+}
+async function loadAudioFromBlob(blob, name){
+  await ensureAudioCtx();
+  const arr = await blob.arrayBuffer();
+  audioBuffer = await audioCtx.decodeAudioData(arr.slice(0));
+  audioName = name;
+  updateAudioInfo();
+}
+async function loadAudioFromStorage(){
+  try {
+    const stored = await idbGet('chantAudio');
+    if(stored && stored.blob){
+      await loadAudioFromBlob(stored.blob, stored.name);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+function pickAudio(){ document.getElementById('audioFile').click(); }
+async function handleAudioPick(e){
+  const file = e.target.files[0]; if(!file) return;
+  try {
+    await loadAudioFromBlob(file, file.name);
+    await idbSet('chantAudio', { blob: file, name: file.name });
+    showToast('✓ Chant loaded successfully');
+    // Also auto-upload to GitHub if configured
+    if(localStorage.getItem('ghToken') && document.getElementById('ghBackupAudio')?.checked !== false){
+      ghUploadAudio(file);
+    }
+    if(pendingStart){ pendingStart = false; toggleJap(); }
+  } catch(err){ showToast('❌ Audio load failed', 'error'); }
+}
+async function updateAudioInfo(){
+  const info = document.getElementById('audioInfo');
+  if(!info) return;
+  const stored = await idbGet('chantAudio').catch(()=>null);
+  if(stored) info.innerHTML = `✓ Saved: <b>${stored.name}</b> (${Math.round(stored.blob.size/1024)} KB)`;
+  else info.innerHTML = '⚠ No audio saved';
+}
+async function clearStoredAudio(){
+  if(!confirm('Delete saved audio? (Will need to reload from GitHub or file)')) return;
+  await idbDel('chantAudio');
+  audioBuffer = null; audioName = '';
+  updateAudioInfo();
+  showToast('Audio cleared');
+}
+function startSeamlessAudio(){
+  if(!audioBuffer) return;
+  ensureAudioCtx();
+  nextStartTime = audioCtx.currentTime + 0.05;
+  scheduleAhead();
+  schedulerInterval = setInterval(scheduleAhead, 1000);
+}
+function scheduleAhead(){
+  while(nextStartTime < audioCtx.currentTime + 3){
+    const src = audioCtx.createBufferSource();
+    src.buffer = audioBuffer;
+    src.connect(audioCtx.destination);
+    src.start(nextStartTime);
+    scheduledSources.push({src, at: nextStartTime});
+    nextStartTime += audioBuffer.duration;
+  }
+  scheduledSources = scheduledSources.filter(s => s.at + audioBuffer.duration > audioCtx.currentTime);
+}
+function stopSeamlessAudio(){
+  clearInterval(schedulerInterval); schedulerInterval = null;
+  scheduledSources.forEach(s => { try{ s.src.stop(); } catch(e){} });
+  scheduledSources = [];
+}
+
+/* ============ FORMATTERS ============ */
+function fmtNum(n){
+  n = Math.round(n);
+  const abs = Math.abs(n);
+  if(abs<1000) return n.toString();
+  if(abs<100000) return (n/1000).toFixed(abs<10000?2:1)+'K';
+  if(abs<10000000) return (n/100000).toFixed(abs<1000000?2:1)+'L';
+  if(abs<1000000000) return (n/10000000).toFixed(2)+'Cr';
+  return (n/1000000000).toFixed(2)+'B';
+}
+function fmtDuration(sec){
+  if(sec<60) return Math.round(sec)+' sec';
+  if(sec<3600) return Math.floor(sec/60)+'m '+Math.round(sec%60)+'s';
+  if(sec<86400) return Math.floor(sec/3600)+'h '+Math.floor((sec%3600)/60)+'m';
+  const d = Math.floor(sec/86400);
+  if(d<30) return d+'d '+Math.floor((sec%86400)/3600)+'h';
+  if(d<365) return Math.floor(d/30)+'mo '+(d%30)+'d';
+  return Math.floor(d/365)+'y '+Math.floor((d%365)/30)+'mo';
+}
+function fmtDate(iso){ if(!iso) return ''; return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'}); }
+function pad(n){return n.toString().padStart(2,'0')}
+function fmtTime(d){return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())}
+function fmtDur(ms){const s=Math.floor(ms/1000);return pad(Math.floor(s/3600))+':'+pad(Math.floor((s%3600)/60))+':'+pad(s%60)}
+function parseHMS(str){
+  const m = String(str).trim().match(/^(\d{1,3}):(\d{2}):(\d{2})$/);
+  if(!m) return null;
+  return (parseInt(m[1])*3600 + parseInt(m[2])*60 + parseInt(m[3])) * 1000;
+}
+
+/* ============ MILESTONES ============ */
+function buildMilestones(){
+  const groups = [];
+  const g1 = { title: '0 → 1 Lakh', targets: [1000] };
+  for(let v=5000; v<=100000; v+=5000) g1.targets.push(v);
+  groups.push(g1);
+  for(let base=100000; base<1000000; base+=100000){
+    const g = { title: fmtNum(base)+' → '+fmtNum(base+100000), targets: [] };
+    for(let v=base+10000; v<=base+100000; v+=10000) g.targets.push(v);
+    groups.push(g);
+  }
+  for(let base=1000000; base<5000000; base+=1000000){
+    const g = { title: fmtNum(base)+' → '+fmtNum(base+1000000), targets: [] };
+    for(let v=base+100000; v<=base+1000000; v+=100000) g.targets.push(v);
+    groups.push(g);
+  }
+  const gBig = { title: '50L → 1 Crore', targets: [] };
+  for(let v=5500000; v<=10000000; v+=500000) gBig.targets.push(v);
+  groups.push(gBig);
+  groups.push({ title: '1 Crore → 10 Crore', targets: [20000000,30000000,50000000,70000000,100000000] });
+  return groups;
+}
+const MILESTONES = buildMilestones();
+
+function checkMilestones(){
+  MILESTONES.forEach(g => g.targets.forEach(t => {
+    if(perm >= t && !milestoneDates[t]) milestoneDates[t] = new Date().toISOString();
+  }));
+  localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+}
+
+function findNextTarget(){
+  for(const g of MILESTONES){
+    for(const t of g.targets){
+      if(perm < t) return t;
+    }
+  }
+  return null;
+}
+
+function renderMilestones(){
+  const wrap = document.getElementById('milestonesContent');
+  const now = Date.now();
+  const chantHrs = 4;
+  const nextT = findNextTarget();
+  const totalDone = Object.keys(milestoneDates).length;
+  const totalMilestones = MILESTONES.reduce((s,g)=>s+g.targets.length,0);
+
+  let summaryHtml = `
+    <div class="m-summary-cards">
+      <div class="m-card">
+        <div class="lbl">Current</div>
+        <div class="val">${fmtNum(perm)}</div>
+        <div class="sub">${perm.toLocaleString()} japs</div>
+      </div>
+      <div class="m-card">
+        <div class="lbl">Next Target</div>
+        <div class="val">${nextT?fmtNum(nextT):'✓ ALL DONE'}</div>
+        <div class="sub">${nextT?fmtNum(nextT-perm)+' japs to go':''}</div>
+      </div>
+      <div class="m-card">
+        <div class="lbl">Milestones Hit</div>
+        <div class="val">${totalDone} / ${totalMilestones}</div>
+        <div class="sub">${((totalDone/totalMilestones)*100).toFixed(1)}% journey</div>
+      </div>
+      <div class="m-card">
+        <div class="lbl">Malas (÷108)</div>
+        <div class="val">${fmtNum(Math.floor(perm/108))}</div>
+        <div class="sub">${(perm%108)}/108 in progress</div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:#ffcc80;margin-bottom:8px;text-align:center;">
+      ETA at <b style="color:#ffcc00;">4 hrs/day</b> • 1 jap ≈ 1.35 sec
+    </p>
+  `;
+
+  let html = '';
+  MILESTONES.forEach((g, gi) => {
+    const total = g.targets.length;
+    const done = g.targets.filter(t => perm >= t).length;
+    const isCurrent = done < total && (gi===0 || MILESTONES[gi-1].targets.every(t=>perm>=t));
+
+    html += `<details class="m-group" ${isCurrent?'open':''}>
+      <summary><span>${g.title}</span><span class="progress-mini">${done}/${total}</span></summary>
+      <div class="m-progress-bar"><div class="fill" style="width:${Math.min(100,(done/total)*100)}%"></div></div>
+      <div class="m-table-wrap">
+      <table class="m-table">
+        <thead><tr>
+          <th>Target</th><th>Malas</th><th>Progress</th><th>Left</th><th>Time</th><th>ETA</th><th>Done On</th>
+        </tr></thead><tbody>`;
+
+    g.targets.forEach((t) => {
+      const isDone = perm >= t;
+      const remaining = Math.max(0, t - perm);
+      const pct = Math.min(100, (perm/t)*100).toFixed(1);
+      const secNeeded = remaining * (JAP_INTERVAL/1000);
+      const timeStr = isDone ? '✓' : fmtDuration(secNeeded);
+      const daysNeeded = secNeeded / (chantHrs * 3600);
+      const etaDate = isDone ? '—' : new Date(now + daysNeeded*86400000).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+      const doneDate = milestoneDates[t] ? fmtDate(milestoneDates[t]) : '—';
+      const malas = Math.floor(t/108);
+      const isNext = t === nextT;
+      const rowClass = isDone ? 'done' : (isNext ? 'current' : '');
+
+      html += `<tr class="${rowClass}">
+        <td class="tgt">${fmtNum(t)}</td>
+        <td class="malas">${fmtNum(malas)}</td>
+        <td class="pct" style="--pct:${pct}%">${pct}%</td>
+        <td class="rem">${isDone?'0':fmtNum(remaining)}</td>
+        <td class="eta">${timeStr}</td>
+        <td class="date">${etaDate}</td>
+        <td class="date">${doneDate}</td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div></details>`;
+  });
+
+  wrap.innerHTML = summaryHtml + html;
+}
+
+/* ============ UI UPDATE ============ */
+function updateUI(){
+  document.getElementById('permCount').textContent = fmtNum(perm);
+  document.getElementById('tripCount').textContent = fmtNum(trip);
+  const adjC = document.getElementById('adjCurrent'); if(adjC) adjC.textContent = fmtNum(trip);
+  localStorage.setItem('permCount', perm);
+  localStorage.setItem('tripCount', trip);
+  checkMilestones();
+  if(document.getElementById('milestonesModal').classList.contains('open')) renderMilestones();
+  if(document.getElementById('alertsModal').classList.contains('open')) renderAlerts();
+}
+function resetTrip(){ if(confirm('Reset Trip to 0?')){ trip=0; updateUI(); } }
+
+function adjustTrip(){
+  const inp = document.getElementById('adjustQty');
+  const qty = parseInt(inp.value);
+  if(!qty || isNaN(qty)){ showToast('Enter a valid number', 'error'); return; }
+  trip = Math.max(0, trip + qty); updateUI(); inp.value = '';
+  const action = qty > 0 ? `add ${qty}` : `subtract ${Math.abs(qty)}`;
+  closeModal('adjust');
+  setTimeout(()=>{
+    if(confirm(`Trip: ${action}ed.\n\nAlso ${action} to Permanent?`)){
+      perm = Math.max(0, perm + qty); updateUI(); autoBackup();
+    }
+    showToast(`✓ Trip ${qty>0?'+':''}${qty}`);
+  }, 200);
+}
+
+/* ============ CLOCK ============ */
+function getElapsedMs(){ return elapsedMs + (sessionStart ? Date.now() - sessionStart : 0); }
+setInterval(()=>{
+  document.getElementById('nowTime').textContent = fmtTime(new Date());
+  if(firstStartTs) document.getElementById('elapsed').textContent = fmtDur(getElapsedMs());
+  if(running) checkTimeAlerts();
+},500);
+
+/* ============ JAP LOOP ============ */
+let japTimer = null;
+
+async function toggleJap(){
+  if(!audioBuffer){
+    const loaded = await loadAudioFromStorage();
+    if(!loaded){
+      // Try to auto-download from GitHub if configured
+      if(localStorage.getItem('ghToken')){
+        showToast('☁ Fetching chant from GitHub...', 'info');
+        const ok = await ghDownloadAudio();
+        if(!ok){
+          showToast('📂 Select your chant audio...');
+          pendingStart = true;
+          pickAudio();
+          return;
+        }
+      } else {
+        showToast('📂 Select your chant audio...');
+        pendingStart = true;
+        pickAudio();
+        return;
+      }
+    }
+  }
+  running = !running;
+  applyRunningState();
+}
+
+function applyRunningState(){
+  const btn = document.getElementById('startBtn');
+  const mandala = document.getElementById('mandalaBox');
+  const elBlock = document.getElementById('elapsedBlock');
+  const pauseTag = document.getElementById('pauseTag');
+
+  if(running){
+    btn.textContent = '⏸ PAUSE JAP';
+    btn.classList.add('running');
+    mandala.classList.remove('paused');
+    elBlock.classList.remove('paused');
+    pauseTag.style.display = 'none';
+    if(!firstStartTs){
+      firstStartTs = Date.now();
+      document.getElementById('startTime').textContent = fmtTime(new Date());
+    }
+    sessionStart = Date.now();
+    requestWakeLock(); startWakeVideo();
+    ensureAudioCtx().then(()=>{
+      startSeamlessAudio();
+      tickJap();
+      japTimer = setInterval(tickJap, JAP_INTERVAL);
+    });
+  } else {
+    btn.textContent = '▶ RESUME JAP';
+    btn.classList.remove('running');
+    mandala.classList.add('paused');
+    elBlock.classList.add('paused');
+    pauseTag.style.display = 'inline-block';
+    if(sessionStart){ elapsedMs += Date.now() - sessionStart; sessionStart = null; }
+    clearInterval(japTimer);
+    stopSeamlessAudio();
+    releaseWakeLock(); stopWakeVideo();
+  }
+}
+function tickJap(){
+  perm++; trip++; updateUI();
+  checkCountAlerts();
+  if(perm % 108 === 0) autoBackup();
+}
+function forcePause(){ if(running){ running = false; applyRunningState(); } }
+function forceResume(){ if(!running){ running = true; applyRunningState(); } }
+
+/* ============ WAKE LOCK ============ */
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', ()=>{
+        if(running && document.visibilityState==='visible') requestWakeLock();
+      });
+    }
+  }catch(e){}
+}
+function releaseWakeLock(){ if(wakeLock){wakeLock.release(); wakeLock=null;} }
+document.addEventListener('visibilitychange',()=>{
+  if(running && document.visibilityState==='visible'){ requestWakeLock(); startWakeVideo(); }
+});
+function startWakeVideo(){
+  const v=document.getElementById('wakeVideo');
+  if(!v.src) v.src="data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAA/G1kYXQAAAKtBgX//6ncRem95tlIt5Ys2CDZI+7veDI2NAAAAAA=";
+  v.play().catch(()=>{});
+}
+function stopWakeVideo(){document.getElementById('wakeVideo').pause()}
+
+/* ============ ALERTS ============ */
+function toggleAlertInputs(){
+  const t = document.getElementById('alertType').value;
+  document.getElementById('countInputGroup').style.display = t==='count' ? 'block' : 'none';
+  document.getElementById('timeInputGroup').style.display = t==='time' ? 'block' : 'none';
+}
+function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); }
+function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); }
+
+function addAlert(){
+  const type = document.getElementById('alertType').value;
+  const saveAsPreset = document.getElementById('saveAsPreset').checked;
+  let a, presetData;
+  if(type==='count'){
+    const n = parseInt(document.getElementById('alertCount').value);
+    if(!n || n<1){ showToast('Enter valid count', 'error'); return; }
+    a = { id: Date.now(), type:'count', delta: n, target: trip + n, label: `${fmtNum(n)} japs`, triggered:false };
+    presetData = { type:'count', delta: n, label: `${fmtNum(n)} japs` };
+    document.getElementById('alertCount').value = '';
+  } else {
+    const str = document.getElementById('alertTime').value;
+    const ms = parseHMS(str);
+    if(!ms){ showToast('Format: HH:MM:SS', 'error'); return; }
+    a = { id: Date.now(), type:'time', delta: ms, target: getElapsedMs() + ms, label: `After ${str}`, triggered:false };
+    presetData = { type:'time', delta: ms, label: `After ${str}` };
+    document.getElementById('alertTime').value = '';
+  }
+  alerts.push(a);
+  if(saveAsPreset && !presets.some(p => p.type===presetData.type && p.delta===presetData.delta)){
+    presets.push(presetData); savePresets();
+  }
+  saveAlertsLocal(); renderAlerts(); renderPresets();
+  showToast('🔔 Alert added');
+}
+function activatePreset(idx){
+  const p = presets[idx];
+  const a = {
+    id: Date.now(), type: p.type, delta: p.delta,
+    target: p.type==='count' ? trip + p.delta : getElapsedMs() + p.delta,
+    label: p.label, triggered: false
+  };
+  alerts.push(a);
+  saveAlertsLocal(); renderAlerts();
+  showToast('🔔 Alert active: '+p.label);
+}
+function deletePreset(idx){
+  if(!confirm('Delete this preset?')) return;
+  presets.splice(idx,1); savePresets(); renderPresets();
+}
+function renderPresets(){
+  const box = document.getElementById('presetChips');
+  if(!presets.length){ box.innerHTML='<p style="color:#888;font-size:12px;">No presets yet.</p>'; return; }
+  box.innerHTML = presets.map((p,i)=>{
+    const icon = p.type==='count' ? '📿' : '⏰';
+    return `<span class="preset-chip" onclick="activatePreset(${i})">${icon} ${p.label}<span class="x" onclick="event.stopPropagation();deletePreset(${i})">✕</span></span>`;
+  }).join('');
+}
+function removeAlert(id){
+  alerts = alerts.filter(a=>a.id!==id);
+  saveAlertsLocal(); renderAlerts();
+  showToast('Alert removed');
+}
+function reactivateAlert(id){
+  const a = alerts.find(x=>x.id===id); if(!a) return;
+  a.triggered = false;
+  a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
+  saveAlertsLocal(); renderAlerts();
+  showToast('🔔 Re-activated');
+}
+function startEditAlert(id){ editingAlertId = id; renderAlerts(); }
+function cancelEditAlert(){ editingAlertId = null; renderAlerts(); }
+function saveEditAlert(id){
+  const a = alerts.find(x=>x.id===id); if(!a) return;
+  const val = document.getElementById('editAlertInput_'+id).value;
+  if(a.type==='count'){
+    const n = parseInt(val);
+    if(!n || n<1){ showToast('Invalid','error'); return; }
+    a.delta = n; a.target = trip + n; a.label = `${fmtNum(n)} japs`;
+  } else {
+    const ms = parseHMS(val);
+    if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
+    a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${val}`;
+  }
+  a.triggered = false;
+  editingAlertId = null;
+  saveAlertsLocal(); renderAlerts();
+  showToast('✓ Updated');
+}
+function renderAlerts(){
+  const box = document.getElementById('alertsList');
+  if(!alerts.length){ box.innerHTML='<p style="color:#888;font-size:12px;">No alerts yet</p>'; return; }
+  box.innerHTML = alerts.map(a => {
+    const icon = a.type==='count' ? '📿' : '⏰';
+    let status = '';
+    if(a.triggered) status = '✓ Triggered — click Re-activate to reuse';
+    else if(a.type==='count') status = `Fire at ${fmtNum(a.target)} • ${fmtNum(Math.max(0,a.target-trip))} japs left`;
+    else status = `Fire at ${fmtDur(a.target)} • ${fmtDur(Math.max(0,a.target-getElapsedMs()))} left`;
+    const isEditing = editingAlertId === a.id;
+    return `<div class="alert-row ${a.triggered?'triggered':''}">
+      <div class="info">
+        <b>${icon} ${a.label}</b>
+        <small>${status}</small>
+      </div>
+      <div class="btns">
+        <button class="b-react" onclick="reactivateAlert(${a.id})">${a.triggered?'♻ Re-activate':'↻ Reset'}</button>
+        <button class="b-edit" onclick="startEditAlert(${a.id})">✏ Edit</button>
+        <button class="b-del" onclick="removeAlert(${a.id})">✕</button>
+      </div>
+      <div class="alert-edit-inline" style="display:${isEditing?'block':'none'};">
+        <input type="text" id="editAlertInput_${a.id}" value="${a.type==='count'?a.delta:fmtDur(a.delta)}">
+        <div class="btns">
+          <button class="save" onclick="saveEditAlert(${a.id})">Save</button>
+          <button class="cancel" onclick="cancelEditAlert()">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function checkCountAlerts(){
+  alerts.forEach(a => {
+    if(a.type==='count' && !a.triggered && trip >= a.target){
+      a.triggered = true; saveAlertsLocal(); triggerAlert(a);
+    }
+  });
+}
+function checkTimeAlerts(){
+  const cur = getElapsedMs();
+  alerts.forEach(a => {
+    if(a.type==='time' && !a.triggered && cur >= a.target){
+      a.triggered = true; saveAlertsLocal(); triggerAlert(a);
+    }
+  });
+}
+function triggerAlert(a){
+  currentAlert = a;
+  const wasRunning = running;
+  forcePause();
+  document.getElementById('alertTitle').textContent = a.type==='count' ? '🎯 Jap Target Reached!' : '⏰ Time Alert!';
+  document.getElementById('alertMsg').textContent = a.label + ' — Har Har Mahadev!';
+  document.getElementById('alertPausedInfo').style.display = wasRunning ? 'block' : 'none';
+  document.getElementById('newInputBox').style.display = 'none';
+  document.getElementById('alertMainBtns').style.display = 'block';
+  document.getElementById('alertNewBtns').style.display = 'none';
+  document.getElementById('alertPopup').classList.add('show');
+  playBeep();
+  if(navigator.vibrate) navigator.vibrate([300,100,300,100,500]);
+}
+function alertContinue(){
+  if(!currentAlert) return;
+  const a = currentAlert;
+  a.triggered = false;
+  a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
+  saveAlertsLocal();
+  closeAlertPopup();
+  forceResume();
+  showToast('▶ Continuing: '+a.label);
+}
+function alertShowNewInput(){
+  document.getElementById('alertMainBtns').style.display = 'none';
+  document.getElementById('alertNewBtns').style.display = 'block';
+  document.getElementById('newInputBox').style.display = 'block';
+  const isCount = currentAlert.type === 'count';
+  const inp = document.getElementById('newAlertInput');
+  inp.placeholder = isCount ? 'e.g. 500' : '00:10:00';
+  inp.value = '';
+  document.getElementById('newAlertHint').textContent = isCount ? 'Number of japs' : 'HH:MM:SS format';
+  setTimeout(()=> inp.focus(), 100);
+}
+function alertCancelNew(){
+  document.getElementById('alertMainBtns').style.display = 'block';
+  document.getElementById('alertNewBtns').style.display = 'none';
+  document.getElementById('newInputBox').style.display = 'none';
+}
+function alertApplyNew(){
+  const val = document.getElementById('newAlertInput').value.trim();
+  if(!val){ showToast('Enter value', 'error'); return; }
+  const a = currentAlert;
+  if(a.type==='count'){
+    const n = parseInt(val);
+    if(!n || n<1){ showToast('Invalid','error'); return; }
+    a.delta = n; a.target = trip + n; a.label = `${fmtNum(n)} japs`;
+  } else {
+    const ms = parseHMS(val);
+    if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
+    a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${val}`;
+  }
+  a.triggered = false;
+  saveAlertsLocal();
+  closeAlertPopup();
+  forceResume();
+  showToast('✓ New alert set');
+}
+function alertDismissOnly(){ closeAlertPopup(); showToast('Dismissed — chanting paused'); }
+function closeAlertPopup(){
+  document.getElementById('alertPopup').classList.remove('show');
+  stopBeep();
+  currentAlert = null;
+  if(document.getElementById('alertsModal').classList.contains('open')) renderAlerts();
+}
+
+/* ============ BEEP ============ */
+let beepCtx=null, beepInterval=null;
+function playBeep(){
+  try{
+    beepCtx = new (window.AudioContext||window.webkitAudioContext)();
+    function beep(){
+      const o = beepCtx.createOscillator();
+      const g = beepCtx.createGain();
+      o.frequency.value = 880; o.type = 'sine';
+      g.gain.value = 0.3;
+      o.connect(g); g.connect(beepCtx.destination);
+      o.start(); o.stop(beepCtx.currentTime + 0.3);
+    }
+    beep();
+    beepInterval = setInterval(beep, 600);
+  }catch(e){}
+}
+function stopBeep(){
+  if(beepInterval){ clearInterval(beepInterval); beepInterval=null; }
+  if(beepCtx){ beepCtx.close(); beepCtx=null; }
+}
+
+/* ============ MODALS (with click-outside-to-close) ============ */
+function openModal(name){
+  document.getElementById(name+'Modal').classList.add('open');
+  if(name==='milestones') renderMilestones();
+  if(name==='settings'){
+    document.getElementById('ghOwner').value = localStorage.getItem('ghOwner') || '';
+    document.getElementById('ghRepo').value = localStorage.getItem('ghRepo') || '';
+    document.getElementById('ghToken').value = localStorage.getItem('ghToken') || '';
+    document.getElementById('ghBackupAudio').checked = localStorage.getItem('ghBackupAudio') !== 'false';
+    updateAudioInfo();
+  }
+  if(name==='search') runCalc();
+  if(name==='alerts'){ toggleAlertInputs(); renderAlerts(); renderPresets(); }
+  if(name==='adjust'){ document.getElementById('adjCurrent').textContent = fmtNum(trip); }
+}
+function closeModal(name){
+  document.getElementById(name+'Modal').classList.remove('open');
+  if(name==='alerts') editingAlertId = null;
+}
+// Click backdrop to close
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => {
+    if(e.target === m){
+      const name = m.getAttribute('data-name');
+      if(name) closeModal(name);
+    }
+  });
+});
+// ESC key to close all modals
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    document.querySelectorAll('.modal.open').forEach(m => {
+      const name = m.getAttribute('data-name');
+      if(name) closeModal(name);
+    });
+  }
+});
+
+/* ============ CALCULATOR ============ */
+function runCalc(){
+  const mode = document.getElementById('calcMode').value;
+  const val = parseFloat(document.getElementById('calcInput').value);
+  const hoursGroup = document.getElementById('hoursGroup');
+  const label = document.getElementById('calcLabel');
+  const res = document.getElementById('calcResult');
+  hoursGroup.style.display = 'none';
+  if(mode==='days2japs'){
+    label.textContent = 'Enter days';
+    hoursGroup.style.display = 'block';
+    if(!val){ res.innerHTML='Enter days above.'; return; }
+    const hrs = parseFloat(document.getElementById('calcHours').value) || 2;
+    const jph = 3600 / (JAP_INTERVAL/1000);
+    const total = Math.round(val * hrs * jph);
+    res.innerHTML = `In <b>${val} days</b> at <b>${hrs} hrs/day</b>:<br>
+      🕉 Total: <b>${fmtNum(total)}</b><br>📅 Daily: <b>${fmtNum(Math.round(hrs*jph))}</b>`;
+  } else if(mode==='japs2days'){
+    label.textContent = 'Enter jap target';
+    hoursGroup.style.display = 'block';
+    if(!val){ res.innerHTML='Enter target.'; return; }
+    const hrs = parseFloat(document.getElementById('calcHours').value) || 2;
+    const secondsNeeded = val * (JAP_INTERVAL/1000);
+    const daysNeeded = secondsNeeded / (hrs * 3600);
+    const remaining = Math.max(0, val - perm);
+    const remainingDays = remaining * (JAP_INTERVAL/1000) / (hrs * 3600);
+    res.innerHTML = `Target: <b>${fmtNum(val)}</b><br>
+      ⏳ From zero: <b>${daysNeeded.toFixed(1)} days</b><br>
+      🎯 From current: <b>${remainingDays.toFixed(1)} days</b><br>
+      📅 Finish: <b>${new Date(Date.now()+remainingDays*86400000).toLocaleDateString('en-GB')}</b>`;
+  } else {
+    label.textContent = 'Enter hours per day';
+    if(!val){ res.innerHTML='Enter hours.'; return; }
+    const jph = 3600 / (JAP_INTERVAL/1000);
+    const daily = Math.round(val * jph);
+    res.innerHTML = `At <b>${val} hrs/day</b>:<br>
+      🕉 Daily: <b>${fmtNum(daily)}</b><br>📅 Weekly: <b>${fmtNum(daily*7)}</b><br>
+      📆 Monthly: <b>${fmtNum(daily*30)}</b><br>🎯 Yearly: <b>${fmtNum(daily*365)}</b>`;
+  }
+}
+
+/* ============ GITHUB ============ */
+const GH_DATA_PATH = 'data/jap_data.json';
+const GH_AUDIO_PATH = 'data/chant_audio.bin';
+const GH_AUDIO_META_PATH = 'data/chant_audio_meta.json';
+
+function saveGhSettings(){
+  const o = document.getElementById('ghOwner').value.trim();
+  const r = document.getElementById('ghRepo').value.trim();
+  const t = document.getElementById('ghToken').value.trim();
+  const audioBk = document.getElementById('ghBackupAudio').checked;
+  if(!o || !r || !t){ showToast('Fill all 3 fields', 'error'); return; }
+  localStorage.setItem('ghOwner', o);
+  localStorage.setItem('ghRepo', r);
+  localStorage.setItem('ghToken', t);
+  localStorage.setItem('ghBackupAudio', audioBk);
+  showToast('✓ Settings saved');
+}
+
+async function ghGetFileSha(path){
+  const o=localStorage.getItem('ghOwner'), r=localStorage.getItem('ghRepo'), t=localStorage.getItem('ghToken');
+  try{
+    const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, {
+      headers: {Authorization: `Bearer ${t}`, Accept: 'application/vnd.github+json'}
+    });
+    if(res.ok) return (await res.json()).sha;
+  }catch(e){}
+  return null;
+}
+
+function blobToBase64(blob){
+  return new Promise((res,rej)=>{
+    const rd = new FileReader();
+    rd.onload = ()=> res(rd.result.split(',')[1]);
+    rd.onerror = rej;
+    rd.readAsDataURL(blob);
+  });
+}
+
+async function ghPutFile(path, base64Content, message){
+  const o=localStorage.getItem('ghOwner'), r=localStorage.getItem('ghRepo'), t=localStorage.getItem('ghToken');
+  const sha = await ghGetFileSha(path);
+  const body = { message, content: base64Content };
+  if(sha) body.sha = sha;
+  const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, {
+    method: 'PUT',
+    headers: {Authorization: `Bearer ${t}`, 'Content-Type':'application/json', Accept: 'application/vnd.github+json'},
+    body: JSON.stringify(body)
+  });
+  return res.ok;
+}
+
+async function ghUploadAudio(blob){
+  const o=localStorage.getItem('ghOwner'); if(!o) return false;
+  try{
+    showToast('☁ Uploading audio to GitHub...', 'info', 4000);
+    const b64 = await blobToBase64(blob);
+    const ok = await ghPutFile(GH_AUDIO_PATH, b64, `Audio backup: ${blob.name}`);
+    if(ok){
+      const meta = { name: blob.name, size: blob.size, type: blob.type, date: new Date().toISOString() };
+      const metaB64 = btoa(unescape(encodeURIComponent(JSON.stringify(meta))));
+      await ghPutFile(GH_AUDIO_META_PATH, metaB64, 'Audio meta');
+      showToast('☁ Audio backed up to GitHub');
+      return true;
+    }
+  }catch(e){ showToast('❌ Audio upload failed', 'error'); }
+  return false;
+}
+
+async function ghDownloadAudio(){
+  const o=localStorage.getItem('ghOwner'), r=localStorage.getItem('ghRepo'), t=localStorage.getItem('ghToken');
+  if(!o||!r||!t) return false;
+  try{
+    // Get meta first
+    const metaRes = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${GH_AUDIO_META_PATH}`, {
+      headers: {Authorization: `Bearer ${t}`, Accept: 'application/vnd.github+json'}
+    });
+    if(!metaRes.ok) return false;
+    const metaJson = await metaRes.json();
+    const meta = JSON.parse(decodeURIComponent(escape(atob(metaJson.content.replace(/\n/g,'')))));
+
+    // Get audio (use raw endpoint for larger files)
+    const audioRes = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${GH_AUDIO_PATH}`, {
+      headers: {Authorization: `Bearer ${t}`, Accept: 'application/vnd.github.raw'}
+    });
+    if(!audioRes.ok) return false;
+    const blob = await audioRes.blob();
+    const typedBlob = new Blob([blob], { type: meta.type || 'audio/mpeg' });
+    await loadAudioFromBlob(typedBlob, meta.name);
+    await idbSet('chantAudio', { blob: typedBlob, name: meta.name });
+    showToast('✓ Audio restored from GitHub');
+    return true;
+  }catch(e){ console.error(e); return false; }
+}
+
+async function ghBackup(){
+  const o=localStorage.getItem('ghOwner'), r=localStorage.getItem('ghRepo'), t=localStorage.getItem('ghToken');
+  if(!o||!r||!t){ showToast('Set GitHub creds first', 'error'); openModal('settings'); return; }
+  try{
+    const data = {perm, trip, milestoneDates, alerts, presets, date: new Date().toISOString()};
+    const jsonStr = JSON.stringify(data, null, 2);
+    const content = btoa(unescape(encodeURIComponent(jsonStr)));
+    const ok = await ghPutFile(GH_DATA_PATH, content, `Backup • ${fmtNum(perm)} japs`);
+    if(ok){
+      showToast('☁ Data backup done');
+      // Also backup audio if enabled and not yet uploaded
+      if(localStorage.getItem('ghBackupAudio') !== 'false'){
+        const stored = await idbGet('chantAudio').catch(()=>null);
+        if(stored && stored.blob){
+          const existingSha = await ghGetFileSha(GH_AUDIO_PATH);
+          if(!existingSha) await ghUploadAudio(stored.blob);
+        }
+      }
+    } else showToast('❌ Backup failed', 'error');
+  }catch(e){ showToast('❌ '+e.message, 'error'); }
+}
+
+async function ghRestore(){
+  const o=localStorage.getItem('ghOwner'), r=localStorage.getItem('ghRepo'), t=localStorage.getItem('ghToken');
+  if(!o||!r||!t){ showToast('Set creds first', 'error'); openModal('settings'); return; }
+  try{
+    showToast('⬇ Restoring from GitHub...', 'info');
+    const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${GH_DATA_PATH}`, {
+      headers: {Authorization: `Bearer ${t}`, Accept: 'application/vnd.github+json'}
+    });
+    if(!res.ok){ showToast('❌ No backup found', 'error'); return; }
+    const meta = await res.json();
+    const jsonStr = decodeURIComponent(escape(atob(meta.content.replace(/\n/g,''))));
+    const d = JSON.parse(jsonStr);
+
+    // Never DECREASE permanent (protect lifetime data)
+    if(d.perm > perm) perm = d.perm;
+    trip = d.trip || 0;
+    // Merge milestone dates (never overwrite existing)
+    milestoneDates = { ...(d.milestoneDates || {}), ...milestoneDates };
+    alerts = d.alerts || [];
+    presets = d.presets || [];
+    localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+    saveAlertsLocal(); savePresets();
+    updateUI();
+    showToast('✓ Data restored: '+fmtNum(perm));
+
+    // Auto-fetch audio if not in local
+    const stored = await idbGet('chantAudio').catch(()=>null);
+    if(!stored){
+      await ghDownloadAudio();
+    }
+  }catch(e){ showToast('❌ '+e.message, 'error'); }
+}
+
+function autoBackup(){ if(localStorage.getItem('ghToken')) ghBackup(); }
+
+/* ============ INIT ============ */
+(async function init(){
+  updateUI();
+  // Try local audio first
+  const loaded = await loadAudioFromStorage();
+  // If no local audio and GH configured, auto-fetch
+  if(!loaded && localStorage.getItem('ghToken')){
+    showToast('☁ Auto-fetching chant from GitHub...', 'info', 3000);
+    await ghDownloadAudio();
+  }
+})();
+</script>
+</body>
+</html>
