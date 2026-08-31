@@ -1,0 +1,23 @@
+{
+  "perm": 0,
+  "trip": 0,
+  "milestoneDates": {},
+  "alerts": [
+    {
+      "id": 1788176117092,
+      "type": "time",
+      "delta": 15000,
+      "target": 24694,
+      "label": "After 00:00:15",
+      "triggered": true
+    }
+  ],
+  "presets": [
+    {
+      "type": "time",
+      "delta": 10000,
+      "label": "After 00:00:10"
+    }
+  ],
+  "date": "2026-08-31T12:57:38.896Z"
+}
