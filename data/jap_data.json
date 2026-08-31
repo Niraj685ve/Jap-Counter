@@ -1,9 +1,9 @@
 {
-  "version": 15,
+  "version": 27,
   "deviceId": "dev_38e7zgo0",
-  "updatedAt": "2026-08-31T15:08:25.243Z",
-  "perm": 0,
-  "trip": 0,
+  "updatedAt": "2026-08-31T15:25:46.888Z",
+  "perm": 12,
+  "trip": 12,
   "milestoneDates": {},
   "alerts": [
     {
@@ -21,5 +21,14 @@
       "delta": 10000,
       "label": "After 00:00:10"
     }
-  ]
+  ],
+  "settings": {
+    "audioDuration": 5.4,
+    "japsPerAudio": 4,
+    "tapCooldown": 150,
+    "backupEvery": 20,
+    "backupDebounce": 3000,
+    "chantHours": 4,
+    "vibrationMs": 30
+  }
 }
