@@ -903,6 +903,280 @@
     .shockwave, .shockwave.delay1, .shockwave.delay2 { animation: none !important; opacity: 0.3; }
     .fire-layer { animation: none !important; opacity: 0.85; }
   }
+  
+/* ═══════════════════════════════════════════════════════════════
+   🕉 v19.1: MANSIK BLACK MODE — Divine Warm Meditation
+   Soft golden lotus ripples • Eye-friendly • Devotional feel
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Mode picker modal */
+.mansik-picker .modal-box { max-width: 340px; border-color: #8b5cf6; }
+.mansik-picker .modal-header {
+  background: linear-gradient(90deg, rgba(139,92,246,0.3), rgba(139,92,246,0.1));
+  border-bottom-color: rgba(139,92,246,0.5);
+}
+.mansik-picker .modal-header h2 {
+  background: linear-gradient(90deg,#c4b5fd,#8b5cf6,#c4b5fd);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.mansik-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.mansik-choice-card {
+  background: rgba(0,0,0,0.6); border: 2px solid rgba(167,139,250,0.4);
+  border-radius: 12px; padding: 16px 10px; text-align: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.mansik-choice-card:active { transform: scale(0.96); }
+.mansik-choice-card.black {
+  background: linear-gradient(135deg, #1a0a00, #3d1a00);
+  border-color: #ff9933;
+}
+.mansik-choice-card.black:hover { box-shadow: 0 0 25px rgba(255,153,51,0.7); }
+.mansik-choice-card.asis {
+  background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(60,20,80,0.5));
+}
+.mansik-choice-card.asis:hover { box-shadow: 0 0 20px rgba(139,92,246,0.6); }
+.mansik-choice-card .mc-icon { font-size: 32px; margin-bottom: 6px; }
+.mansik-choice-card .mc-title { font-size: 14px; font-weight: bold; color: #fff; }
+.mansik-choice-card .mc-desc { font-size: 10px; color: #ffcc80; margin-top: 4px; line-height: 1.3; }
+
+/* ═══ BLACK MODE — Divine Devotional Overlay ═══ */
+.black-mode-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  /* Deep temple-night gradient — not pure black, gentle warmth */
+  background:
+    radial-gradient(ellipse at center,
+      #0a0400 0%,
+      #050200 55%,
+      #000000 100%);
+  display: none;
+  align-items: center; justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.black-mode-overlay.show { display: flex; }
+
+/* Subtle ambient temple glow — always pulsing gently in background */
+.black-mode-overlay::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%,
+      rgba(80,25,0,0.35) 0%,
+      rgba(40,10,0,0.2) 30%,
+      transparent 60%);
+  animation: bmAmbient 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes bmAmbient {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.05); }
+}
+
+/* Central ॐ — divine golden glow, breathing like a diya flame */
+.bm-om {
+  position: relative;
+  font-size: 24vmin;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow:
+    0 0 25px rgba(255,180,50,0.6),
+    0 0 50px rgba(255,120,0,0.4),
+    0 0 80px rgba(255,80,0,0.25),
+    0 0 120px rgba(255,50,0,0.15);
+  z-index: 10;
+  animation: bmOmBreath 5s ease-in-out infinite;
+  font-family: "Noto Sans Devanagari", "Sanskrit Text", "Mangal", serif;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  filter: drop-shadow(0 0 15px rgba(255,150,0,0.4));
+}
+@keyframes bmOmBreath {
+  0%, 100% {
+    transform: scale(1);
+    color: #ffcc00;
+    text-shadow:
+      0 0 20px rgba(255,150,30,0.45),
+      0 0 40px rgba(255,100,0,0.3),
+      0 0 70px rgba(255,60,0,0.2);
+  }
+  50% {
+    transform: scale(1.05);
+    color: #ffe680;
+    text-shadow:
+      0 0 35px rgba(255,200,80,0.75),
+      0 0 65px rgba(255,140,0,0.55),
+      0 0 100px rgba(255,80,0,0.35),
+      0 0 140px rgba(255,50,0,0.2);
+  }
+}
+
+/* ═══ Divine ripple ring — soft golden lotus wave ═══ */
+.bm-flash {
+  position: absolute; top: 50%; left: 50%;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.1);
+  pointer-events: none;
+  border: 2px solid rgba(255,180,60,0.6);
+  box-shadow:
+    0 0 30px rgba(255,150,30,0.4),
+    0 0 50px rgba(255,100,0,0.25),
+    inset 0 0 15px rgba(255,200,80,0.3);
+  animation: bmDivineRipple 2.2s cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+  z-index: 5;
+  will-change: transform, opacity;
+}
+@keyframes bmDivineRipple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.1);
+    opacity: 0;
+    border-width: 3px;
+  }
+  15% {
+    opacity: 0.9;
+    border-width: 2.5px;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(25);
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+/* Second ring — saffron, slightly delayed for layered devotion */
+.bm-flash.secondary {
+  border-color: rgba(255,130,30,0.55);
+  box-shadow:
+    0 0 25px rgba(255,110,20,0.35),
+    0 0 45px rgba(255,70,0,0.2);
+  animation: bmDivineRipple 2.5s cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+  animation-delay: 0.25s;
+}
+
+/* Third ring — deep red, longest reach, mystic feel */
+.bm-flash.tertiary {
+  border-color: rgba(255,80,20,0.4);
+  box-shadow: 0 0 20px rgba(255,60,0,0.3);
+  animation: bmDivineRipple 2.8s cubic-bezier(0.25, 0.8, 0.3, 1) forwards;
+  animation-delay: 0.5s;
+}
+
+/* ═══ Divine light rays — soft radial beams (no harsh lightning) ═══ */
+.bm-ray {
+  position: absolute; top: 50%; left: 50%;
+  width: 3px;
+  height: 45vmax;
+  transform-origin: center top;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 4;
+  background: linear-gradient(180deg,
+    rgba(255,200,80,0.6) 0%,
+    rgba(255,150,30,0.35) 40%,
+    rgba(255,100,0,0.15) 70%,
+    transparent 100%);
+  filter: blur(1.5px);
+  border-radius: 50%;
+  animation: bmDivineRay 1.8s ease-out forwards;
+}
+@keyframes bmDivineRay {
+  0%   { opacity: 0; transform: translate(-50%, 0) rotate(var(--angle, 0deg)) scaleY(0); }
+  25%  { opacity: 0.7; transform: translate(-50%, 0) rotate(var(--angle, 0deg)) scaleY(1); }
+  100% { opacity: 0; transform: translate(-50%, 0) rotate(var(--angle, 0deg)) scaleY(1); }
+}
+
+/* Floating flower/spark particles — like temple flowers falling upward */
+.bm-particle {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,220,120,0.9), rgba(255,130,0,0.3) 60%, transparent 100%);
+  box-shadow: 0 0 8px rgba(255,180,50,0.7);
+  pointer-events: none;
+  z-index: 3;
+  animation: bmParticleFloat 3s ease-out forwards;
+}
+@keyframes bmParticleFloat {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 0), var(--dy, -200px)) scale(1.4); }
+}
+
+/* Bottom counter — subtle golden */
+.bm-counter {
+  position: absolute; bottom: 8%; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10; text-align: center; pointer-events: none;
+}
+.bm-counter .bm-count-lbl {
+  font-size: 9px; letter-spacing: 3px;
+  color: rgba(255,180,80,0.4); text-transform: uppercase;
+}
+.bm-counter .bm-count-num {
+  font-size: 26px; font-weight: 900;
+  color: rgba(255,215,0,0.75); display: block;
+  text-shadow: 0 0 14px rgba(255,150,0,0.5); margin-top: 3px;
+}
+
+/* Top info bar */
+.bm-info {
+  position: absolute; top: 4%; left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px; letter-spacing: 2px;
+  color: rgba(255,180,80,0.4); z-index: 10;
+  pointer-events: none; text-transform: uppercase;
+  text-align: center;
+}
+.bm-info .bm-alert-info {
+  display: block;
+  font-size: 9px;
+  color: rgba(150,220,150,0.5);
+  margin-top: 3px;
+  letter-spacing: 1px;
+}
+
+/* Exit button */
+.bm-exit {
+  position: absolute; top: 3%; right: 4%;
+  background: rgba(255,80,20,0.12);
+  color: rgba(255,180,100,0.7);
+  border: 1px solid rgba(255,120,40,0.35);
+  width: 44px; height: 44px; border-radius: 50%;
+  font-size: 18px; cursor: pointer; z-index: 20;
+  font-weight: bold; transition: all 0.2s;
+}
+.bm-exit:active { background: rgba(255,80,20,0.35); color: #fff; transform: scale(0.9); }
+
+/* Pause button */
+.bm-pause {
+  position: absolute; top: 3%; left: 4%;
+  background: rgba(255,204,0,0.1);
+  color: rgba(255,204,0,0.65);
+  border: 1px solid rgba(255,204,0,0.3);
+  width: 44px; height: 44px; border-radius: 50%;
+  font-size: 16px; cursor: pointer; z-index: 20;
+  font-weight: bold;
+}
+.bm-pause:active { transform: scale(0.9); }
+
+.black-mode-overlay.paused .bm-om {
+  animation: bmPausedBlink 1.4s ease-in-out infinite;
+}
+@keyframes bmPausedBlink {
+  0%, 100% { opacity: 0.25; color: #ff8844; }
+  50%      { opacity: 0.55; color: #ffaa66; }
+}
+
+/* Alert time input styling in picker */
+.mansik-picker .form-group input[type=text].alert-time-input {
+  font-family: monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-align: center;
+}
 </style>
 
 </head>
@@ -1297,6 +1571,73 @@
       <button class="main" onclick="applyScreenoffJaps(true)" style="width:100%;">✓ Add to Permanent</button>
       <button class="main secondary" onclick="applyScreenoffJaps(false)" style="width:100%;margin-top:6px;">✕ Discard (roll back Trip)</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════ v19.1: MANSIK PICKER MODAL ═══════════ -->
+<div class="modal mansik-picker" id="mansikPickerModal" data-name="mansikPicker">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🧘 Mansik Jap Setup</h2>
+      <button class="close-btn" onclick="closeModal('mansikPicker')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>⏰ Alert Time (optional)</label>
+        <input type="text" id="mansikAlertTime" class="alert-time-input" placeholder="00:00:00">
+        <small>HH:MM:SS format — jap complete hone pe alert bajega. Blank = no alert.</small>
+      </div>
+
+      <div class="toggle-switch">
+        <label>💾 Save as preset</label>
+        <label class="switch">
+          <input type="checkbox" id="mansikSavePreset">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <p style="font-size:11px;color:#ffcc80;text-align:center;margin:8px 0 4px;">
+        ⏱ Jap interval Advanced Settings me set hota hai
+      </p>
+
+      <p style="font-size:12px;color:#c4b5fd;text-align:center;margin:12px 0 8px;font-weight:bold;letter-spacing:1.5px;">
+        CHOOSE YOUR EXPERIENCE
+      </p>
+
+      <div class="mansik-choice-grid">
+        <div class="mansik-choice-card asis" onclick="startMansikChoice('asis')">
+          <div class="mc-icon">🌀</div>
+          <div class="mc-title">As-is</div>
+          <div class="mc-desc">Full mandala visible — normal mansik mode</div>
+        </div>
+        <div class="mansik-choice-card black" onclick="startMansikChoice('black')">
+          <div class="mc-icon">🕉✨</div>
+          <div class="mc-title">Black Mode</div>
+          <div class="mc-desc">Divine golden ripples. Aankh band karke devotion me dubo.</div>
+        </div>
+      </div>
+
+      <p class="help-text" style="text-align:center;margin-top:10px;">
+        🔒 Screen wake-lock auto ON • ॐ centre me gentle diya-flame ki tarah chamakega
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ v19.1: BLACK MODE FULLSCREEN OVERLAY ═══════════ -->
+<div class="black-mode-overlay" id="blackModeOverlay">
+  <button class="bm-pause" id="bmPauseBtn" onclick="toggleBlackModePause()" title="Pause/Resume">⏸</button>
+  <button class="bm-exit" onclick="exitBlackMode()" title="Exit">✕</button>
+  <div class="bm-info" id="bmInfo">
+    <span id="bmIntervalTxt">Every 2.5s</span>
+    <span class="bm-alert-info" id="bmAlertInfo" style="display:none;"></span>
+  </div>
+  <div class="bm-om">ॐ</div>
+  <div class="bm-effects" id="bmEffects"></div>
+  <div class="bm-counter">
+    <span class="bm-count-lbl">Trip</span>
+    <span class="bm-count-num" id="bmCountNum">0</span>
   </div>
 </div>
 
@@ -2096,25 +2437,32 @@ function updateSyncBar(){
 function tickJap(){
   perm++; trip++; japsSinceBackup++;
   recordJapForToday(1);
-  doVibrate(); // v13: vibrate on EVERY count (audio + mansik + manual)
+  doVibrate();
   updateUI();
   checkCountAlerts();
   if(japsSinceBackup >= SETTINGS.backupEvery){
     japsSinceBackup = 0;
     scheduleAutoBackup();
   }
+  bmOnJapFired();   // 🖤 v19: notify black mode overlay
 }
 
 async function onStartClick(){
   if(running){
     running = false;
     applyRunningState();
+    if(blackModeActive){ await exitBlackMode(); }   // 🖤 v19
     scheduleAutoBackup(true);
     return;
   }
   if(conflictPending){
     showToast('⚠ Resolve data conflict first', 'error');
     openModal('conflict');
+    return;
+  }
+  // 🖤 v19: For mansik mode, always show picker first
+  if(chantMode === 'mansik'){
+    openMansikPicker();
     return;
   }
   if(chantMode === 'audio'){
@@ -3126,6 +3474,205 @@ async function dangerResetLocal(){
   showToast(`✓ Reset complete — ${fmtNum(perm)} japs restored`, 'success', 4000);
   closeModal('settings');
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   🕉 v19.1: MANSIK BLACK MODE — Divine Integration Layer
+   ═══════════════════════════════════════════════════════════════ */
+let blackModeActive = false;
+let blackModePaused = false;
+let blackModeWakeLock = null;
+
+function openMansikPicker(){
+  // Pre-fill last used alert time
+  const savedAlert = localStorage.getItem('mansikAlertTime') || '';
+  document.getElementById('mansikAlertTime').value = savedAlert;
+  document.getElementById('mansikSavePreset').checked = false;
+  openModal('mansikPicker');
+}
+
+function startMansikChoice(choice){
+  const alertStr = document.getElementById('mansikAlertTime').value.trim();
+  const saveAsPreset = document.getElementById('mansikSavePreset').checked;
+  let alertAdded = null;
+
+  // Validate + create alert if provided (uses your existing alert system)
+  if(alertStr){
+    const ms = parseHMS(alertStr);
+    if(!ms){
+      showToast('⚠ Alert format: HH:MM:SS', 'error');
+      return;
+    }
+    const a = {
+      id: Date.now(),
+      type: 'time',
+      delta: ms,
+      target: getElapsedMs() + ms,
+      label: `After ${alertStr}`,
+      triggered: false
+    };
+    alerts.push(a);
+    saveAlertsLocal();
+    if(typeof renderAlerts === 'function') renderAlerts();
+    if(saveAsPreset && !presets.some(p => p.type==='time' && p.delta===ms)){
+      presets.push({ type:'time', delta: ms, label: `After ${alertStr}` });
+      if(typeof savePresets === 'function') savePresets();
+      if(typeof renderPresets === 'function') renderPresets();
+    }
+    localStorage.setItem('mansikAlertTime', alertStr);
+    alertAdded = alertStr;
+  } else {
+    localStorage.removeItem('mansikAlertTime');
+  }
+
+  closeModal('mansikPicker');
+
+  running = true;
+  if(choice === 'black'){
+    blackModeActive = true;
+    showBlackModeOverlay(alertAdded);
+  } else {
+    blackModeActive = false;
+  }
+  applyRunningState();
+
+  if(alertAdded) showToast(`🔔 Alert set: After ${alertAdded}`, 'success');
+}
+
+function showBlackModeOverlay(alertTime){
+  const overlay = document.getElementById('blackModeOverlay');
+  const intervalSec = (getJapInterval() / 1000).toFixed(1);
+  document.getElementById('bmIntervalTxt').textContent = `Every ${intervalSec}s`;
+
+  const alertInfo = document.getElementById('bmAlertInfo');
+  if(alertTime){
+    alertInfo.textContent = `🔔 Alert after ${alertTime}`;
+    alertInfo.style.display = 'block';
+  } else {
+    alertInfo.style.display = 'none';
+  }
+
+  document.getElementById('bmCountNum').textContent = fmtNum(trip);
+  overlay.classList.add('show');
+  overlay.classList.remove('paused');
+  document.getElementById('bmPauseBtn').textContent = '⏸';
+  blackModePaused = false;
+
+  acquireBmWakeLock();
+
+  // Tap anywhere = bonus manual jap
+  overlay.onclick = (e) => {
+    if(e.target.closest('.bm-exit') || e.target.closest('.bm-pause')) return;
+    if(!running || blackModePaused) return;
+    tickJap();
+  };
+}
+
+// Called by tickJap() on every count
+function bmOnJapFired(){
+  if(!blackModeActive) return;
+  bmTriggerDivineRipple();
+  const el = document.getElementById('bmCountNum');
+  if(el) el.textContent = fmtNum(trip);
+}
+
+function bmTriggerDivineRipple(){
+  const effects = document.getElementById('bmEffects');
+  if(!effects) return;
+
+  // Three layered divine ripples (gold → saffron → deep red)
+  const r1 = document.createElement('div');
+  r1.className = 'bm-flash';
+  effects.appendChild(r1);
+  setTimeout(()=> r1.remove(), 2300);
+
+  const r2 = document.createElement('div');
+  r2.className = 'bm-flash secondary';
+  effects.appendChild(r2);
+  setTimeout(()=> r2.remove(), 2800);
+
+  const r3 = document.createElement('div');
+  r3.className = 'bm-flash tertiary';
+  effects.appendChild(r3);
+  setTimeout(()=> r3.remove(), 3400);
+
+  // 6 divine light rays at random angles — soft golden beams
+  for(let i = 0; i < 6; i++){
+    const ray = document.createElement('div');
+    ray.className = 'bm-ray';
+    ray.style.setProperty('--angle', `${(360 / 6) * i + Math.random() * 20}deg`);
+    effects.appendChild(ray);
+    setTimeout(()=> ray.remove(), 1900);
+  }
+
+  // 5 floating temple-flower particles rising up
+  for(let i = 0; i < 5; i++){
+    const p = document.createElement('div');
+    p.className = 'bm-particle';
+    const startX = 45 + Math.random() * 10; // near center
+    const startY = 45 + Math.random() * 10;
+    p.style.left = startX + '%';
+    p.style.top = startY + '%';
+    p.style.setProperty('--dx', (Math.random() * 200 - 100) + 'px');
+    p.style.setProperty('--dy', -(150 + Math.random() * 150) + 'px');
+    effects.appendChild(p);
+    setTimeout(()=> p.remove(), 3100);
+  }
+}
+
+function toggleBlackModePause(){
+  const overlay = document.getElementById('blackModeOverlay');
+  const btn = document.getElementById('bmPauseBtn');
+  running = !running;
+  applyRunningState();
+  blackModePaused = !running;
+  if(blackModePaused){
+    overlay.classList.add('paused');
+    btn.textContent = '▶';
+  } else {
+    overlay.classList.remove('paused');
+    btn.textContent = '⏸';
+  }
+}
+
+async function exitBlackMode(){
+  blackModeActive = false;
+  const overlay = document.getElementById('blackModeOverlay');
+  overlay.classList.remove('show', 'paused');
+  overlay.onclick = null;
+  const eff = document.getElementById('bmEffects');
+  if(eff) eff.innerHTML = '';
+  await releaseBmWakeLock();
+  if(running){
+    running = false;
+    applyRunningState();
+    scheduleAutoBackup(true);
+  }
+  showToast('🕉 Meditation ended — Har Har Mahadev', 'info');
+}
+
+/* ═══ Wake Lock ═══ */
+async function acquireBmWakeLock(){
+  try {
+    if('wakeLock' in navigator){
+      blackModeWakeLock = await navigator.wakeLock.request('screen');
+      blackModeWakeLock.addEventListener('release', ()=> {
+        if(blackModeActive && document.visibilityState === 'visible'){
+          setTimeout(acquireBmWakeLock, 500);
+        }
+      });
+    }
+  } catch(e){ console.warn('WakeLock failed', e); }
+  if(typeof startWakeVideo === 'function') startWakeVideo();
+}
+async function releaseBmWakeLock(){
+  try { if(blackModeWakeLock){ await blackModeWakeLock.release(); blackModeWakeLock = null; } } catch(e){}
+}
+
+document.addEventListener('visibilitychange', async ()=>{
+  if(document.visibilityState === 'visible' && blackModeActive){
+    await acquireBmWakeLock();
+  }
+});
 
 /* ============ STARTUP ============ */
 async function initApp(){
