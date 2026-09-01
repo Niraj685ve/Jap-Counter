@@ -1015,6 +1015,7 @@
 
 <div class="toast" id="toast"></div>
 
+
 <script>
 /* ============ ADVANCED SETTINGS ============ */
 const DEFAULT_SETTINGS = {
@@ -1067,11 +1068,7 @@ let presets = JSON.parse(localStorage.getItem('presets') || '[]');
 let lastSyncTs = parseInt(localStorage.getItem('lastSyncTs') || '0');
 let localVersion = parseInt(localStorage.getItem('localVersion') || '0');
 let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') || '-1');
-<<<<<<< HEAD
 let lastKnownRemote = JSON.parse(localStorage.getItem('lastKnownRemote') || 'null');
-=======
-let lastKnownRemote = JSON.parse(localStorage.getItem('lastKnownRemote') || 'null'); // NEW: tracks last remote snapshot
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 
 let running = false, wakeLock = null;
 let elapsedMs = 0, sessionStart = null, firstStartTs = null;
@@ -1082,15 +1079,10 @@ let backupInProgress = false;
 let backupDebounceTimer = null;
 let japsSinceBackup = 0;
 let japTimer = null;
-<<<<<<< HEAD
 let conflictPending = null;
 let syncLocked = false;
 let sessionReconciled = false;      // v12.1: true after startup conflict check completes
 let lastVisibilityCheckTs = 0;      // v12.1: throttle re-checks on tab focus
-=======
-let conflictPending = null; // NEW: holds { remote, local, source } while modal open
-let syncLocked = false; // NEW: freezes all sync while conflict modal is open
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 
 let chantMode = localStorage.getItem('chantMode') || 'audio';
 if(!MODES.includes(chantMode)) chantMode = 'audio';
@@ -1520,26 +1512,6 @@ async function onStartClick(){
     showToast('⚠ Resolve data conflict first', 'error');
     openModal('conflict');
     return;
-<<<<<<< HEAD
-=======
-  }
-  // Pre-start sync with conflict check
-  if(ghConfigured()){
-    const btn = document.getElementById('startBtn');
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = '⏳ CHECKING SYNC...';
-    try{
-      const res = await safePullFromGitHub(false);
-      if(res && res.conflict){
-        btn.disabled = false;
-        btn.textContent = originalText;
-        return; // conflict modal shown, don't start
-      }
-    }catch(e){ console.warn('Pre-start sync failed:', e); }
-    btn.disabled = false;
-    btn.textContent = originalText;
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   }
   if(chantMode === 'audio'){
     if(!audioBuffer){
@@ -1899,10 +1871,6 @@ function openModal(name){
   if(name==='adjust'){ document.getElementById('adjCurrent').textContent = fmtNum(trip); }
 }
 function closeModal(name){
-<<<<<<< HEAD
-=======
-  // Conflict modal cannot be closed with X — must resolve
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   if(name === 'conflict' && conflictPending){
     showToast('⚠ Please choose an option to resolve', 'error');
     return;
@@ -1914,11 +1882,7 @@ document.querySelectorAll('.modal').forEach(m => {
   m.addEventListener('click', e => {
     if(e.target === m){
       const name = m.getAttribute('data-name');
-<<<<<<< HEAD
       if(name === 'conflict') return;
-=======
-      if(name === 'conflict') return; // conflict modal not dismissable by outside click
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
       if(name) closeModal(name);
     }
   });
@@ -2118,13 +2082,7 @@ async function ghDownloadAudio(){
   }catch(e){ console.error(e); showToast('❌ Audio download: '+e.message,'error'); return false; }
 }
 
-<<<<<<< HEAD
 /* ============ CONFLICT DETECTION CORE ============ */
-=======
-/* ============ CONFLICT DETECTION CORE (NEW in v12) ============ */
-
-/** Fetch fresh remote snapshot from GitHub */
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 async function fetchRemoteData(){
   if(!ghConfigured()) return null;
   const info = await ghGetFileInfo(GH_DATA_PATH);
@@ -2138,83 +2096,35 @@ async function fetchRemoteData(){
   }
 }
 
-<<<<<<< HEAD
-=======
-/**
- * Detect conflict between local and remote.
- * Returns { conflict: bool, reason: string, severity: 'high'|'low' }
- *
- * RULES:
- *  1. NO conflict if remote is empty (first-ever backup)
- *  2. NO conflict if local === remote (perm & trip match)
- *  3. NO conflict if local > remote AND remote === lastKnownRemote
- *     (this is normal local progress — safe to push)
- *  4. CONFLICT if local < remote (local suspiciously behind — user probably chanted elsewhere)
- *  5. CONFLICT if remote > lastKnownRemote (another device pushed since last sync)
- *  6. CONFLICT if local and remote both differ and lastKnownRemote is null/unset (unknown history)
- */
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 function detectConflict(remote){
   if(!remote || remote.empty) return { conflict:false, reason:'no_remote' };
   const rp = remote.perm || 0, rt = remote.trip || 0;
   const lp = perm, lt = trip;
-<<<<<<< HEAD
   if(rp === lp && rt === lt) return { conflict:false, reason:'match' };
-=======
-
-  // Rule 2: exact match
-  if(rp === lp && rt === lt) return { conflict:false, reason:'match' };
-
-  // Rule 4: local behind remote (highly suspicious)
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   if(lp < rp){
     return {
       conflict: true, severity: 'high',
       reason: `Local Permanent (${fmtNum(lp)}) is LESS than GitHub (${fmtNum(rp)}). You may have chanted on another device.`
     };
   }
-<<<<<<< HEAD
-=======
-
-  // Rule 5: remote moved since last known snapshot (another device pushed)
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   if(lastKnownRemote && (rp !== (lastKnownRemote.perm || 0) || rt !== (lastKnownRemote.trip || 0))){
     return {
       conflict: true, severity: 'high',
       reason: `GitHub was updated by another device (last seen: ${fmtNum(lastKnownRemote.perm||0)}, now: ${fmtNum(rp)}).`
     };
   }
-<<<<<<< HEAD
-=======
-
-  // Rule 6: no last-known baseline + both differ
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   if(!lastKnownRemote && (lp !== rp || lt !== rt)){
     return {
       conflict: true, severity: 'high',
       reason: `First sync on this session shows mismatch. Local: ${fmtNum(lp)}, GitHub: ${fmtNum(rp)}. Choose carefully.`
     };
   }
-<<<<<<< HEAD
   return { conflict:false, reason:'local_ahead_safe' };
 }
 
 function showConflictModal(remote, reason){
   const wasRunning = running;
   if(wasRunning) forcePause();
-=======
-
-  // Rule 3: local ahead, remote unchanged → safe push
-  return { conflict:false, reason:'local_ahead_safe' };
-}
-
-/** Show the conflict modal with all details */
-function showConflictModal(remote, reason){
-  // Auto-pause any chanting
-  const wasRunning = running;
-  if(wasRunning) forcePause();
-
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   conflictPending = { remote, wasRunning };
   syncLocked = true;
 
@@ -2226,10 +2136,6 @@ function showConflictModal(remote, reason){
   document.getElementById('conflictRemotePerm').textContent = fmtNum(rp);
   document.getElementById('conflictRemoteTrip').textContent = fmtNum(rt);
 
-<<<<<<< HEAD
-=======
-  // Highlight recommendation
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   const localBadge = document.getElementById('conflictLocalBadge');
   const remoteBadge = document.getElementById('conflictRemoteBadge');
   const localCard = document.getElementById('conflictCardLocal');
@@ -2263,18 +2169,10 @@ function showConflictModal(remote, reason){
 
   setSyncStatus('conflict', 'CONFLICT!');
   document.getElementById('conflictModal').classList.add('open');
-<<<<<<< HEAD
-=======
-  // beep to attract attention
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   playBeep();
   setTimeout(stopBeep, 2000);
 }
 
-<<<<<<< HEAD
-=======
-/** User's choice from the conflict modal */
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 async function resolveConflict(action){
   if(!conflictPending){
     document.getElementById('conflictModal').classList.remove('open');
@@ -2288,18 +2186,10 @@ async function resolveConflict(action){
     conflictPending = null;
     syncLocked = false;
     showToast('Cancelled — data unchanged. Sync stays blocked until resolved.', 'info', 4000);
-<<<<<<< HEAD
-=======
-    // Keep sync locked-ish — but user cancelled. Reset syncLocked so they can retry.
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
     return;
   }
 
   if(action === 'pull'){
-<<<<<<< HEAD
-=======
-    // ACCEPT GITHUB — overwrite local
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
     perm = remote.perm || 0;
     trip = remote.trip || 0;
     milestoneDates = remote.milestoneDates || {};
@@ -2327,28 +2217,20 @@ async function resolveConflict(action){
     document.getElementById('conflictModal').classList.remove('open');
     conflictPending = null;
     syncLocked = false;
-<<<<<<< HEAD
     sessionReconciled = true;
     lastVisibilityCheckTs = Date.now();
-=======
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
     setSyncStatus('synced', 'now');
     showToast(`✓ Restored from GitHub: ${fmtNum(perm)} japs`, 'success', 4000);
     return;
   }
 
   if(action === 'push'){
-<<<<<<< HEAD
-=======
-    // OVERWRITE GITHUB with local
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
     if(!confirm(`⚠ This will OVERWRITE GitHub with local values (${fmtNum(perm)} perm, ${fmtNum(trip)} trip).\n\nGitHub currently has ${fmtNum(remote.perm||0)} perm. Are you SURE?`)){
       return;
     }
     document.getElementById('conflictModal').classList.remove('open');
     conflictPending = null;
     syncLocked = false;
-<<<<<<< HEAD
     localVersion = Math.max(localVersion, (remote.version || 0)) + 1;
     localStorage.setItem('localVersion', localVersion);
     const ok = await doPushToGitHub(false, true);
@@ -2357,31 +2239,15 @@ async function resolveConflict(action){
       lastVisibilityCheckTs = Date.now();
       showToast(`✓ GitHub overwritten with local: ${fmtNum(perm)} japs`, 'success', 4000);
     }
-=======
-    // Bump local version above remote to guarantee overwrite
-    localVersion = Math.max(localVersion, (remote.version || 0)) + 1;
-    localStorage.setItem('localVersion', localVersion);
-    // Force push
-    const ok = await doPushToGitHub(false, true);
-    if(ok) showToast(`✓ GitHub overwritten with local: ${fmtNum(perm)} japs`, 'success', 4000);
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
     return;
   }
 }
 
-<<<<<<< HEAD
 /* ============ SAFE SYNC (v12.1) ============ */
 
 /**
  * Safe pull — always fetches remote first, checks conflict.
  * Used at startup, manual sync, and 10+ min tab-return.
-=======
-/* ============ SAFE SYNC (v12) ============ */
-
-/**
- * Safe pull — always fetches remote first, checks conflict, then merges/pauses.
- * Returns { ok, conflict, changed, empty }
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
  */
 async function safePullFromGitHub(showUI=true){
   if(!ghConfigured()) return { ok:false, reason:'not_configured' };
@@ -2402,17 +2268,9 @@ async function safePullFromGitHub(showUI=true){
       showConflictModal(remote, conflict.reason);
       return { ok:true, conflict:true };
     }
-<<<<<<< HEAD
     const remoteVer = remote.version || 0;
     let changed = false;
     if(remoteVer > localVersion){
-=======
-    // No conflict — safe to accept remote if newer OR just record as lastKnownRemote
-    const remoteVer = remote.version || 0;
-    let changed = false;
-    if(remoteVer > localVersion){
-      // Remote is genuinely newer AND no conflict → adopt it
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
       perm = remote.perm || 0;
       trip = remote.trip || 0;
       milestoneDates = remote.milestoneDates || {};
@@ -2449,15 +2307,10 @@ async function safePullFromGitHub(showUI=true){
 }
 
 /**
-<<<<<<< HEAD
  * Safe push (v12.1):
  * - If session already reconciled → DIRECT PUSH (no fetch, no conflict check)
  * - Only very first push before reconcile does pre-flight fetch
  * This keeps Mansik/Audio jap running smoothly without every-2-min interruption.
-=======
- * Safe push — checks for conflict BEFORE pushing.
- * If remote changed since last known state, pauses and shows modal.
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
  */
 async function safePushToGitHub(silent=false){
   if(!ghConfigured()) return false;
@@ -2466,13 +2319,9 @@ async function safePushToGitHub(silent=false){
     if(!silent) setSyncStatus('synced', 'up to date');
     return true;
   }
-<<<<<<< HEAD
   if(sessionReconciled){
     return doPushToGitHub(silent, false);
   }
-=======
-  // Pre-flight conflict check
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   const remote = await fetchRemoteData();
   if(!remote){
     if(!silent) showToast('❌ Cannot reach GitHub','error');
@@ -2489,10 +2338,6 @@ async function safePushToGitHub(silent=false){
   return doPushToGitHub(silent, false);
 }
 
-<<<<<<< HEAD
-=======
-/** Actual push — assumes conflict already checked */
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 async function doPushToGitHub(silent=false, forceOverwrite=false){
   if(!ghConfigured()) return false;
   if(backupInProgress) return false;
@@ -2545,11 +2390,7 @@ function buildPayload(){
 
 function scheduleAutoBackup(immediate=false){
   if(!ghConfigured()) return;
-<<<<<<< HEAD
   if(syncLocked || conflictPending) return;
-=======
-  if(syncLocked || conflictPending) return; // freeze auto-backup during conflict
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   clearTimeout(backupDebounceTimer);
   const delay = immediate ? 100 : SETTINGS.backupDebounce;
   backupDebounceTimer = setTimeout(()=>{ safePushToGitHub(true); }, delay);
@@ -2559,7 +2400,6 @@ function scheduleAutoBackup(immediate=false){
 async function manualBackup(){
   if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
   if(syncLocked){ showToast('⚠ Resolve conflict first','error'); openModal('conflict'); return; }
-<<<<<<< HEAD
   // Manual button = full pre-flight check (user initiated, so it's OK to be slow)
   const savedFlag = sessionReconciled;
   sessionReconciled = false; // force full check
@@ -2570,33 +2410,20 @@ async function manualBackup(){
   } else {
     sessionReconciled = savedFlag; // restore on failure
   }
-=======
-  const ok = await safePushToGitHub(false);
-  if(ok && localVersion === lastBackedUpVersion) showToast('✓ All data on GitHub');
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
 }
 
 async function manualRestore(){
   if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
   if(syncLocked){ showToast('⚠ Resolve conflict first','error'); openModal('conflict'); return; }
-<<<<<<< HEAD
   const remote = await fetchRemoteData();
   if(!remote){ showToast('❌ Cannot reach GitHub','error'); return; }
   if(remote.empty){ showToast('No backup exists on GitHub yet','info'); return; }
-=======
-  // Always fetch fresh + show comparison even if no auto-detected conflict
-  const remote = await fetchRemoteData();
-  if(!remote){ showToast('❌ Cannot reach GitHub','error'); return; }
-  if(remote.empty){ showToast('No backup exists on GitHub yet','info'); return; }
-  // Force show conflict modal so user chooses
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   showConflictModal(remote, 'Manual restore — please confirm which side is correct.');
 }
 
 async function manualSync(){
   if(!ghConfigured()){ openModal('settings'); return; }
   if(syncLocked){ openModal('conflict'); return; }
-<<<<<<< HEAD
   const savedFlag = sessionReconciled;
   sessionReconciled = false;
   const res = await safePullFromGitHub(true);
@@ -2605,11 +2432,6 @@ async function manualSync(){
     await safePushToGitHub(false);
   } else if(!res.conflict){
     sessionReconciled = savedFlag;
-=======
-  const res = await safePullFromGitHub(true);
-  if(res.ok && !res.conflict){
-    await safePushToGitHub(false);
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   }
 }
 
@@ -2622,10 +2444,6 @@ async function dangerResetLocal(){
   } else {
     if(!confirm(`🔥 RESET LOCAL & PULL FROM GITHUB\n\nThis will WIPE local data:\n  📱 Local Perm: ${fmtNum(perm)}\n  📱 Local Trip: ${fmtNum(trip)}\n\nAnd restore from GitHub:\n  ☁ GitHub Perm: ${fmtNum(remote.perm||0)}\n  ☁ GitHub Trip: ${fmtNum(remote.trip||0)}\n\nContinue?`)) return;
   }
-<<<<<<< HEAD
-=======
-  // Wipe local
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   perm = 0; trip = 0; milestoneDates = {};
   alerts = []; presets = [];
   localVersion = 0; lastBackedUpVersion = -1;
@@ -2639,10 +2457,6 @@ async function dangerResetLocal(){
   localStorage.setItem('lastBackedUpVersion', -1);
   localStorage.removeItem('lastKnownRemote');
   updateUI(false);
-<<<<<<< HEAD
-=======
-  // Now pull
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   if(remote && !remote.empty){
     perm = remote.perm || 0;
     trip = remote.trip || 0;
@@ -2670,11 +2484,8 @@ async function dangerResetLocal(){
   }
   lastSyncTs = Date.now();
   localStorage.setItem('lastSyncTs', lastSyncTs);
-<<<<<<< HEAD
   sessionReconciled = true;
   lastVisibilityCheckTs = Date.now();
-=======
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
   setSyncStatus('synced', 'now');
 }
 
@@ -2696,7 +2507,6 @@ async function init(){
         showStartup('Downloading chant audio...', 'One-time only');
         await ghDownloadAudio();
       }
-<<<<<<< HEAD
       // v12.1: Only mark reconciled if no conflict shown
       if(res.ok && !res.conflict){
         sessionReconciled = true;
@@ -2705,11 +2515,6 @@ async function init(){
           showStartup('Uploading local changes...', '');
           await safePushToGitHub(true);
         }
-=======
-      if(res.ok && !res.conflict && localVersion > lastBackedUpVersion){
-        showStartup('Uploading local changes...', '');
-        await safePushToGitHub(true);
->>>>>>> b0d39644310f77251bedb2a8ec251d3c4ae81af1
       }
     }catch(e){
       console.warn('Startup sync error:', e);
