@@ -1,9 +1,9 @@
 {
-  "version": 52,
-  "deviceId": "dev_38e7zgo0",
-  "updatedAt": "2026-08-31T16:05:59.857Z",
-  "perm": 16,
-  "trip": 16,
+  "version": 101,
+  "deviceId": "dev_ezh0kxit",
+  "updatedAt": "2026-08-31T18:36:05.239Z",
+  "perm": 42,
+  "trip": 42,
   "milestoneDates": {},
   "alerts": [
     {
