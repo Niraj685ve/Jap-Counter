@@ -1,9 +1,9 @@
 {
-  "version": 112,
+  "version": 116,
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-01T01:04:23.787Z",
-  "perm": 7,
-  "trip": 7,
+  "updatedAt": "2026-09-01T01:05:04.142Z",
+  "perm": 11,
+  "trip": 11,
   "milestoneDates": {},
   "alerts": [
     {
