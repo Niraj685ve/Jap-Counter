@@ -1,7 +1,7 @@
 {
-  "perm": 1230,
-  "trip": 52,
-  "version": 439,
+  "perm": 1238,
+  "trip": 60,
+  "version": 447,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
@@ -23,7 +23,7 @@
     }
   ],
   "dailyStats": {
-    "2026-09-01": 173
+    "2026-09-01": 181
   },
   "settings": {
     "audioDuration": 1.4,
@@ -35,6 +35,6 @@
     "vibrationMs": 30
   },
   "deviceId": "dev_38e7zgo0",
-  "updatedAt": "2026-09-01T16:33:10.333Z",
+  "updatedAt": "2026-09-01T16:34:57.475Z",
   "appVersion": "v13"
 }
