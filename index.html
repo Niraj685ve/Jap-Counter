@@ -3,15 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🔱 Mahadev Jap Counter Pro v12</title>
+<title>🔱 Mahadev Jap Counter Pro v15</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow-x: hidden; }
   body {
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: #ffd97a; min-height: 100vh; padding: 8px;
+    color: #ffd97a; min-height: 100vh; padding: 8px 8px 30px;
     text-align: center; user-select: none; background: #000;
   }
+
+  /* ===== ANIMATED GRADIENT SCROLLBAR (Global) ===== */
+  html { scrollbar-width: thin; scrollbar-color: #ff6600 rgba(0,0,0,0.4); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, rgba(20,0,0,0.6), rgba(40,10,0,0.8), rgba(20,0,0,0.6));
+    border-radius: 10px;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ffcc00 0%, #ff6600 35%, #ff3300 65%, #ffcc00 100%);
+    background-size: 100% 300%;
+    border-radius: 10px;
+    border: 1px solid rgba(255,204,0,0.5);
+    box-shadow: 0 0 8px rgba(255,102,0,0.7), inset 0 0 3px rgba(255,255,150,0.4);
+    animation: scrollbarFlow 4s ease-in-out infinite;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #ffff33, #ff9933, #ff3300, #ffff33);
+    box-shadow: 0 0 14px rgba(255,204,0,1);
+  }
+  ::-webkit-scrollbar-corner { background: transparent; }
+  @keyframes scrollbarFlow {
+    0%   { background-position: 0% 0%; }
+    50%  { background-position: 0% 100%; }
+    100% { background-position: 0% 0%; }
+  }
+
   .bg-layer {
     position: fixed; inset: 0; z-index: -3;
     background:
@@ -39,7 +67,7 @@
   }
   @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
 
-  /* ===== TOP BAR — GRID for perfect centering ===== */
+  /* ===== TOP BAR ===== */
   .top-bar {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -64,9 +92,7 @@
     font-weight: 900; letter-spacing: 1px;
     white-space: nowrap;
   }
-  .top-right-tools {
-    display: flex; align-items: center; gap: 6px;
-  }
+  .top-right-tools { display: flex; align-items: center; gap: 6px; }
   .sync-mini {
     display: flex; align-items: center; gap: 4px;
     background: rgba(0,0,0,0.5); border: 1px solid rgba(255,140,0,0.3);
@@ -74,10 +100,7 @@
     cursor: pointer; font-size: 10px; color: #ffcc80;
   }
   .sync-mini:hover { background: rgba(255,140,0,0.15); }
-  .sync-dot {
-    width: 9px; height: 9px; border-radius: 50%;
-    background: #666; transition: all 0.3s;
-  }
+  .sync-dot { width: 9px; height: 9px; border-radius: 50%; background: #666; transition: all 0.3s; }
   .sync-dot.synced { background: #10b981; box-shadow: 0 0 6px #10b981; }
   .sync-dot.syncing { background: #f59e0b; animation: pulseSync 1s infinite; }
   .sync-dot.error   { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
@@ -92,9 +115,14 @@
     color: #ffcc00; width: 32px; height: 32px; border-radius: 50%;
     font-size: 14px; cursor: pointer;
   }
+  .icon-btn.countdown-btn {
+    background: rgba(139,92,246,0.25);
+    border-color: #a78bfa;
+    color: #c4b5fd;
+  }
 
   .panel {
-    margin: 8px auto; max-width: 420px;
+    margin: 8px auto; max-width: 460px;
     background: rgba(20,0,0,0.65);
     border: 1px solid rgba(255,140,0,0.4);
     border-radius: 12px; padding: 10px;
@@ -116,95 +144,380 @@
     margin-left: 3px; vertical-align: middle;
   }
 
-  .mandala { position: relative; width: 92vw; max-width: 400px; aspect-ratio: 1/1; margin: 5px auto; }
+  /* ===== MANDALA — BIG & CENTERED ===== */
+  .mandala-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin: 10px auto 6px;
+  }
+  .mandala {
+    position: relative;
+    width: min(96vw, 480px);
+    aspect-ratio: 1/1;
+  }
   .mandala.tappable { cursor: pointer; }
   .mandala.tappable::after {
-    content: '👆 TAP HERE'; position: absolute; bottom: 6%; left: 50%;
+    content: '👆 TAP HERE'; position: absolute; bottom: 3%; left: 50%;
     transform: translateX(-50%); font-size: 11px; color: #6ee7b7;
     background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;
     border: 1px solid #10b981; animation: pulseTap 1.5s infinite;
-    pointer-events: none;
+    pointer-events: none; z-index: 5;
   }
   .mandala.mansik::after {
-    content: '🧘 MANSIK JAP — Silent auto-count'; position: absolute; bottom: 6%; left: 50%;
+    content: '🧘 MANSIK JAP — Silent auto-count'; position: absolute; bottom: 3%; left: 50%;
     transform: translateX(-50%); font-size: 10px; color: #c4b5fd;
     background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;
     border: 1px solid #8b5cf6; animation: pulseTap 2s infinite;
-    pointer-events: none;
+    pointer-events: none; z-index: 5;
   }
   @keyframes pulseTap { 0%,100%{opacity:0.6} 50%{opacity:1} }
   .mandala svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
 
+  /* ===== 5 RINGS — Properly Layered (radii: 190 / 162 / 135 / 110 / 88) ===== */
   .ring1 { animation: spin 25s linear infinite; filter: drop-shadow(0 0 6px #ff6600); }
   .ring2 { animation: spinRev 30s linear infinite; filter: drop-shadow(0 0 5px #ffcc00); }
   .ring3 { animation: spin 35s linear infinite; filter: drop-shadow(0 0 5px #ff9933); }
   .ring4 { animation: spinRev 40s linear infinite; filter: drop-shadow(0 0 5px #ffb347); }
-  .ring5 { animation: spin 45s linear infinite; filter: drop-shadow(0 0 4px #ffcc00); }
+
+  /* v15: Hypnotic Ring 5 — bigger, more visible, obsessed spinning */
+  .ring5 {
+    animation: spinObsessed 14s linear infinite, ring5Aura 2s ease-in-out infinite alternate;
+    filter: drop-shadow(0 0 10px #ffcc00) drop-shadow(0 0 20px #ff6600);
+  }
+  @keyframes spinObsessed {
+    0%   { transform: rotate(0deg) scale(1); }
+    25%  { transform: rotate(90deg) scale(1.03); }
+    50%  { transform: rotate(180deg) scale(1); }
+    75%  { transform: rotate(270deg) scale(1.03); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+  @keyframes ring5Aura {
+    from { filter: drop-shadow(0 0 8px #ffcc00) drop-shadow(0 0 18px #ff6600); }
+    to   { filter: drop-shadow(0 0 25px #ffff00) drop-shadow(0 0 45px #ff3300) drop-shadow(0 0 60px #ff0000); }
+  }
+  .ring5 text {
+    animation: omColorShift 3s ease-in-out infinite;
+  }
+  @keyframes omColorShift {
+    0%   { fill: #ffd700; }
+    25%  { fill: #ff9933; }
+    50%  { fill: #ffff33; }
+    75%  { fill: #ff3300; }
+    100% { fill: #ffd700; }
+  }
+
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes spinRev { to { transform: rotate(-360deg); } }
-  .ring-text  { font-size: 17px; font-weight: bold; fill: #ffd700; letter-spacing: 3px; }
-  .ring-text.r2 { fill:#ff9933; font-size:15px; }
-  .ring-text.r3 { fill:#ffb347; font-size:13px; }
-  .ring-text.r4 { fill:#ffcc00; font-size:12px; }
-  .ring-text.r5 { fill:#ffd700; font-size:11px; letter-spacing: 5px; }
+  .ring-text     { font-size: 17px; font-weight: bold; fill: #ffd700; letter-spacing: 3px; }
+  .ring-text.r2  { fill:#ff9933; font-size:15px; letter-spacing: 2px; }
+  .ring-text.r3  { fill:#ffb347; font-size:13px; letter-spacing: 2px; }
+  .ring-text.r4  { fill:#ffcc00; font-size:12px; letter-spacing: 2px; }
+  .ring-text.r5  { fill:#ffd700; font-size:14px; letter-spacing: 4px; font-weight: 900; }
 
   .trishul { position:absolute; font-size: 22px; color:#ffcc00; text-shadow: 0 0 10px #ff6600; z-index:2; pointer-events:none; }
   .trishul.tl{top:2%;left:2%} .trishul.tr{top:2%;right:2%;transform:scaleX(-1)}
   .trishul.bl{bottom:2%;left:2%;transform:scaleY(-1)} .trishul.br{bottom:2%;right:2%;transform:scale(-1,-1)}
 
-  .counters {
-    position:absolute; top:50%; left:50%;
-    transform: translate(-50%, -50%);
-    display:flex; gap: 8px; width: 55%;
-    pointer-events: none;
+  /* ===== HYPNOTIC OVERLAYS (behind unified circle, above rings) ===== */
+  .hypnotic-rays {
+    position: absolute; inset: 24%;
+    border-radius: 50%; pointer-events: none;
+    background: conic-gradient(from 0deg,
+      transparent 0deg, rgba(255,204,0,0.15) 20deg, transparent 40deg,
+      rgba(255,102,0,0.18) 60deg, transparent 80deg, rgba(255,204,0,0.15) 100deg,
+      transparent 120deg, rgba(255,102,0,0.18) 140deg, transparent 160deg,
+      rgba(255,204,0,0.15) 180deg, transparent 200deg, rgba(255,102,0,0.18) 220deg,
+      transparent 240deg, rgba(255,204,0,0.15) 260deg, transparent 280deg,
+      rgba(255,102,0,0.18) 300deg, transparent 320deg, rgba(255,204,0,0.15) 340deg,
+      transparent 360deg);
+    animation: hypnoRays 11s linear infinite;
+    mix-blend-mode: screen;
+    filter: blur(4px);
+    z-index: 1;
   }
-  .circle {
-    flex:1; aspect-ratio:1/1; border-radius:50%;
-    background: radial-gradient(circle, rgba(255,100,0,0.4), rgba(0,0,0,0.9));
-    border: 2px solid #ffb347;
-    box-shadow: 0 0 25px rgba(255,140,0,.6), inset 0 0 20px rgba(255,200,0,.25);
-    display:flex; flex-direction:column; justify-content:center; align-items:center;
-    padding: 4px; pointer-events: auto;
-    animation: pulseGlow 2s ease-in-out infinite alternate;
-    transition: border-color 0.3s;
+  @keyframes hypnoRays { to { transform: rotate(-360deg); } }
+
+  .aura-pulse {
+    position: absolute; inset: 30%;
+    border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle,
+      rgba(255,204,0,0.32) 0%,
+      rgba(255,102,0,0.22) 30%,
+      rgba(255,50,0,0.1) 55%,
+      transparent 75%);
+    animation: auraPulse 3.5s ease-in-out infinite;
+    filter: blur(6px);
+    z-index: 1;
+    mix-blend-mode: screen;
   }
-  .circle.tap-flash { animation: tapFlash 0.15s ease-out; }
-  @keyframes tapFlash {
-    0% { transform: scale(1); box-shadow: 0 0 40px rgba(102,255,153,0.9); }
-    100% { transform: scale(1.05); }
-  }
-  @keyframes pulseGlow {
-    from{ box-shadow: 0 0 20px rgba(255,140,0,.5), inset 0 0 15px rgba(255,200,0,.2);}
-    to  { box-shadow: 0 0 40px rgba(255,80,0,.9), inset 0 0 25px rgba(255,220,0,.4);}
+  @keyframes auraPulse {
+    0%, 100% { transform: scale(0.85); opacity: 0.55; }
+    50%      { transform: scale(1.18); opacity: 1; }
   }
 
-  .paused .circle {
+  .shockwave {
+    position: absolute; top: 50%; left: 50%;
+    width: 30%; aspect-ratio: 1/1;
+    border-radius: 50%;
+    border: 2px solid rgba(255,204,0,0.5);
+    transform: translate(-50%, -50%) scale(0.4);
+    animation: shockwave 4.5s ease-out infinite;
+    pointer-events: none;
+    z-index: 1;
+    box-shadow: 0 0 15px rgba(255,204,0,0.4), inset 0 0 15px rgba(255,102,0,0.3);
+  }
+  .shockwave.delay1 { animation-delay: 1.5s; border-color: rgba(255,102,0,0.5); }
+  .shockwave.delay2 { animation-delay: 3s; border-color: rgba(255,50,0,0.5); }
+  @keyframes shockwave {
+    0%   { transform: translate(-50%,-50%) scale(0.4); opacity: 0.9; border-width: 3px; }
+    100% { transform: translate(-50%,-50%) scale(1.9); opacity: 0; border-width: 0.5px; }
+  }
+
+  .kaleido-core {
+    position: absolute; top: 50%; left: 50%;
+    width: 55%; aspect-ratio: 1/1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: conic-gradient(from 0deg,
+      rgba(255,204,0,0.12), rgba(255,80,0,0.18), rgba(255,0,0,0.12),
+      rgba(255,80,0,0.18), rgba(255,204,0,0.12), rgba(255,80,0,0.18),
+      rgba(255,0,0,0.12), rgba(255,80,0,0.18), rgba(255,204,0,0.12));
+    animation: kaleido 18s linear infinite;
+    mix-blend-mode: overlay;
+    filter: blur(8px);
+    pointer-events: none;
+    z-index: 1;
+  }
+  @keyframes kaleido { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  /* ===== UNIFIED DIVINE CENTER — Sits inside Ring 5 (44% keeps Om visible) ===== */
+  .counters {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40%;
+    aspect-ratio: 1/1;
+    pointer-events: none;
+    z-index: 3;
+  }
+  .circle.unified {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 30% 25%, rgba(255,220,80,0.5), transparent 45%),
+      radial-gradient(circle at 70% 75%, rgba(255,50,0,0.4), transparent 50%),
+      radial-gradient(circle, rgba(80,10,0,0.9), rgba(0,0,0,0.97));
+    border: 3px solid #ffcc00;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 5% 6%;
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+    animation: divinePulse 3s ease-in-out infinite alternate;
+  }
+  @keyframes divinePulse {
+    from {
+      box-shadow:
+        0 0 25px rgba(255,140,0,.65),
+        inset 0 0 20px rgba(255,220,0,.3),
+        inset 0 0 40px rgba(255,80,0,.25);
+      border-color: #ffcc00;
+    }
+    to {
+      box-shadow:
+        0 0 55px rgba(255,50,0,1),
+        0 0 90px rgba(255,204,0,0.5),
+        inset 0 0 35px rgba(255,220,0,.55),
+        inset 0 0 65px rgba(255,80,0,.5);
+      border-color: #ffff33;
+    }
+  }
+  .circle.unified::before {
+    content: '';
+    position: absolute; inset: -5px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+      #ffcc00, #ff6600, #ff0000, #ff9933, #ffff33,
+      #ff6600, #ffcc00, #ff3300, #ffcc00);
+    z-index: -1;
+    animation: rotBorder 7s linear infinite;
+    opacity: 0.75;
+    filter: blur(3px);
+  }
+  @keyframes rotBorder { to { transform: rotate(360deg); } }
+
+  .circle.unified::after {
+    content: '';
+    position: absolute; inset: 6%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 20%, rgba(255,255,200,0.35), transparent 40%);
+    pointer-events: none;
+    animation: shimmerFloat 5s ease-in-out infinite alternate;
+  }
+  @keyframes shimmerFloat {
+    from { transform: translate(-3%, -3%); opacity: 0.5; }
+    to   { transform: translate(3%, 3%);  opacity: 0.9; }
+  }
+
+  .circle.unified.tap-flash {
+    animation: tapFlash 0.2s ease-out, divinePulse 3s ease-in-out infinite alternate;
+  }
+  @keyframes tapFlash {
+    0%   { transform: scale(1); box-shadow: 0 0 60px rgba(102,255,153,1), inset 0 0 40px rgba(102,255,153,0.6); }
+    100% { transform: scale(1.06); }
+  }
+
+  .paused .circle.unified {
     animation: pauseBlink 0.7s ease-in-out infinite !important;
     border-color: #ff3300 !important;
   }
   @keyframes pauseBlink {
     0%, 100% {
-      background: radial-gradient(circle, rgba(255,0,0,0.6), rgba(80,0,0,0.9));
-      box-shadow: 0 0 30px rgba(255,0,0,0.9), inset 0 0 20px rgba(255,50,0,0.5);
+      background: radial-gradient(circle, rgba(255,0,0,0.7), rgba(80,0,0,0.95));
+      box-shadow: 0 0 35px rgba(255,0,0,0.95), inset 0 0 25px rgba(255,50,0,0.6);
       border-color: #ff0000;
     }
     50% {
-      background: radial-gradient(circle, rgba(255,204,0,0.6), rgba(100,80,0,0.9));
-      box-shadow: 0 0 30px rgba(255,204,0,0.9), inset 0 0 20px rgba(255,220,0,0.5);
+      background: radial-gradient(circle, rgba(255,204,0,0.7), rgba(100,80,0,0.95));
+      box-shadow: 0 0 35px rgba(255,204,0,0.95), inset 0 0 25px rgba(255,220,0,0.6);
       border-color: #ffcc00;
     }
   }
 
-  .circle .label { font-size: 9px; color:#ffcc80; letter-spacing:1px; font-weight:bold; text-transform:uppercase; }
-  .circle .value {
-    font-size: 15px; font-weight:bold; color:#fff; margin: 2px 0; line-height:1.1;
-    text-shadow: 0 0 8px #ff9933; word-break: break-word;
+  .divine-top {
+    font-size: 14px;
+    color: #ffcc00;
+    text-shadow: 0 0 8px #ff6600, 0 0 15px #ff3300;
+    animation: glow 1.5s infinite alternate;
+    line-height: 1;
+    margin-bottom: 2px;
+    z-index: 2;
   }
-  .circle .reset-btn {
-    background: linear-gradient(135deg,#ff3300,#660000);
-    color:white; border:2px solid #ffcc00; border-radius:50%;
-    width:22px; height:22px; font-weight:bold; font-size:10px;
-    cursor:pointer; margin-top:2px; pointer-events: auto;
+
+  .perm-section {
+    text-align: center;
+    z-index: 2;
+    position: relative;
+  }
+  .perm-section .label {
+    font-size: 8px;
+    color: #ffcc00;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ff6600;
+    margin-bottom: 1px;
+  }
+  .perm-section .value {
+    font-size: 24px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow:
+      0 0 8px #ffcc00,
+      0 0 18px #ff6600,
+      0 0 28px #ff3300;
+    animation: valueGlow 2.2s ease-in-out infinite alternate;
+    letter-spacing: 0.5px;
+    word-break: break-word;
+  }
+  @keyframes valueGlow {
+    from { text-shadow: 0 0 6px #ffcc00, 0 0 14px #ff6600, 0 0 22px #ff3300; }
+    to   { text-shadow: 0 0 14px #ffff66, 0 0 25px #ff3300, 0 0 40px #ff0000; }
+  }
+
+  .sacred-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 92%;
+    margin: 3px 0;
+    z-index: 2;
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #ffcc00 40%, #ff6600 50%, #ffcc00 60%, transparent);
+    box-shadow: 0 0 6px #ff6600;
+  }
+  .divider-om {
+    font-size: 11px;
+    color: #ffcc00;
+    text-shadow: 0 0 6px #ff6600;
+    animation: spin 6s linear infinite;
+    line-height: 1;
+  }
+
+  .trip-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    z-index: 2;
+    padding: 2px 7px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,140,0,0.4);
+    border-radius: 12px;
+    backdrop-filter: blur(2px);
+  }
+  .trip-section .label {
+    font-size: 7px;
+    color: #ffcc80;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: bold;
+  }
+  .trip-section .value {
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffcc00;
+    text-shadow: 0 0 4px #ff6600;
+    line-height: 1;
+  }
+  .trip-section .reset-btn {
+    background: linear-gradient(135deg, #ff3300, #660000);
+    color: white;
+    border: 1.5px solid #ffcc00;
+    border-radius: 50%;
+    width: 17px; height: 17px;
+    font-weight: bold; font-size: 10px;
+    cursor: pointer;
+    pointer-events: auto;
+    padding: 0;
+    line-height: 1;
+    box-shadow: 0 0 6px rgba(255,50,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .trip-section .reset-btn:active { transform: scale(0.9); }
+
+  /* Responsive scaling for mobile */
+  @media (max-width: 400px) {
+    .counters { width: 42%; }
+    .perm-section .value { font-size: 22px; }
+    .divine-top { font-size: 13px; }
+    .ring-text     { font-size: 15px; letter-spacing: 2px; }
+    .ring-text.r2  { font-size: 13px; letter-spacing: 1.5px; }
+    .ring-text.r3  { font-size: 11px; letter-spacing: 1.5px; }
+    .ring-text.r4  { font-size: 10px; letter-spacing: 1.5px; }
+    .ring-text.r5  { font-size: 12px; letter-spacing: 3px; }
+  }
+  @media (max-width: 340px) {
+    .counters { width: 44%; }
+    .perm-section .value { font-size: 20px; }
+  }
+
+  /* ===== BUTTON AREA — pushed down with a nice gap after mandala ===== */
+  .button-area {
+    margin-top: 18px;
+    padding-top: 6px;
   }
 
   .big-start {
@@ -212,7 +525,7 @@
     color: white; border: 2px solid #ffcc00;
     padding: 14px 30px; border-radius: 50px;
     font-size: 16px; font-weight: bold; letter-spacing: 1px;
-    margin: 10px 3px; cursor: pointer; min-width: 180px;
+    margin: 10px 3px; cursor: pointer; min-width: 200px;
     box-shadow: 0 3px 20px rgba(255,80,0,.7);
     text-transform: uppercase;
   }
@@ -229,7 +542,7 @@
     font-size: 12px; font-weight: bold;
     margin: 5px 3px; cursor: pointer;
     box-shadow: 0 2px 10px rgba(255,204,0,.3);
-    min-width: 220px;
+    min-width: 240px;
   }
   .mode-toggle.audio  { background: linear-gradient(135deg, #ff6600, #cc0000); border-color: #ffcc00; }
   .mode-toggle.manual { background: linear-gradient(135deg, #10b981, #059669); border-color: #6ee7b7; }
@@ -251,6 +564,8 @@
   button.alert-btn { background: linear-gradient(135deg, #10b981, #059669); }
   button.warn { background: linear-gradient(135deg, #f59e0b, #d97706); }
   button.danger { background: linear-gradient(135deg, #dc2626, #991b1b); }
+  button.stats-btn { background: linear-gradient(135deg, #3b82f6, #1e40af); }
+  button.record-btn { background: linear-gradient(135deg, #f59e0b, #b45309); }
 
   .status {
     font-size: 12px; color: #ffcc80; margin-top: 6px; min-height: 16px;
@@ -260,6 +575,57 @@
   input[type=file] { display:none; }
   .row { display:flex; justify-content:center; flex-wrap:wrap; }
   #wakeVideo { position: fixed; width:1px; height:1px; opacity:0.01; pointer-events:none; }
+
+  /* ===== BOTTOM COUNTDOWN ===== */
+  .countdown-bottom {
+    margin: 15px auto 20px;
+    max-width: 460px;
+    background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(20,0,30,0.75));
+    border: 1px solid rgba(167,139,250,0.5);
+    border-radius: 14px;
+    padding: 12px 15px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 20px rgba(139,92,246,0.3);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .countdown-bottom:hover { transform: scale(1.02); }
+  .countdown-bottom:active { transform: scale(0.98); }
+  .cd-header {
+    font-size: 10px; color: #c4b5fd; text-transform: uppercase;
+    letter-spacing: 2px; margin-bottom: 4px; font-weight: bold;
+  }
+  .cd-target-name {
+    font-size: 14px; color: #ffcc00; font-weight: bold;
+    text-shadow: 0 0 8px rgba(255,204,0,0.5);
+    margin-bottom: 6px;
+  }
+  .cd-remaining {
+    font-size: 28px; color: #fff; font-weight: 900;
+    text-shadow: 0 0 15px #a78bfa;
+    line-height: 1; margin: 4px 0;
+    letter-spacing: 1px;
+  }
+  .cd-remaining .cd-unit { font-size: 12px; color: #c4b5fd; font-weight: bold; }
+  .cd-progress {
+    height: 8px; background: rgba(255,255,255,0.08);
+    border-radius: 4px; overflow: hidden;
+    margin: 8px 0 4px; position: relative;
+  }
+  .cd-progress .cd-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    box-shadow: 0 0 10px rgba(236,72,153,0.6);
+  }
+  .cd-meta {
+    font-size: 10px; color: #ffcc80;
+    display: flex; justify-content: space-between;
+    margin-top: 4px;
+  }
+  .cd-tap-hint { font-size: 9px; color: #a78bfa; margin-top: 4px; opacity: 0.7; }
 
   .toast {
     position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-100px);
@@ -313,140 +679,113 @@
     font-size:14px; cursor:pointer; font-weight:bold;
     box-shadow: 0 2px 8px rgba(255,50,0,0.5);
   }
-  .modal-body { padding: 12px; }
+  .modal-body { padding: 12px; max-height: 80vh; overflow-y: auto; }
   .modal-body .panel { margin: 0 0 10px; max-width: 100%; background: rgba(0,0,0,0.4); }
   .modal-body .panel:last-child { margin-bottom: 0; }
 
-  /* ===== CONFLICT MODAL (NEW in v12) ===== */
-  .conflict-modal .modal-box {
-    border-color: #ef4444;
-    box-shadow: 0 10px 60px rgba(239,68,68,0.6);
-    animation: alertPulse 1s ease-in-out infinite;
-  }
-  @keyframes alertPulse {
-    0%,100% { box-shadow: 0 10px 60px rgba(239,68,68,0.6); }
-    50% { box-shadow: 0 10px 80px rgba(239,68,68,0.9); }
-  }
-  .conflict-modal .modal-header {
-    background: linear-gradient(90deg, rgba(239,68,68,0.4), rgba(220,38,38,0.2));
-    border-bottom-color: rgba(239,68,68,0.6);
-  }
-  .conflict-modal .modal-header h2 {
-    background: linear-gradient(90deg,#fca5a5,#ef4444,#fca5a5);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .conflict-cards {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 8px; align-items: center;
-    margin-bottom: 12px;
-  }
-  .conflict-card {
-    background: rgba(0,0,0,0.5);
-    border: 2px solid rgba(255,140,0,0.4);
+  /* ===== REVERSE COUNT MODAL ===== */
+  .rc-hero {
+    background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(236,72,153,0.15));
+    border: 2px solid #a78bfa;
     border-radius: 12px;
-    padding: 10px 8px;
+    padding: 20px 15px;
     text-align: center;
+    margin-bottom: 10px;
+    box-shadow: 0 0 25px rgba(139,92,246,0.4);
   }
-  .conflict-card.local {
-    border-color: #3b82f6;
-    box-shadow: 0 0 15px rgba(59,130,246,0.4);
+  .rc-target-lbl { font-size: 11px; color: #c4b5fd; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .rc-target-name { font-size: 20px; color: #ffcc00; font-weight: 900; text-shadow: 0 0 12px rgba(255,204,0,0.6); margin-bottom: 10px; }
+  .rc-big { font-size: 48px; font-weight: 900; color: #fff; text-shadow: 0 0 20px #ec4899, 0 0 40px #a78bfa; line-height: 1; margin: 8px 0; letter-spacing: 2px; }
+  .rc-sub { font-size: 12px; color: #ffcc80; margin-top: 4px; }
+  .rc-progress-big { height: 12px; background: rgba(255,255,255,0.1); border-radius: 6px; margin: 12px 0 6px; overflow: hidden; }
+  .rc-progress-big .fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b, #ffcc00); border-radius: 6px; transition: width 0.5s ease; box-shadow: 0 0 15px rgba(236,72,153,0.7); }
+  .rc-percent { font-size: 14px; color: #a78bfa; font-weight: bold; }
+  .rc-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0; }
+  .rc-stat { background: rgba(0,0,0,0.5); border: 1px solid rgba(167,139,250,0.4); border-radius: 8px; padding: 8px; text-align: center; }
+  .rc-stat .lbl { font-size: 9px; color: #c4b5fd; text-transform: uppercase; }
+  .rc-stat .val { font-size: 15px; color: #ffcc00; font-weight: bold; margin-top: 2px; }
+  .rc-motivational { font-size: 12px; color: #6ee7b7; background: rgba(16,185,129,0.15); border: 1px dashed #10b981; padding: 8px 10px; border-radius: 8px; margin-top: 8px; font-style: italic; }
+
+  /* ===== DAILY STATS MODAL ===== */
+  .stats-tabs { display: flex; gap: 4px; margin-bottom: 10px; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 3px; }
+  .stats-tab { flex: 1; padding: 6px 4px; font-size: 11px; background: transparent; color: #ffcc80; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+  .stats-tab.active { background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; box-shadow: 0 0 10px rgba(59,130,246,0.5); }
+  .stats-summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 10px; }
+  .stats-summary-grid .m-card { background: rgba(30,10,0,0.7); }
+  .bar-chart { display: flex; align-items: flex-end; height: 140px; gap: 3px; padding: 8px 4px 30px; background: rgba(0,0,0,0.4); border-radius: 8px; position: relative; overflow-x: auto; }
+  .bar-chart .bar-col { flex: 1; min-width: 22px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+  .bar-chart .bar { width: 80%; min-height: 2px; background: linear-gradient(180deg, #f59e0b, #dc2626); border-radius: 3px 3px 0 0; position: relative; transition: height 0.5s ease; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+  .bar-chart .bar.today { background: linear-gradient(180deg, #10b981, #059669); box-shadow: 0 0 10px rgba(16,185,129,0.7); }
+  .bar-chart .bar.best { background: linear-gradient(180deg, #ffcc00, #ff6600); box-shadow: 0 0 12px rgba(255,204,0,0.8); }
+  .bar-chart .bar-val { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #fff; font-weight: bold; white-space: nowrap; }
+  .bar-chart .bar-label { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 8px; color: #ffcc80; white-space: nowrap; }
+  .stats-empty { text-align: center; padding: 30px 20px; color: #888; font-size: 12px; }
+
+  /* ===== BEST DAY MODAL ===== */
+  .record-hero {
+    background: linear-gradient(135deg, rgba(255,204,0,0.25), rgba(255,102,0,0.15));
+    border: 2px solid #ffcc00;
+    border-radius: 12px;
+    padding: 20px 15px;
+    text-align: center;
+    margin-bottom: 10px;
+    box-shadow: 0 0 25px rgba(255,204,0,0.4);
+    position: relative;
   }
-  .conflict-card.remote {
-    border-color: #10b981;
-    box-shadow: 0 0 15px rgba(16,185,129,0.4);
+  .record-hero::before {
+    content: '🏆'; position: absolute;
+    top: -18px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 36px;
+    filter: drop-shadow(0 0 10px #ffcc00);
+    animation: glow 1.5s infinite alternate;
   }
-  .conflict-card.recommended {
-    border-width: 3px;
-    animation: recommendedGlow 1.2s ease-in-out infinite alternate;
-  }
-  @keyframes recommendedGlow {
-    from { box-shadow: 0 0 15px rgba(16,185,129,0.4); }
-    to   { box-shadow: 0 0 25px rgba(16,185,129,0.9); }
-  }
-  .cc-label {
-    font-size: 10px; letter-spacing: 1px;
-    color: #ffcc80; font-weight: bold;
-    text-transform: uppercase; margin-bottom: 4px;
-  }
-  .cc-perm {
-    font-size: 22px; font-weight: bold; color: #ffcc00;
-    text-shadow: 0 0 10px rgba(255,204,0,0.6);
-    line-height: 1;
-  }
-  .cc-trip {
-    font-size: 14px; font-weight: bold; color: #ff9933;
-    margin-top: 3px;
-  }
-  .cc-sub {
-    font-size: 9px; color: #aaa; text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  .cc-diff {
-    font-size: 10px; color: #ef4444;
-    background: rgba(239,68,68,0.15);
-    padding: 2px 4px; border-radius: 4px;
-    margin-top: 4px; font-weight: bold;
-  }
-  .cc-badge {
-    display: inline-block;
-    font-size: 8px; padding: 2px 5px;
-    border-radius: 8px; margin-top: 3px;
-    font-weight: bold; letter-spacing: 0.5px;
-  }
+  .record-lbl { font-size: 10px; color: #ffcc80; text-transform: uppercase; letter-spacing: 2px; margin-top: 10px; }
+  .record-big { font-size: 52px; font-weight: 900; color: #ffcc00; text-shadow: 0 0 25px #ff6600, 0 0 40px #dc2626; line-height: 1; margin: 8px 0; letter-spacing: 2px; }
+  .record-date { font-size: 14px; color: #fff; font-weight: bold; margin-top: 4px; }
+  .record-sub { font-size: 11px; color: #ffcc80; margin-top: 8px; }
+  .top-days-list { background: rgba(0,0,0,0.4); border-radius: 8px; padding: 8px; }
+  .top-day-row { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; align-items: center; padding: 8px; margin: 3px 0; background: rgba(255,140,0,0.08); border-radius: 6px; border-left: 3px solid #ff6600; }
+  .top-day-row.rank-1 { border-left-color: #ffcc00; background: rgba(255,204,0,0.12); }
+  .top-day-row.rank-2 { border-left-color: #a3a3a3; }
+  .top-day-row.rank-3 { border-left-color: #cd7f32; }
+  .top-day-rank { font-size: 16px; font-weight: bold; color: #ffcc00; text-align: center; }
+  .top-day-date { font-size: 12px; color: #fff; }
+  .top-day-date small { color: #aaa; display: block; font-size: 9px; }
+  .top-day-count { font-size: 14px; color: #ffcc00; font-weight: bold; }
+  .today-vs-record { background: rgba(59,130,246,0.15); border: 1px dashed #60a5fa; padding: 8px 10px; border-radius: 8px; margin-top: 10px; font-size: 12px; color: #fff; text-align: center; }
+  .today-vs-record b { color: #60a5fa; }
+
+  /* ===== CONFLICT MODAL ===== */
+  .conflict-modal .modal-box { border-color: #ef4444; box-shadow: 0 10px 60px rgba(239,68,68,0.6); animation: alertPulse 1s ease-in-out infinite; }
+  @keyframes alertPulse { 0%,100% { box-shadow: 0 10px 60px rgba(239,68,68,0.6); } 50% { box-shadow: 0 10px 80px rgba(239,68,68,0.9); } }
+  .conflict-modal .modal-header { background: linear-gradient(90deg, rgba(239,68,68,0.4), rgba(220,38,38,0.2)); border-bottom-color: rgba(239,68,68,0.6); }
+  .conflict-modal .modal-header h2 { background: linear-gradient(90deg,#fca5a5,#ef4444,#fca5a5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .conflict-cards { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .conflict-card { background: rgba(0,0,0,0.5); border: 2px solid rgba(255,140,0,0.4); border-radius: 12px; padding: 10px 8px; text-align: center; }
+  .conflict-card.local { border-color: #3b82f6; box-shadow: 0 0 15px rgba(59,130,246,0.4); }
+  .conflict-card.remote { border-color: #10b981; box-shadow: 0 0 15px rgba(16,185,129,0.4); }
+  .conflict-card.recommended { border-width: 3px; animation: recommendedGlow 1.2s ease-in-out infinite alternate; }
+  @keyframes recommendedGlow { from { box-shadow: 0 0 15px rgba(16,185,129,0.4); } to { box-shadow: 0 0 25px rgba(16,185,129,0.9); } }
+  .cc-label { font-size: 10px; letter-spacing: 1px; color: #ffcc80; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+  .cc-perm { font-size: 22px; font-weight: bold; color: #ffcc00; text-shadow: 0 0 10px rgba(255,204,0,0.6); line-height: 1; }
+  .cc-trip { font-size: 14px; font-weight: bold; color: #ff9933; margin-top: 3px; }
+  .cc-sub { font-size: 9px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+  .cc-diff { font-size: 10px; color: #ef4444; background: rgba(239,68,68,0.15); padding: 2px 4px; border-radius: 4px; margin-top: 4px; font-weight: bold; }
+  .cc-badge { display: inline-block; font-size: 8px; padding: 2px 5px; border-radius: 8px; margin-top: 3px; font-weight: bold; letter-spacing: 0.5px; }
   .cc-badge.rec { background: #10b981; color: white; }
   .cc-badge.warn { background: #f59e0b; color: white; }
-  .conflict-vs {
-    font-size: 20px; font-weight: bold;
-    color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.8);
-  }
-  .conflict-hint {
-    font-size: 12px; color: #ffcc80;
-    background: rgba(239,68,68,0.15);
-    border: 1px dashed rgba(239,68,68,0.5);
-    padding: 8px 10px; border-radius: 8px;
-    margin: 8px 0; line-height: 1.4;
-  }
-  .conflict-actions button {
-    display: block; width: 100%; margin: 6px 0;
-    padding: 10px 12px; font-size: 13px;
-    border-radius: 8px; border: none;
-    font-weight: bold; cursor: pointer;
-    color: white;
-  }
-  .conflict-actions .btn-push {
-    background: linear-gradient(135deg, #3b82f6, #1e40af);
-    border: 1px solid #60a5fa;
-  }
-  .conflict-actions .btn-pull {
-    background: linear-gradient(135deg, #10b981, #059669);
-    border: 1px solid #34d399;
-    box-shadow: 0 0 15px rgba(16,185,129,0.4);
-  }
-  .conflict-actions .btn-cancel {
-    background: linear-gradient(135deg, #666, #333);
-    border: 1px solid #888;
-  }
-  .conflict-meta {
-    font-size: 10px; color: #aaa;
-    text-align: center; margin-top: 6px;
-  }
+  .conflict-vs { font-size: 20px; font-weight: bold; color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.8); }
+  .conflict-hint { font-size: 12px; color: #ffcc80; background: rgba(239,68,68,0.15); border: 1px dashed rgba(239,68,68,0.5); padding: 8px 10px; border-radius: 8px; margin: 8px 0; line-height: 1.4; }
+  .conflict-actions button { display: block; width: 100%; margin: 6px 0; padding: 10px 12px; font-size: 13px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; color: white; }
+  .conflict-actions .btn-push { background: linear-gradient(135deg, #3b82f6, #1e40af); border: 1px solid #60a5fa; }
+  .conflict-actions .btn-pull { background: linear-gradient(135deg, #10b981, #059669); border: 1px solid #34d399; box-shadow: 0 0 15px rgba(16,185,129,0.4); }
+  .conflict-actions .btn-cancel { background: linear-gradient(135deg, #666, #333); border: 1px solid #888; }
+  .conflict-meta { font-size: 10px; color: #aaa; text-align: center; margin-top: 6px; }
 
-  .alert-popup {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-    display: none; align-items: center; justify-content: center;
-    padding: 15px;
-  }
+  .alert-popup { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 15px; }
   .alert-popup.show { display: flex; }
-  .alert-content {
-    background: linear-gradient(135deg, #660000, #2d0000);
-    border: 2px solid #ffcc00; border-radius: 16px;
-    padding: 20px; max-width: 320px; width: 100%;
-    text-align: center;
-    box-shadow: 0 0 40px rgba(255,80,0,0.7);
-    animation: alertShake 0.5s ease-in-out infinite;
-  }
+  .alert-content { background: linear-gradient(135deg, #660000, #2d0000); border: 2px solid #ffcc00; border-radius: 16px; padding: 20px; max-width: 320px; width: 100%; text-align: center; box-shadow: 0 0 40px rgba(255,80,0,0.7); animation: alertShake 0.5s ease-in-out infinite; }
   @keyframes alertShake { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02); } }
   .alert-content .om { font-size: 42px; color: #ffcc00; text-shadow: 0 0 15px #ff6600; animation: glow 1s infinite alternate; }
   .alert-content h3 { font-size: 16px; color: #ffcc00; margin: 6px 0; }
@@ -561,6 +900,7 @@
       <span class="sync-dot" id="syncDot"></span>
       <span class="sync-txt" id="syncStatus">...</span>
     </div>
+    <button class="icon-btn countdown-btn" onclick="openModal('reverseCount')" title="Countdown to milestone">🎯</button>
     <button class="icon-btn" onclick="openModal('settings')">⚙</button>
   </div>
 </div>
@@ -580,193 +920,232 @@
   </div>
 </div>
 
-<div class="mandala" id="mandalaBox" onclick="onMandalaTap(event)">
-  <span class="trishul tl">🔱</span><span class="trishul tr">🔱</span>
-  <span class="trishul bl">🔱</span><span class="trishul br">🔱</span>
+<div class="mandala-wrap">
+  <div class="mandala" id="mandalaBox" onclick="onMandalaTap(event)">
+    <span class="trishul tl">🔱</span><span class="trishul tr">🔱</span>
+    <span class="trishul bl">🔱</span><span class="trishul br">🔱</span>
 
-  <svg viewBox="0 0 400 400" class="ring1">
-    <defs><path id="c1" d="M 200,200 m -185,0 a 185,185 0 1,1 370,0 a 185,185 0 1,1 -370,0"/></defs>
-    <text class="ring-text"><textPath href="#c1" startOffset="0">
-      ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय •
-    </textPath></text>
-  </svg>
-  <svg viewBox="0 0 400 400" class="ring2">
-    <defs><path id="c2" d="M 200,200 m -160,0 a 160,160 0 1,1 320,0 a 160,160 0 1,1 -320,0"/></defs>
-    <text class="ring-text r2"><textPath href="#c2" startOffset="0">
-      हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦
-    </textPath></text>
-  </svg>
-  <svg viewBox="0 0 400 400" class="ring3">
-    <defs><path id="c3" d="M 200,200 m -136,0 a 136,136 0 1,1 272,0 a 136,136 0 1,1 -272,0"/></defs>
-    <text class="ring-text r3"><textPath href="#c3" startOffset="0">
-      श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ नमस्तुभ्यं ॥
-    </textPath></text>
-  </svg>
-  <svg viewBox="0 0 400 400" class="ring4">
-    <defs><path id="c4" d="M 200,200 m -112,0 a 112,112 0 1,1 224,0 a 112,112 0 1,1 -224,0"/></defs>
-    <text class="ring-text r4"><textPath href="#c4" startOffset="0">
-      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ 
-    </textPath></text>
-  </svg>
-  <svg viewBox="0 0 400 400" class="ring5">
-    <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
-    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
-      ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
-    </textPath></text>
-  </svg>
+    <!-- RING 1: Om Namah Shivaya (outermost, r=190) -->
+    <svg viewBox="0 0 400 400" class="ring1">
+      <defs><path id="c1" d="M 200,200 m -190,0 a 190,190 0 1,1 380,0 a 190,190 0 1,1 -380,0"/></defs>
+      <text class="ring-text"><textPath href="#c1" startOffset="0">
+        ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय •
+      </textPath></text>
+    </svg>
+
+    <!-- RING 2: Har Har Mahadev (r=162) -->
+    <svg viewBox="0 0 400 400" class="ring2">
+      <defs><path id="c2" d="M 200,200 m -162,0 a 162,162 0 1,1 324,0 a 162,162 0 1,1 -324,0"/></defs>
+      <text class="ring-text r2"><textPath href="#c2" startOffset="0">
+        हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ महादेव महादेव ✦
+      </textPath></text>
+    </svg>
+
+    <!-- RING 3: Shri Shivaya Namastubhyam (r=135) -->
+    <svg viewBox="0 0 400 400" class="ring3">
+      <defs><path id="c3" d="M 200,200 m -135,0 a 135,135 0 1,1 270,0 a 135,135 0 1,1 -270,0"/></defs>
+      <text class="ring-text r3"><textPath href="#c3" startOffset="0">
+        श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥
+      </textPath></text>
+    </svg>
+
+    <!-- RING 4: Jai Shri Mahakal (r=110) -->
+    <svg viewBox="0 0 400 400" class="ring4">
+      <defs><path id="c4" d="M 200,200 m -110,0 a 110,110 0 1,1 220,0 a 110,110 0 1,1 -220,0"/></defs>
+      <text class="ring-text r4"><textPath href="#c4" startOffset="0">
+        जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥
+      </textPath></text>
+    </svg>
+
+    <!-- RING 5: ॐ ॐ ॐ (innermost, r=88 — bigger and clearly visible) -->
     <svg viewBox="0 0 400 400" class="ring5">
-    <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
-    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
-      ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
-    </textPath></text>
-  </svg>
-    <svg viewBox="0 0 400 400" class="ring5">
-    <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
-    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
-      ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
-    </textPath></text>
-  </svg>
+      <defs><path id="c5" d="M 200,200 m -88,0 a 88,88 0 1,1 176,0 a 88,88 0 1,1 -176,0"/></defs>
+      <text class="ring-text r5"><textPath href="#c5" startOffset="0">
+        ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ
+      </textPath></text>
+    </svg>
 
-  <div class="counters">
-    <div class="circle" id="permCircle">
-      <div class="label">Permanent</div>
-      <div class="value" id="permCount">0</div>
-    </div>
-    <div class="circle" id="tripCircle">
-      <div class="label">Trip</div>
-      <div class="value" id="tripCount">0</div>
-      <button class="reset-btn" onclick="event.stopPropagation();resetTrip()">R</button>
-    </div>
-  </div>
-</div>
+    <!-- Hypnotic illusion overlays (behind unified circle) -->
+    <div class="hypnotic-rays"></div>
+    <div class="kaleido-core"></div>
+    <div class="aura-pulse"></div>
+    <div class="shockwave"></div>
+    <div class="shockwave delay1"></div>
+    <div class="shockwave delay2"></div>
 
-<div class="row">
-  <button class="big-start" id="startBtn" onclick="onStartClick()">▶ START JAP</button>
-</div>
-<div class="row">
-  <button class="mode-toggle audio" id="modeToggleBtn" onclick="toggleMode()">🎵 Audio Mode (tap to change)</button>
-</div>
+    <!-- UNIFIED DIVINE CENTER (40% width — sits inside Ring 5, Om stays visible) -->
+    <div class="counters">
+      <div class="circle unified" id="permCircle">
+        <div class="divine-top">🔱</div>
 
-<div class="row">
-  <button class="main view" onclick="openModal('milestones')">🏆 Milestones</button>
-  <button class="main view" onclick="openModal('search')">🔍 Calculator</button>
-  <button class="main alert-btn" onclick="openModal('alerts')">🔔 Alerts</button>
-</div>
-<div class="row">
-  <button class="main secondary" onclick="pickAudio()">🎵 Load Chant</button>
-  <button class="main warn" onclick="openAdjustProtected()">✏ Adjust Trip <span class="lock-badge">🔒</span></button>
-  <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioPick(event)">
-</div>
-<div class="row">
-  <button class="main gh" onclick="manualBackup()">💾 GitHub Backup</button>
-  <button class="main gh" onclick="manualRestore()">⬇ GitHub Restore</button>
-</div>
-
-<div class="row"><div class="status" id="status">🙏 Har Har Mahadev.</div></div>
-
-<!-- ===== CONFLICT MODAL (NEW in v12) ===== -->
-<div class="modal conflict-modal" id="conflictModal" data-name="conflict">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>⚠ Data Mismatch Detected</h2>
-    </div>
-    <div class="modal-body">
-      <div class="panel">
-        <p class="conflict-hint" id="conflictHint">
-          Local device data does not match GitHub. Choose which side to trust.
-        </p>
-        <div class="conflict-cards">
-          <div class="conflict-card local" id="conflictCardLocal">
-            <div class="cc-label">📱 LOCAL</div>
-            <div class="cc-perm" id="conflictLocalPerm">0</div>
-            <div class="cc-sub">Permanent</div>
-            <div class="cc-trip" id="conflictLocalTrip">0</div>
-            <div class="cc-sub">Trip</div>
-            <div class="cc-badge warn" id="conflictLocalBadge" style="display:none;">HIGHER</div>
-          </div>
-          <div class="conflict-vs">VS</div>
-          <div class="conflict-card remote" id="conflictCardRemote">
-            <div class="cc-label">☁ GITHUB</div>
-            <div class="cc-perm" id="conflictRemotePerm">0</div>
-            <div class="cc-sub">Permanent</div>
-            <div class="cc-trip" id="conflictRemoteTrip">0</div>
-            <div class="cc-sub">Trip</div>
-            <div class="cc-badge rec" id="conflictRemoteBadge" style="display:none;">RECOMMENDED</div>
-          </div>
+        <div class="perm-section">
+          <div class="label">॥ Permanent ॥</div>
+          <div class="value" id="permCount">0</div>
         </div>
-        <div class="conflict-meta" id="conflictMeta"></div>
-        <div class="conflict-actions">
-          <button class="btn-pull" onclick="resolveConflict('pull')">☁ Use GITHUB — Overwrite Local</button>
-          <button class="btn-push" onclick="resolveConflict('push')">📱 Use LOCAL — Push to GitHub</button>
-          <button class="btn-cancel" onclick="resolveConflict('cancel')">✕ Cancel — Do Nothing</button>
-        </div>
-        <p class="help-text" style="text-align:center;margin-top:8px;">
-          💡 GitHub is your master DB. When in doubt, choose GitHub.
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
 
-<!-- ADJUST TRIP MODAL -->
-<div class="modal" id="adjustModal" data-name="adjust">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>✏ Adjust Trip Count 🔒</h2>
-      <button class="close-btn" onclick="closeModal('adjust')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="panel">
-        <div class="form-group">
-          <label>Current Trip: <span id="adjCurrent" style="color:#fff;">0</span></label>
-          <input type="number" id="adjustQty" placeholder="e.g. 60 or -60">
+        <div class="sacred-divider">
+          <span class="divider-line"></span>
+          <span class="divider-om">🕉</span>
+          <span class="divider-line"></span>
         </div>
-        <p class="help-text" style="text-align:center;">Positive = add, Negative = subtract.<br>You'll be asked if to also apply to Permanent.</p>
-        <div class="row">
-          <button class="main" onclick="adjustTrip()">✓ Apply</button>
-          <button class="main secondary" onclick="closeModal('adjust')">Cancel</button>
+
+        <div class="trip-section" id="tripCircle">
+          <span class="label">Trip</span>
+          <span class="value" id="tripCount">0</span>
+          <button class="reset-btn" onclick="event.stopPropagation();resetTrip()" title="Reset trip">↻</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SCREEN-OFF APPLY MODAL -->
-<div class="modal screenoff-modal" id="screenoffModal" data-name="screenoff">
+<!-- Buttons pushed down below the bigger mandala -->
+<div class="button-area">
+  <div class="row">
+    <button class="big-start" id="startBtn" onclick="onStartClick()">▶ START JAP</button>
+  </div>
+  <div class="row">
+    <button class="mode-toggle audio" id="modeToggleBtn" onclick="toggleMode()">🎵 Audio Mode (tap to change)</button>
+  </div>
+
+  <div class="row">
+    <button class="main view" onclick="openModal('milestones')">🏆 Milestones</button>
+    <button class="main view" onclick="openModal('search')">🔍 Calculator</button>
+    <button class="main alert-btn" onclick="openModal('alerts')">🔔 Alerts</button>
+  </div>
+  <div class="row">
+    <button class="main stats-btn" onclick="openModal('dailyStats')">📊 Daily Stats</button>
+    <button class="main record-btn" onclick="openModal('bestDay')">🏅 Best Day</button>
+  </div>
+  <div class="row">
+    <button class="main secondary" onclick="pickAudio()">🎵 Load Chant</button>
+    <button class="main warn" onclick="openAdjustProtected()">✏ Adjust Trip <span class="lock-badge">🔒</span></button>
+    <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioPick(event)">
+  </div>
+  <div class="row">
+    <button class="main gh" onclick="manualBackup()">💾 GitHub Backup</button>
+    <button class="main gh" onclick="manualRestore()">⬇ GitHub Restore</button>
+  </div>
+
+  <div class="row"><div class="status" id="status">🙏 Har Har Mahadev.</div></div>
+</div>
+
+<!-- ===== BOTTOM COUNTDOWN ===== -->
+<div class="countdown-bottom" id="countdownBottom" onclick="openModal('reverseCount')">
+  <div class="cd-header">🎯 Countdown to Next Milestone</div>
+  <div class="cd-target-name" id="cdTargetName">1 Lakh</div>
+  <div class="cd-remaining"><span id="cdRemaining">100,000</span> <span class="cd-unit">japs to go</span></div>
+  <div class="cd-progress"><div class="cd-fill" id="cdFill" style="width:0%"></div></div>
+  <div class="cd-meta">
+    <span>Current: <b id="cdCurrent" style="color:#ffcc00;">0</b></span>
+    <span id="cdPercent" style="color:#a78bfa;font-weight:bold;">0%</span>
+  </div>
+  <div class="cd-tap-hint">👆 Tap for detailed view</div>
+</div>
+
+<!-- ===== REVERSE COUNT MODAL ===== -->
+<div class="modal" id="reverseCountModal" data-name="reverseCount">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>📱 Screen-Off Japs</h2>
-      <button class="close-btn" onclick="closeModal('screenoff')">✕</button>
+      <h2>🎯 Countdown to Milestone</h2>
+      <button class="close-btn" onclick="closeModal('reverseCount')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="panel">
-        <p style="font-size:12px;color:#ffcc80;text-align:center;">You chanted while screen was off:</p>
-        <div class="big-count" id="screenoffCount">0</div>
-        <p style="font-size:11px;color:#ffcc80;text-align:center;margin-bottom:10px;">
-          Trip has counted these. Apply to <b style="color:#ffcc00;">Permanent</b> too?
-        </p>
-        <div class="row">
-          <button class="main alert-btn" onclick="applyScreenoffJaps(true)">✓ Yes, Apply</button>
-          <button class="main danger" onclick="applyScreenoffJaps(false)">✕ Discard</button>
-        </div>
-        <p class="help-text" style="text-align:center;margin-top:8px;">"Apply" adds to Permanent + syncs to GitHub instantly</p>
+      <div class="rc-hero">
+        <div class="rc-target-lbl">Next Target</div>
+        <div class="rc-target-name" id="rcTargetName">1 Lakh</div>
+        <div class="rc-big"><span id="rcRemaining">100,000</span></div>
+        <div class="rc-sub">japs remaining 🔥</div>
+        <div class="rc-progress-big"><div class="fill" id="rcFill" style="width:0%"></div></div>
+        <div class="rc-percent" id="rcPercent">0% complete</div>
+      </div>
+      <div class="rc-stats-grid">
+        <div class="rc-stat"><div class="lbl">Current</div><div class="val" id="rcCurrent">0</div></div>
+        <div class="rc-stat"><div class="lbl">Target</div><div class="val" id="rcTarget">100,000</div></div>
+        <div class="rc-stat"><div class="lbl">Time Needed</div><div class="val" id="rcTimeNeeded">—</div></div>
+        <div class="rc-stat"><div class="lbl">ETA Date</div><div class="val" id="rcEtaDate">—</div></div>
+        <div class="rc-stat"><div class="lbl">Malas Left</div><div class="val" id="rcMalasLeft">—</div></div>
+        <div class="rc-stat"><div class="lbl">Per Day Need</div><div class="val" id="rcPerDay">—</div></div>
+      </div>
+      <div class="rc-motivational" id="rcMotivational">💪 Keep going! Har Har Mahadev 🔱</div>
+      <div style="margin-top:10px;text-align:center;">
+        <button class="main view" onclick="openModal('milestones');closeModal('reverseCount');">📋 View All Milestones</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- MILESTONES MODAL -->
+<!-- ===== DAILY STATS MODAL ===== -->
+<div class="modal" id="dailyStatsModal" data-name="dailyStats">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📊 Daily Stats</h2>
+      <button class="close-btn" onclick="closeModal('dailyStats')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="stats-tabs">
+        <button class="stats-tab active" data-view="daily" onclick="switchStatsView('daily')">📅 Daily</button>
+        <button class="stats-tab" data-view="weekly" onclick="switchStatsView('weekly')">📆 Weekly</button>
+        <button class="stats-tab" data-view="monthly" onclick="switchStatsView('monthly')">🗓 Monthly</button>
+      </div>
+      <div class="stats-summary-grid" id="statsSummary"></div>
+      <div id="statsChartWrap">
+        <p style="font-size:11px;color:#ffcc80;text-align:center;margin-bottom:6px;">
+          <span id="statsChartLabel">Last 14 days</span>
+        </p>
+        <div class="bar-chart" id="statsChart">
+          <div class="stats-empty">No data yet — start chanting! 🔱</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:#aaa;text-align:center;">
+        📌 Legend: <span style="color:#10b981;">■</span> Today &nbsp; <span style="color:#ffcc00;">■</span> Best &nbsp; <span style="color:#f59e0b;">■</span> Other days
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BEST DAY MODAL ===== -->
+<div class="modal" id="bestDayModal" data-name="bestDay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🏅 Best Day Record</h2>
+      <button class="close-btn" onclick="closeModal('bestDay')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="record-hero">
+        <div class="record-lbl">All-Time Record</div>
+        <div class="record-big" id="bdRecordCount">—</div>
+        <div class="record-date" id="bdRecordDate">No data yet</div>
+        <div class="record-sub" id="bdRecordSub">Start chanting to set a record!</div>
+      </div>
+      <div class="today-vs-record" id="bdTodayVs">Today: <b>0</b> japs</div>
+      <div style="margin-top:12px;">
+        <p style="font-size:11px;color:#ffcc80;text-align:center;margin-bottom:6px;font-weight:bold;">🏆 Top 10 Days</p>
+        <div class="top-days-list" id="bdTopDays">
+          <p style="color:#888;font-size:12px;text-align:center;padding:10px;">No records yet</p>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px;background:rgba(59,130,246,0.1);border-radius:6px;font-size:11px;color:#aaa;text-align:center;">
+        💡 Today's count: <b id="bdToday" style="color:#10b981;">0</b>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MILESTONES MODAL ===== -->
 <div class="modal" id="milestonesModal" data-name="milestones">
-  <div class="modal-box" style="max-width: 500px;">
+  <div class="modal-box">
     <div class="modal-header">
       <h2>🏆 Milestone Journey</h2>
       <button class="close-btn" onclick="closeModal('milestones')">✕</button>
     </div>
-    <div class="modal-body" id="milestonesContent"></div>
+    <div class="modal-body">
+      <div id="milestonesContent"></div>
+    </div>
   </div>
 </div>
 
-<!-- CALCULATOR MODAL -->
+<!-- ===== CALCULATOR MODAL ===== -->
 <div class="modal" id="searchModal" data-name="search">
   <div class="modal-box">
     <div class="modal-header">
@@ -774,76 +1153,90 @@
       <button class="close-btn" onclick="closeModal('search')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="panel">
-        <div class="form-group">
-          <label>Mode</label>
-          <select id="calcMode" onchange="runCalc()">
-            <option value="days2japs">If I chant for X days → how many japs?</option>
-            <option value="japs2days">To reach X japs → how many days?</option>
-            <option value="hours2japs">If I chant X hours daily → daily count</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label id="calcLabel">Enter days</label>
-          <input type="number" id="calcInput" min="0.1" step="0.1" oninput="runCalc()" placeholder="e.g. 30">
-        </div>
-        <div class="form-group" id="hoursGroup" style="display:none;">
-          <label>Hours per day</label>
-          <input type="number" id="calcHours" min="0.1" max="24" step="0.5" value="2" oninput="runCalc()">
-        </div>
-        <div class="result-box" id="calcResult">Enter a value above.</div>
-        <p class="help-text">Speed: dynamic based on Advanced Settings</p>
+      <div class="form-group">
+        <label>Mode</label>
+        <select id="calcMode" onchange="runCalc()">
+          <option value="days2japs">📅 Days → Total Japs</option>
+          <option value="japs2days">🎯 Japs → Days Needed</option>
+          <option value="perday">⏰ Hours/day → Daily Japs</option>
+        </select>
       </div>
+      <div class="form-group">
+        <label id="calcLabel">Enter days</label>
+        <input type="number" id="calcInput" placeholder="e.g. 30" oninput="runCalc()">
+      </div>
+      <div class="form-group" id="hoursGroup" style="display:none;">
+        <label>Chant hours per day</label>
+        <input type="number" id="calcHours" placeholder="4" step="0.5" value="4" oninput="runCalc()">
+      </div>
+      <div class="result-box" id="calcResult">Enter value...</div>
     </div>
   </div>
 </div>
 
-<!-- ALERTS MODAL -->
+<!-- ===== ALERTS MODAL ===== -->
 <div class="modal" id="alertsModal" data-name="alerts">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>🔔 Alerts Manager</h2>
+      <h2>🔔 Alerts & Presets</h2>
       <button class="close-btn" onclick="closeModal('alerts')">✕</button>
     </div>
     <div class="modal-body">
       <div class="panel">
-        <div style="font-size:11px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">⚡ SAVED PRESETS (tap to activate)</div>
-        <div id="presetChips"></div>
+        <p style="font-size:12px;color:#ffcc80;margin-bottom:8px;text-align:center;">⭐ Quick Presets</p>
+        <div id="presetChips" style="text-align:center;"></div>
       </div>
       <div class="panel">
-        <div style="font-size:11px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">➕ CREATE NEW ALERT</div>
         <div class="form-group">
           <label>Alert Type</label>
           <select id="alertType" onchange="toggleAlertInputs()">
-            <option value="count">Mala Count (japs)</option>
-            <option value="time">Time Alert (duration)</option>
+            <option value="count">📿 After N japs</option>
+            <option value="time">⏰ After time (HH:MM:SS)</option>
           </select>
         </div>
         <div class="form-group" id="countInputGroup">
-          <label>Alert at how many japs (from now)?</label>
-          <input type="number" id="alertCount" placeholder="e.g. 108, 1008, 10000" min="1">
+          <label>Number of japs</label>
+          <input type="number" id="alertCount" placeholder="e.g. 108">
         </div>
         <div class="form-group" id="timeInputGroup" style="display:none;">
-          <label>Alert after (HH:MM:SS)</label>
-          <input type="text" id="alertTime" placeholder="00:30:00">
+          <label>Time (HH:MM:SS)</label>
+          <input type="text" id="alertTime" placeholder="00:10:00">
         </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="saveAsPreset" checked style="width:auto;margin-right:5px;">
-            Save as preset (reusable)
-          </label>
+        <div class="toggle-switch">
+          <label>💾 Save as preset</label>
+          <label class="switch"><input type="checkbox" id="saveAsPreset"><span class="slider"></span></label>
         </div>
-        <button class="main alert-btn" onclick="addAlert()">➕ Add Alert</button>
+        <button class="main alert-btn" onclick="addAlert()" style="width:100%;margin-top:8px;">➕ Add Alert</button>
       </div>
       <div class="panel">
-        <div style="font-size:11px;color:#ffcc00;margin-bottom:6px;font-weight:bold;">📋 ALL ALERTS</div>
+        <p style="font-size:12px;color:#ffcc80;margin-bottom:8px;text-align:center;">🔔 Active Alerts</p>
         <div id="alertsList"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SETTINGS MODAL -->
+<!-- ===== ADJUST TRIP MODAL ===== -->
+<div class="modal" id="adjustModal" data-name="adjust">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>✏ Adjust Trip <span class="lock-badge">🔒 Unlocked</span></h2>
+      <button class="close-btn" onclick="closeModal('adjust')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="protected-badge">🔒 Password protected — you passed!</div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>Current Trip: <b id="adjCurrent" style="color:#ffcc00;">0</b></label>
+        <input type="number" id="adjustQty" placeholder="e.g. 100 or -50">
+        <small>Positive = add • Negative = subtract</small>
+      </div>
+      <button class="main warn" onclick="adjustTrip()" style="width:100%;">✓ Apply</button>
+      <p class="help-text">You'll be asked if you want to apply the same change to Permanent count too.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL ===== -->
 <div class="modal" id="settingsModal" data-name="settings">
   <div class="modal-box">
     <div class="modal-header">
@@ -852,170 +1245,189 @@
     </div>
     <div class="modal-body">
       <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">📿 CHANT MODE</div>
-        <div class="toggle-switch">
-          <label>📳 Vibration on Manual Tap</label>
-          <label class="switch">
-            <input type="checkbox" id="vibrationToggle" onchange="saveVibrationPref()">
-            <span class="slider"></span>
-          </label>
+        <p style="font-size:12px;color:#ffcc80;margin-bottom:8px;text-align:center;">🎵 Chant Audio</p>
+        <div style="text-align:center;font-size:11px;color:#fff;margin-bottom:8px;" id="audioInfo">Loading...</div>
+        <div class="row">
+          <button class="main secondary" onclick="pickAudio()">📂 Change</button>
+          <button class="main danger" onclick="clearStoredAudio()">🗑 Clear</button>
         </div>
-        <div class="toggle-switch">
-          <label>🔊 Background Audio (screen off)</label>
-          <label class="switch">
-            <input type="checkbox" id="bgAudioToggle" checked onchange="saveBgAudioPref()">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <p class="help-text">3 Modes: 🎵 Audio (with chant) → 🖐 Manual (tap) → 🧘 Mansik (silent auto-count)</p>
       </div>
 
       <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🐙 GITHUB SYNC</div>
+        <p style="font-size:12px;color:#ffcc80;margin-bottom:8px;text-align:center;">📳 Preferences</p>
+        <div class="toggle-switch">
+          <label>Vibration on each jap</label>
+          <label class="switch"><input type="checkbox" id="vibrationToggle" onchange="saveVibrationPref()"><span class="slider"></span></label>
+        </div>
+        <div class="toggle-switch">
+          <label>Background audio keep-alive</label>
+          <label class="switch"><input type="checkbox" id="bgAudioToggle" onchange="saveBgAudioPref()"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <p style="font-size:12px;color:#ffcc80;margin-bottom:8px;text-align:center;">☁ GitHub Sync</p>
         <div class="form-group">
-          <label>GitHub Username</label>
-          <input type="text" id="ghOwner" placeholder="yourname">
+          <label>Owner (username)</label>
+          <input type="text" id="ghOwner" placeholder="your-github-username">
         </div>
         <div class="form-group">
-          <label>Repository Name</label>
-          <input type="text" id="ghRepo" placeholder="jap-counter">
+          <label>Repository</label>
+          <input type="text" id="ghRepo" placeholder="jap-data">
         </div>
         <div class="form-group">
           <label>Personal Access Token</label>
           <input type="password" id="ghToken" placeholder="ghp_...">
+          <small>Needs <b>Contents: read/write</b> permission</small>
         </div>
-        <div class="form-group">
-          <label>
-            <input type="checkbox" id="ghBackupAudio" checked style="width:auto;margin-right:5px;">
-            Also backup audio file (once, reused)
-          </label>
+        <div class="toggle-switch">
+          <label>☁ Backup audio to GitHub too</label>
+          <label class="switch"><input type="checkbox" id="ghBackupAudio"><span class="slider"></span></label>
         </div>
-        <button class="main gh" onclick="saveGhSettings()">💾 Save Settings</button>
-        <button class="main danger" onclick="dangerResetLocal()" style="margin-top:8px;">🔥 Reset Local & Pull from GitHub</button>
-        <p class="help-text">Use if local data is corrupted. Wipes local + restores from GitHub.</p>
+        <button class="main gh" onclick="saveGhSettings()" style="width:100%;margin-top:8px;">💾 Save Settings</button>
       </div>
 
       <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🎵 AUDIO</div>
-        <div id="audioInfo" style="font-size:12px;color:#fff;text-align:left;">Loading...</div>
-        <button class="main secondary" onclick="clearStoredAudio()" style="margin-top:8px;">🗑 Clear Saved Audio</button>
-      </div>
-
-      <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🔧 ADVANCED</div>
-        <button class="main warn" onclick="openAdvancedProtected()">⚡ Advanced Settings <span class="lock-badge">🔒</span></button>
-        <p class="help-text" style="text-align:center;">Timings, intervals, chant speed — password protected</p>
-      </div>
-
-      <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🔒 LIFETIME DATA PROTECTION</div>
-        <div class="protected-badge">
-          🛡 Permanent count + milestone dates are LIFETIME data.<br>
-          GitHub is master DB. Mismatches ask for permission.<br>
-          Har Har Mahadev! 🔱
-        </div>
+        <p style="font-size:12px;color:#ffcc80;margin-bottom:8px;text-align:center;">🔧 Advanced</p>
+        <button class="main warn" onclick="openAdvancedProtected()" style="width:100%;">🔒 Advanced Settings</button>
+        <button class="main danger" onclick="dangerResetLocal()" style="width:100%;margin-top:6px;">⚠ Danger: Wipe Local & Restore</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ADVANCED SETTINGS MODAL -->
+<!-- ===== ADVANCED SETTINGS MODAL ===== -->
 <div class="modal" id="advancedModal" data-name="advanced">
   <div class="modal-box">
     <div class="modal-header">
-      <h2>⚡ Advanced Settings 🔒</h2>
+      <h2>🔧 Advanced Settings <span class="lock-badge">🔒 Unlocked</span></h2>
       <button class="close-btn" onclick="closeModal('advanced')">✕</button>
     </div>
     <div class="modal-body">
-      <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🎵 AUDIO TIMING</div>
-        <div class="form-group">
-          <label>Audio Duration (seconds)</label>
-          <input type="number" id="advAudioDuration" step="0.01" min="0.1">
-          <small>Duration of one full audio loop (default 5.4s)</small>
-        </div>
-        <div class="form-group">
-          <label>Japs per Audio Loop</label>
-          <input type="number" id="advJapsPerAudio" step="1" min="1">
-          <small>How many japs happen in one audio loop (default 4)</small>
-        </div>
-        <div class="form-group">
-          <label>Manual Tap Cooldown (ms)</label>
-          <input type="number" id="advTapCooldown" step="10" min="0">
-          <small>Min gap between taps to prevent double-count (default 150ms)</small>
-        </div>
+      <div class="protected-badge">⚠ Changes affect chant timing & sync. Handle carefully.</div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>Audio duration (sec)</label>
+        <input type="number" id="advAudioDuration" step="0.1">
+        <small>Length of one chant audio loop</small>
       </div>
-
-      <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">☁ SYNC TIMING</div>
-        <div class="form-group">
-          <label>Auto-backup every X japs</label>
-          <input type="number" id="advBackupEvery" step="1" min="1">
-          <small>How often to auto-push (default 20)</small>
-        </div>
-        <div class="form-group">
-          <label>Backup Debounce (ms)</label>
-          <input type="number" id="advBackupDebounce" step="100" min="0">
-          <small>Wait after last change before pushing (default 3000)</small>
-        </div>
+      <div class="form-group">
+        <label>Japs per audio loop</label>
+        <input type="number" id="advJapsPerAudio">
+        <small>How many japs one audio contains</small>
       </div>
-
-      <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🏆 MILESTONE ETA</div>
-        <div class="form-group">
-          <label>Chanting Hours/Day (for ETA)</label>
-          <input type="number" id="advChantHours" step="0.5" min="0.1" max="24">
-          <small>Used to calculate milestone forecasts (default 4)</small>
-        </div>
+      <div class="form-group">
+        <label>Tap cooldown (ms)</label>
+        <input type="number" id="advTapCooldown">
+        <small>Min gap between manual taps</small>
       </div>
-
-      <div class="panel">
-        <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">📳 VIBRATION</div>
-        <div class="form-group">
-          <label>Vibration Duration (ms)</label>
-          <input type="number" id="advVibrationMs" step="5" min="5" max="500">
-          <small>How long each tap vibrates (default 30)</small>
-        </div>
+      <div class="form-group">
+        <label>Backup every N japs</label>
+        <input type="number" id="advBackupEvery">
       </div>
-
+      <div class="form-group">
+        <label>Backup debounce (ms)</label>
+        <input type="number" id="advBackupDebounce">
+      </div>
+      <div class="form-group">
+        <label>Default chant hours/day (for ETA)</label>
+        <input type="number" id="advChantHours" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>Vibration duration (ms)</label>
+        <input type="number" id="advVibrationMs">
+      </div>
       <div class="row">
-        <button class="main alert-btn" onclick="saveAdvancedSettings()">💾 Save</button>
-        <button class="main warn" onclick="resetAdvancedSettings()">↺ Reset Defaults</button>
+        <button class="main" onclick="saveAdvancedSettings()">💾 Save</button>
+        <button class="main secondary" onclick="resetAdvancedSettings()">↺ Reset Defaults</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ALERT POPUP -->
+<!-- ===== CONFLICT MODAL ===== -->
+<div class="modal conflict-modal" id="conflictModal" data-name="conflict">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚠ Data Conflict Detected!</h2>
+    </div>
+    <div class="modal-body">
+      <div class="conflict-hint" id="conflictHint">Conflict details...</div>
+      <div class="conflict-cards">
+        <div class="conflict-card local" id="conflictCardLocal">
+          <div class="cc-label">📱 This Device</div>
+          <div class="cc-perm" id="conflictLocalPerm">0</div>
+          <div class="cc-sub">Permanent</div>
+          <div class="cc-trip" id="conflictLocalTrip">0</div>
+          <div class="cc-sub">Trip</div>
+          <span class="cc-badge" id="conflictLocalBadge" style="display:none;"></span>
+        </div>
+        <div class="conflict-vs">VS</div>
+        <div class="conflict-card remote" id="conflictCardRemote">
+          <div class="cc-label">☁ GitHub</div>
+          <div class="cc-perm" id="conflictRemotePerm">0</div>
+          <div class="cc-sub">Permanent</div>
+          <div class="cc-trip" id="conflictRemoteTrip">0</div>
+          <div class="cc-sub">Trip</div>
+          <span class="cc-badge rec" id="conflictRemoteBadge" style="display:none;">RECOMMENDED</span>
+        </div>
+      </div>
+      <div class="conflict-meta" id="conflictMeta"></div>
+      <div class="conflict-actions">
+        <button class="btn-pull" onclick="resolveConflict('pull')">⬇ Use GitHub Version (Safe)</button>
+        <button class="btn-push" onclick="resolveConflict('push')">⬆ Overwrite GitHub with Local</button>
+        <button class="btn-cancel" onclick="resolveConflict('cancel')">✕ Cancel (Block Sync)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SCREEN-OFF MODAL ===== -->
+<div class="modal screenoff-modal" id="screenoffModal" data-name="screenoff">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🌙 Screen-Off Japs</h2>
+      <button class="close-btn" onclick="closeModal('screenoff')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:#ffcc80;text-align:center;">You tapped this many times while screen was off:</p>
+      <div class="big-count" id="screenoffCount">0</div>
+      <p style="font-size:11px;color:#aaa;text-align:center;margin-bottom:10px;">Trip already updated. Apply to Permanent too?</p>
+      <button class="main" onclick="applyScreenoffJaps(true)" style="width:100%;">✓ Add to Permanent</button>
+      <button class="main secondary" onclick="applyScreenoffJaps(false)" style="width:100%;margin-top:6px;">✕ Discard (roll back Trip)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ALERT POPUP ===== -->
 <div class="alert-popup" id="alertPopup">
   <div class="alert-content">
     <div class="om">🕉</div>
-    <h3 id="alertTitle">Target Reached!</h3>
-    <p id="alertMsg">Your target is complete.</p>
-    <div class="paused-info" id="alertPausedInfo" style="display:none;">
-      ⏸ Chanting paused — will resume when you choose
-    </div>
-    <div class="new-input-box" id="newInputBox">
-      <input type="text" id="newAlertInput" placeholder="e.g. 00:10:00">
-      <p class="help-text" style="color:#ffcc80;text-align:center;" id="newAlertHint">HH:MM:SS format</p>
-    </div>
+    <h3 id="alertTitle">🎯 Target Reached!</h3>
+    <p id="alertMsg">Har Har Mahadev!</p>
+    <div class="paused-info" id="alertPausedInfo" style="display:none;">⏸ Chanting paused — pick an action</div>
+
     <div id="alertMainBtns">
-      <button class="main alert-btn" onclick="alertContinue()">▶ Continue (same interval)</button>
+      <button class="main" onclick="alertContinue()">▶ Continue Same</button>
       <div class="btn-row">
-        <button class="main view" onclick="alertShowNewInput()">✏ New Time</button>
-        <button class="main secondary" onclick="alertDismissOnly()">Dismiss</button>
+        <button class="main alert-btn" onclick="alertShowNewInput()">🆕 New Target</button>
+        <button class="main secondary" onclick="alertDismissOnly()">✕ Dismiss</button>
       </div>
     </div>
+
     <div id="alertNewBtns" style="display:none;">
-      <button class="main alert-btn" onclick="alertApplyNew()">✓ Apply & Resume</button>
-      <button class="main secondary" onclick="alertCancelNew()">Back</button>
+      <div class="new-input-box" id="newInputBox">
+        <input type="text" id="newAlertInput">
+        <small id="newAlertHint" style="color:#aaa;font-size:10px;"></small>
+      </div>
+      <div class="btn-row">
+        <button class="main" onclick="alertApplyNew()">✓ Apply</button>
+        <button class="main secondary" onclick="alertCancelNew()">← Back</button>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
-
 <script>
 /* ============ ADVANCED SETTINGS ============ */
 const DEFAULT_SETTINGS = {
@@ -1065,6 +1477,7 @@ let trip = parseInt(localStorage.getItem('tripCount') || '0');
 let milestoneDates = JSON.parse(localStorage.getItem('milestoneDates') || '{}');
 let alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
 let presets = JSON.parse(localStorage.getItem('presets') || '[]');
+let dailyStats = JSON.parse(localStorage.getItem('dailyStats') || '{}'); // v13: {"2026-09-01": 1234}
 let lastSyncTs = parseInt(localStorage.getItem('lastSyncTs') || '0');
 let localVersion = parseInt(localStorage.getItem('localVersion') || '0');
 let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') || '-1');
@@ -1081,8 +1494,13 @@ let japsSinceBackup = 0;
 let japTimer = null;
 let conflictPending = null;
 let syncLocked = false;
-let sessionReconciled = false;      // v12.1: true after startup conflict check completes
-let lastVisibilityCheckTs = 0;      // v12.1: throttle re-checks on tab focus
+let sessionReconciled = false;
+let lastVisibilityCheckTs = 0;
+
+/* v13: BACKGROUND JAP TRACKING */
+let backgroundStartTs = null;    // When screen went off / tab hidden
+let backgroundStartCount = 0;    // Perm value when going background
+let statsView = 'daily';         // 'daily' | 'weekly' | 'monthly'
 
 let chantMode = localStorage.getItem('chantMode') || 'audio';
 if(!MODES.includes(chantMode)) chantMode = 'audio';
@@ -1284,6 +1702,10 @@ function fmtRelative(ts){
   if(s<86400) return Math.floor(s/3600)+'h';
   return Math.floor(s/86400)+'d';
 }
+function todayKey(d){
+  d = d || new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+}
 
 /* ============ MILESTONES ============ */
 function buildMilestones(){
@@ -1321,6 +1743,17 @@ function findNextTarget(){
   for(const g of MILESTONES) for(const t of g.targets) if(perm < t) return t;
   return null;
 }
+function findNextTargetName(t){
+  if(!t) return 'All Done ✓';
+  if(t < 100000) return fmtNum(t);
+  if(t === 100000) return '1 Lakh';
+  if(t < 1000000) return (t/100000).toFixed(0)+' Lakh';
+  if(t === 1000000) return '10 Lakh';
+  if(t < 10000000) return (t/100000).toFixed(0)+' Lakh';
+  if(t === 10000000) return '1 Crore';
+  return (t/10000000).toFixed(1)+' Crore';
+}
+
 function renderMilestones(){
   const wrap = document.getElementById('milestonesContent');
   const now = Date.now();
@@ -1367,6 +1800,269 @@ function renderMilestones(){
   wrap.innerHTML = summaryHtml + html;
 }
 
+/* ============ REVERSE COUNT (v13) ============ */
+function updateReverseCount(){
+  const nextT = findNextTarget();
+  const targetName = findNextTargetName(nextT);
+  const japInterval = getJapInterval();
+  const chantHrs = SETTINGS.chantHours;
+
+  // Bottom widget
+  if(!nextT){
+    document.getElementById('cdTargetName').textContent = '🎉 All Milestones Done!';
+    document.getElementById('cdRemaining').textContent = '0';
+    document.getElementById('cdFill').style.width = '100%';
+    document.getElementById('cdCurrent').textContent = fmtNum(perm);
+    document.getElementById('cdPercent').textContent = '100%';
+  } else {
+    const remaining = nextT - perm;
+    const prevT = getPrevMilestone(nextT);
+    const range = nextT - prevT;
+    const done = perm - prevT;
+    const pct = Math.min(100, Math.max(0, (done/range)*100));
+    document.getElementById('cdTargetName').textContent = targetName;
+    document.getElementById('cdRemaining').textContent = remaining.toLocaleString();
+    document.getElementById('cdFill').style.width = pct.toFixed(1) + '%';
+    document.getElementById('cdCurrent').textContent = fmtNum(perm);
+    document.getElementById('cdPercent').textContent = pct.toFixed(1) + '%';
+  }
+
+  // Modal (only if open)
+  if(document.getElementById('reverseCountModal').classList.contains('open')){
+    if(!nextT){
+      document.getElementById('rcTargetName').textContent = '🎉 All Done!';
+      document.getElementById('rcRemaining').textContent = '0';
+      document.getElementById('rcFill').style.width = '100%';
+      document.getElementById('rcPercent').textContent = '100% complete';
+      document.getElementById('rcCurrent').textContent = fmtNum(perm);
+      document.getElementById('rcTarget').textContent = '—';
+      document.getElementById('rcTimeNeeded').textContent = '✓';
+      document.getElementById('rcEtaDate').textContent = '—';
+      document.getElementById('rcMalasLeft').textContent = '0';
+      document.getElementById('rcPerDay').textContent = '—';
+      document.getElementById('rcMotivational').innerHTML = '🎊 Congratulations! You completed all milestones! Har Har Mahadev 🔱';
+    } else {
+      const remaining = nextT - perm;
+      const prevT = getPrevMilestone(nextT);
+      const range = nextT - prevT;
+      const done = perm - prevT;
+      const pct = Math.min(100, Math.max(0, (done/range)*100));
+      const secNeeded = remaining * (japInterval/1000);
+      const daysNeeded = secNeeded / (chantHrs * 3600);
+      const etaDate = new Date(Date.now() + daysNeeded*86400000).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'2-digit'});
+      const malasLeft = Math.ceil(remaining/108);
+      const jph = 3600 / (japInterval/1000);
+      const perDay = Math.round(chantHrs * jph);
+
+      document.getElementById('rcTargetName').textContent = targetName;
+      document.getElementById('rcRemaining').textContent = remaining.toLocaleString();
+      document.getElementById('rcFill').style.width = pct.toFixed(1) + '%';
+      document.getElementById('rcPercent').textContent = pct.toFixed(1) + '% complete';
+      document.getElementById('rcCurrent').textContent = fmtNum(perm);
+      document.getElementById('rcTarget').textContent = fmtNum(nextT);
+      document.getElementById('rcTimeNeeded').textContent = fmtDuration(secNeeded);
+      document.getElementById('rcEtaDate').textContent = etaDate;
+      document.getElementById('rcMalasLeft').textContent = fmtNum(malasLeft);
+      document.getElementById('rcPerDay').textContent = fmtNum(perDay);
+
+      // Motivational message
+      let motiv = '';
+      if(pct >= 90) motiv = '🔥 So close! Push the final stretch! Har Har Mahadev 🔱';
+      else if(pct >= 75) motiv = '⚡ 3/4th complete! Momentum is unstoppable now!';
+      else if(pct >= 50) motiv = '💪 Halfway there! Keep the fire burning 🔱';
+      else if(pct >= 25) motiv = '🌟 Great progress! Consistency is key.';
+      else motiv = '🕉 Every jap counts. Har Har Mahadev 🔱';
+      document.getElementById('rcMotivational').innerHTML = motiv;
+    }
+  }
+}
+function getPrevMilestone(nextT){
+  let prev = 0;
+  for(const g of MILESTONES){
+    for(const t of g.targets){
+      if(t === nextT) return prev;
+      prev = t;
+    }
+  }
+  return 0;
+}
+
+/* ============ DAILY STATS (v13) ============ */
+function recordJapForToday(count=1){
+  const key = todayKey();
+  dailyStats[key] = (dailyStats[key] || 0) + count;
+  localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
+}
+function switchStatsView(view){
+  statsView = view;
+  document.querySelectorAll('.stats-tab').forEach(t => t.classList.toggle('active', t.dataset.view === view));
+  renderDailyStats();
+}
+function renderDailyStats(){
+  const chartLabel = document.getElementById('statsChartLabel');
+  const chart = document.getElementById('statsChart');
+  const summary = document.getElementById('statsSummary');
+
+  const entries = Object.entries(dailyStats).sort((a,b) => a[0].localeCompare(b[0]));
+  const now = new Date();
+  const todayK = todayKey();
+
+  let data = [];       // [{label, key, count, isToday}]
+  let periodLabel = '';
+
+  if(statsView === 'daily'){
+    // Last 14 days
+    periodLabel = 'Last 14 days';
+    for(let i=13; i>=0; i--){
+      const d = new Date(now); d.setDate(d.getDate() - i);
+      const k = todayKey(d);
+      data.push({
+        label: pad(d.getDate())+'/'+pad(d.getMonth()+1),
+        key: k,
+        count: dailyStats[k] || 0,
+        isToday: k === todayK
+      });
+    }
+  } else if(statsView === 'weekly'){
+    // Last 8 weeks
+    periodLabel = 'Last 8 weeks';
+    for(let i=7; i>=0; i--){
+      const end = new Date(now); end.setDate(end.getDate() - i*7);
+      const start = new Date(end); start.setDate(start.getDate() - 6);
+      let sum = 0;
+      for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+        sum += dailyStats[todayKey(d)] || 0;
+      }
+      data.push({
+        label: pad(start.getDate())+'/'+pad(start.getMonth()+1),
+        key: 'w'+i,
+        count: sum,
+        isToday: i===0
+      });
+    }
+  } else {
+    // Last 6 months
+    periodLabel = 'Last 6 months';
+    for(let i=5; i>=0; i--){
+      const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+      const monKey = d.getFullYear()+'-'+pad(d.getMonth()+1);
+      let sum = 0;
+      Object.keys(dailyStats).forEach(k => {
+        if(k.startsWith(monKey)) sum += dailyStats[k];
+      });
+      const monNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      data.push({
+        label: monNames[d.getMonth()]+' '+String(d.getFullYear()).slice(2),
+        key: monKey,
+        count: sum,
+        isToday: i===0
+      });
+    }
+  }
+
+  chartLabel.textContent = periodLabel;
+
+  // Summary cards
+  const totalToday = dailyStats[todayK] || 0;
+  let weekTotal = 0;
+  for(let i=0; i<7; i++){
+    const d = new Date(now); d.setDate(d.getDate()-i);
+    weekTotal += dailyStats[todayKey(d)] || 0;
+  }
+  let monthTotal = 0;
+  const curMon = now.getFullYear()+'-'+pad(now.getMonth()+1);
+  Object.keys(dailyStats).forEach(k => { if(k.startsWith(curMon)) monthTotal += dailyStats[k]; });
+
+  const allDays = Object.values(dailyStats);
+  const activeDays = allDays.filter(v => v > 0).length;
+  const avgPerActive = activeDays > 0 ? Math.round(allDays.reduce((s,v)=>s+v,0) / activeDays) : 0;
+
+  summary.innerHTML = `
+    <div class="m-card"><div class="lbl">Today</div><div class="val">${fmtNum(totalToday)}</div><div class="sub">${totalToday.toLocaleString()}</div></div>
+    <div class="m-card"><div class="lbl">This Week</div><div class="val">${fmtNum(weekTotal)}</div><div class="sub">7 days</div></div>
+    <div class="m-card"><div class="lbl">This Month</div><div class="val">${fmtNum(monthTotal)}</div><div class="sub">${curMon}</div></div>
+    <div class="m-card"><div class="lbl">Avg / Active Day</div><div class="val">${fmtNum(avgPerActive)}</div><div class="sub">${activeDays} active days</div></div>
+  `;
+
+  // Chart
+  const maxCount = Math.max(...data.map(d => d.count), 1);
+  const bestCount = maxCount;
+  if(data.every(d => d.count === 0)){
+    chart.innerHTML = '<div class="stats-empty">No data yet — start chanting! 🔱</div>';
+    return;
+  }
+  chart.innerHTML = data.map(d => {
+    const h = (d.count / maxCount) * 100;
+    const cls = d.isToday ? 'today' : (d.count === bestCount && d.count > 0 ? 'best' : '');
+    return `<div class="bar-col">
+      <div class="bar ${cls}" style="height:${h}%">
+        ${d.count > 0 ? `<span class="bar-val">${fmtNum(d.count)}</span>` : ''}
+      </div>
+      <span class="bar-label">${d.label}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ============ BEST DAY (v13) ============ */
+function renderBestDay(){
+  const entries = Object.entries(dailyStats).sort((a,b) => b[1] - a[1]);
+  const todayK = todayKey();
+  const todayCount = dailyStats[todayK] || 0;
+
+  if(entries.length === 0 || entries[0][1] === 0){
+    document.getElementById('bdRecordCount').textContent = '—';
+    document.getElementById('bdRecordDate').textContent = 'No data yet';
+    document.getElementById('bdRecordSub').textContent = 'Start chanting to set a record!';
+    document.getElementById('bdToday').textContent = '0';
+    document.getElementById('bdTopDays').innerHTML = '<p style="color:#888;font-size:12px;text-align:center;padding:10px;">No records yet</p>';
+    document.getElementById('bdTodayVs').innerHTML = 'Today: <b>0</b> japs';
+    return;
+  }
+
+  const [bestKey, bestCount] = entries[0];
+  const bestDate = new Date(bestKey).toLocaleDateString('en-GB',{weekday:'long', day:'2-digit', month:'short', year:'numeric'});
+  const chantHrs = SETTINGS.chantHours;
+  const japInterval = getJapInterval();
+  const bestHrs = (bestCount * (japInterval/1000) / 3600).toFixed(1);
+
+  document.getElementById('bdRecordCount').textContent = fmtNum(bestCount);
+  document.getElementById('bdRecordDate').textContent = bestDate;
+  document.getElementById('bdRecordSub').textContent = `${bestCount.toLocaleString()} japs • ~${bestHrs} hrs of chanting`;
+
+  document.getElementById('bdToday').textContent = todayCount.toLocaleString();
+
+  // Today vs record
+  let vsMsg = '';
+  if(bestKey === todayK){
+    vsMsg = '🔥 Today IS your record day! Keep it going!';
+  } else if(todayCount === 0){
+    vsMsg = `Today: <b>0</b> • ${fmtNum(bestCount)} to beat record 🎯`;
+  } else if(todayCount >= bestCount){
+    vsMsg = `🎉 NEW RECORD! Today: <b>${fmtNum(todayCount)}</b> (previous: ${fmtNum(bestCount)})`;
+  } else {
+    const diff = bestCount - todayCount;
+    const pct = ((todayCount/bestCount)*100).toFixed(0);
+    vsMsg = `Today: <b>${fmtNum(todayCount)}</b> (${pct}% of record) • ${fmtNum(diff)} to beat 🎯`;
+  }
+  document.getElementById('bdTodayVs').innerHTML = vsMsg;
+
+  // Top 10
+  const top10 = entries.slice(0, 10);
+  document.getElementById('bdTopDays').innerHTML = top10.map(([k, v], i) => {
+    const rank = i+1;
+    const d = new Date(k);
+    const dateStr = d.toLocaleDateString('en-GB',{day:'2-digit', month:'short'});
+    const dayName = d.toLocaleDateString('en-GB',{weekday:'short'});
+    const yr = String(d.getFullYear()).slice(2);
+    const medal = rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`#${rank}`;
+    return `<div class="top-day-row rank-${rank}">
+      <div class="top-day-rank">${medal}</div>
+      <div class="top-day-date">${dateStr} '${yr}<small>${dayName}${k===todayK?' • TODAY':''}</small></div>
+      <div class="top-day-count">${fmtNum(v)}</div>
+    </div>`;
+  }).join('');
+}
+
 /* ============ UI UPDATE ============ */
 function markDirty(){
   localVersion++;
@@ -1380,8 +2076,12 @@ function updateUI(saveDirty=true){
   localStorage.setItem('tripCount', trip);
   checkMilestones();
   if(saveDirty) markDirty();
+  updateReverseCount();
   if(document.getElementById('milestonesModal').classList.contains('open')) renderMilestones();
   if(document.getElementById('alertsModal').classList.contains('open')) renderAlerts();
+  if(document.getElementById('reverseCountModal').classList.contains('open')) updateReverseCount();
+  if(document.getElementById('dailyStatsModal').classList.contains('open')) renderDailyStats();
+  if(document.getElementById('bestDayModal').classList.contains('open')) renderBestDay();
 }
 function resetTrip(){ if(confirm('Reset Trip to 0?')){ trip=0; updateUI(); scheduleAutoBackup(); } }
 
@@ -1491,8 +2191,11 @@ function updateSyncBar(){
 }
 
 /* ============ JAP CORE ============ */
+/* v13: tickJap now always vibrates (for Mansik too) */
 function tickJap(){
   perm++; trip++; japsSinceBackup++;
+  recordJapForToday(1);
+  doVibrate(); // v13: vibrate on EVERY count (audio + mansik + manual)
   updateUI();
   checkCountAlerts();
   if(japsSinceBackup >= SETTINGS.backupEvery){
@@ -1593,10 +2296,10 @@ function onMandalaTap(e){
   const c = document.getElementById('permCircle');
   c.classList.remove('tap-flash'); void c.offsetWidth; c.classList.add('tap-flash');
   setTimeout(()=> c.classList.remove('tap-flash'), 150);
-  doVibrate();
   if(screenWasOff){
     trip++; screenOffJapCount++;
     localStorage.setItem('tripCount', trip);
+    doVibrate();
     markDirty(); updateUI(false);
   } else {
     tickJap();
@@ -1617,16 +2320,56 @@ async function requestWakeLock(){
 }
 function releaseWakeLock(){ if(wakeLock){wakeLock.release(); wakeLock=null;} }
 
+/* ============ VISIBILITY: BACKGROUND CONTINUE (v13) ============
+   Key change: When screen goes off / tab hidden while running:
+   - Audio mode: seamless audio keeps playing (Web Audio API works in bg)
+   - Mansik mode: keep silent audio + let interval run (silent audio keeps CPU alive on most devices)
+   - Manual mode: track taps as before
+   When coming back visible:
+   - Compute time gap and CATCH UP missed japs for audio/mansik mode
+   - This ensures counter stays accurate even if browser throttled the timer
+*/
 document.addEventListener('visibilitychange', async ()=>{
   if(document.visibilityState === 'hidden'){
-    if(running){ screenWasOff = true; screenOffJapCount = 0; }
+    if(running){
+      backgroundStartTs = Date.now();
+      backgroundStartCount = perm;
+      // Keep silent audio playing to prevent OS from suspending
+      startSilentKeepAlive();
+      if(chantMode === 'manual'){ screenWasOff = true; screenOffJapCount = 0; }
+    }
     if(localVersion > lastBackedUpVersion) scheduleAutoBackup(true);
   } else if(document.visibilityState === 'visible'){
-    if(running){ requestWakeLock(); startWakeVideo(); }
+    if(running){
+      requestWakeLock();
+      startWakeVideo();
+      // v13: CATCH-UP for audio/mansik mode if timer was throttled
+      if((chantMode === 'audio' || chantMode === 'mansik') && backgroundStartTs){
+        const gap = Date.now() - backgroundStartTs;
+        const expected = Math.floor(gap / getJapInterval());
+        const actualIncrement = perm - backgroundStartCount;
+        const missed = Math.max(0, expected - actualIncrement);
+        if(missed > 0){
+          perm += missed;
+          trip += missed;
+          recordJapForToday(missed);
+          localStorage.setItem('permCount', perm);
+          localStorage.setItem('tripCount', trip);
+          markDirty();
+          updateUI(false);
+          showToast(`⚡ Caught up ${missed} japs from background`, 'info', 3000);
+          scheduleAutoBackup(true);
+        }
+        // Restart timer clean
+        if(japTimer){ clearInterval(japTimer); japTimer = null; }
+        japTimer = setInterval(tickJap, getJapInterval());
+        backgroundStartTs = null;
+      }
+    }
     if(screenWasOff && chantMode === 'manual' && screenOffJapCount > 0){ showScreenoffPrompt(); }
     screenWasOff = false;
 
-    // v12.1: If tab was hidden 10+ min AND we're NOT actively chanting, silent re-check
+    // 10+ min hidden AND not chanting → silent re-check with GitHub
     const gap = Date.now() - lastVisibilityCheckTs;
     if(!running && sessionReconciled && ghConfigured() && gap > 10*60*1000 && !syncLocked){
       lastVisibilityCheckTs = Date.now();
@@ -1649,6 +2392,7 @@ function showScreenoffPrompt(){
 function applyScreenoffJaps(applyToPerm){
   if(applyToPerm){
     perm += screenOffJapCount;
+    recordJapForToday(screenOffJapCount);
     localStorage.setItem('permCount', perm);
     updateUI();
     showToast(`✓ ${fmtNum(screenOffJapCount)} japs added to Permanent`);
@@ -1856,6 +2600,9 @@ function stopBeep(){ if(beepInterval){ clearInterval(beepInterval); beepInterval
 function openModal(name){
   document.getElementById(name+'Modal').classList.add('open');
   if(name==='milestones') renderMilestones();
+  if(name==='reverseCount') updateReverseCount();
+  if(name==='dailyStats') renderDailyStats();
+  if(name==='bestDay') renderBestDay();
   if(name==='settings'){
     document.getElementById('ghOwner').value = localStorage.getItem('ghOwner') || '';
     document.getElementById('ghRepo').value = localStorage.getItem('ghRepo') || '';
@@ -2195,6 +2942,7 @@ async function resolveConflict(action){
     milestoneDates = remote.milestoneDates || {};
     if(remote.alerts) alerts = remote.alerts;
     if(remote.presets) presets = remote.presets;
+    if(remote.dailyStats) dailyStats = remote.dailyStats;
     if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
     localVersion = remote.version || 0;
     lastBackedUpVersion = localVersion;
@@ -2205,6 +2953,7 @@ async function resolveConflict(action){
     localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
     localStorage.setItem('alerts', JSON.stringify(alerts));
     localStorage.setItem('presets', JSON.stringify(presets));
+    localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
     localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
     localStorage.setItem('localVersion', localVersion);
     localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
@@ -2243,12 +2992,7 @@ async function resolveConflict(action){
   }
 }
 
-/* ============ SAFE SYNC (v12.1) ============ */
-
-/**
- * Safe pull — always fetches remote first, checks conflict.
- * Used at startup, manual sync, and 10+ min tab-return.
- */
+/* ============ SAFE SYNC ============ */
 async function safePullFromGitHub(showUI=true){
   if(!ghConfigured()) return { ok:false, reason:'not_configured' };
   if(syncLocked){ return { ok:false, reason:'locked' }; }
@@ -2276,6 +3020,7 @@ async function safePullFromGitHub(showUI=true){
       milestoneDates = remote.milestoneDates || {};
       if(remote.alerts) alerts = remote.alerts;
       if(remote.presets) presets = remote.presets;
+      if(remote.dailyStats) dailyStats = remote.dailyStats;
       if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
       localVersion = remoteVer;
       lastBackedUpVersion = localVersion;
@@ -2284,6 +3029,7 @@ async function safePullFromGitHub(showUI=true){
       localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
       localStorage.setItem('alerts', JSON.stringify(alerts));
       localStorage.setItem('presets', JSON.stringify(presets));
+      localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
       localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
       localStorage.setItem('localVersion', localVersion);
       localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
@@ -2306,12 +3052,6 @@ async function safePullFromGitHub(showUI=true){
   }
 }
 
-/**
- * Safe push (v12.1):
- * - If session already reconciled → DIRECT PUSH (no fetch, no conflict check)
- * - Only very first push before reconcile does pre-flight fetch
- * This keeps Mansik/Audio jap running smoothly without every-2-min interruption.
- */
 async function safePushToGitHub(silent=false){
   if(!ghConfigured()) return false;
   if(backupInProgress || syncLocked) return false;
@@ -2357,21 +3097,15 @@ async function doPushToGitHub(silent=false, forceOverwrite=false){
     lastSyncTs = Date.now();
     localStorage.setItem('lastSyncTs', lastSyncTs);
     lastKnownRemote = { perm, trip, version: versionAtStart };
-    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
+        localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
+    sessionReconciled = true;
     setSyncStatus('synced', 'now');
-    if(!silent) showToast('☁ Synced');
-    if(localStorage.getItem('ghBackupAudio') !== 'false'){
-      const stored = await idbGet('chantAudio').catch(()=>null);
-      if(stored && stored.blob){
-        const existing = await ghGetFileInfo(GH_AUDIO_PATH);
-        if(!existing) await ghUploadAudio(stored.blob);
-      }
-    }
+    if(!silent) showToast(`☁ Backed up: ${fmtNum(perm)} japs`);
     return true;
   }catch(e){
     console.error('Push error:', e);
-    setSyncStatus('error', 'failed');
-    if(!silent) showToast('❌ Sync: '+e.message, 'error', 5000);
+    setSyncStatus('error', 'push failed');
+    if(!silent) showToast('❌ Backup: '+e.message, 'error', 4000);
     return false;
   }finally{
     backupInProgress = false;
@@ -2380,156 +3114,161 @@ async function doPushToGitHub(silent=false, forceOverwrite=false){
 
 function buildPayload(){
   return {
+    perm, trip,
     version: localVersion,
+    milestoneDates,
+    alerts,
+    presets,
+    dailyStats,
+    settings: SETTINGS,
     deviceId: DEVICE_ID,
     updatedAt: new Date().toISOString(),
-    perm, trip, milestoneDates, alerts, presets,
-    settings: SETTINGS
+    appVersion: 'v13'
   };
 }
 
 function scheduleAutoBackup(immediate=false){
-  if(!ghConfigured()) return;
-  if(syncLocked || conflictPending) return;
-  clearTimeout(backupDebounceTimer);
-  const delay = immediate ? 100 : SETTINGS.backupDebounce;
-  backupDebounceTimer = setTimeout(()=>{ safePushToGitHub(true); }, delay);
+  if(!ghConfigured() || syncLocked || conflictPending) return;
+  if(backupDebounceTimer) clearTimeout(backupDebounceTimer);
+  if(immediate){
+    safePushToGitHub(true);
+    return;
+  }
+  backupDebounceTimer = setTimeout(()=>{
+    safePushToGitHub(true);
+  }, SETTINGS.backupDebounce);
 }
 
-/* ============ MANUAL BUTTONS ============ */
 async function manualBackup(){
-  if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
-  if(syncLocked){ showToast('⚠ Resolve conflict first','error'); openModal('conflict'); return; }
-  // Manual button = full pre-flight check (user initiated, so it's OK to be slow)
-  const savedFlag = sessionReconciled;
-  sessionReconciled = false; // force full check
+  if(!ghConfigured()){ showToast('⚙ Configure GitHub in Settings first', 'error'); openModal('settings'); return; }
   const ok = await safePushToGitHub(false);
-  if(ok){
-    sessionReconciled = true;
-    if(localVersion === lastBackedUpVersion) showToast('✓ All data on GitHub');
-  } else {
-    sessionReconciled = savedFlag; // restore on failure
-  }
+  if(ok) showToast('✓ Manual backup complete');
 }
 
 async function manualRestore(){
-  if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
-  if(syncLocked){ showToast('⚠ Resolve conflict first','error'); openModal('conflict'); return; }
-  const remote = await fetchRemoteData();
-  if(!remote){ showToast('❌ Cannot reach GitHub','error'); return; }
-  if(remote.empty){ showToast('No backup exists on GitHub yet','info'); return; }
-  showConflictModal(remote, 'Manual restore — please confirm which side is correct.');
+  if(!ghConfigured()){ showToast('⚙ Configure GitHub in Settings first', 'error'); openModal('settings'); return; }
+  if(!confirm('⬇ Pull latest from GitHub?\n\nIf there is a conflict you will be asked to choose.')) return;
+  syncLocked = false;
+  sessionReconciled = false;
+  const res = await safePullFromGitHub(true);
+  if(res.ok && !res.conflict && !res.empty){
+    sessionReconciled = true;
+    lastVisibilityCheckTs = Date.now();
+  }
 }
 
 async function manualSync(){
   if(!ghConfigured()){ openModal('settings'); return; }
-  if(syncLocked){ openModal('conflict'); return; }
-  const savedFlag = sessionReconciled;
-  sessionReconciled = false;
-  const res = await safePullFromGitHub(true);
-  if(res.ok && !res.conflict){
-    sessionReconciled = true;
+  if(conflictPending){ openModal('conflict'); return; }
+  if(localVersion > lastBackedUpVersion){
     await safePushToGitHub(false);
-  } else if(!res.conflict){
-    sessionReconciled = savedFlag;
+  } else {
+    const res = await safePullFromGitHub(true);
+    if(res.ok && !res.conflict && !res.empty){
+      sessionReconciled = true;
+      lastVisibilityCheckTs = Date.now();
+    }
   }
 }
 
-/* ============ DANGER: Reset local & pull from GitHub ============ */
 async function dangerResetLocal(){
-  if(!ghConfigured()){ showToast('Configure GitHub first','error'); return; }
+  if(!confirm('⚠ DANGER: This will WIPE all local data and restore from GitHub.\n\nAre you absolutely sure?')) return;
+  if(!confirm('⚠ FINAL WARNING: Local data will be LOST if GitHub does not have a backup.\n\nContinue?')) return;
+  if(!ghConfigured()){ showToast('GitHub not configured', 'error'); return; }
+  showStartup('Wiping local data...', 'Then pulling from GitHub');
   const remote = await fetchRemoteData();
   if(!remote || remote.empty){
-    if(!confirm('⚠ No GitHub backup found. Reset will wipe local data with NO restore. Continue?')) return;
-  } else {
-    if(!confirm(`🔥 RESET LOCAL & PULL FROM GITHUB\n\nThis will WIPE local data:\n  📱 Local Perm: ${fmtNum(perm)}\n  📱 Local Trip: ${fmtNum(trip)}\n\nAnd restore from GitHub:\n  ☁ GitHub Perm: ${fmtNum(remote.perm||0)}\n  ☁ GitHub Trip: ${fmtNum(remote.trip||0)}\n\nContinue?`)) return;
+    hideStartup();
+    showToast('❌ No GitHub backup found — aborted', 'error', 5000);
+    return;
   }
-  perm = 0; trip = 0; milestoneDates = {};
-  alerts = []; presets = [];
-  localVersion = 0; lastBackedUpVersion = -1;
-  lastKnownRemote = null;
-  localStorage.setItem('permCount', 0);
-  localStorage.setItem('tripCount', 0);
-  localStorage.setItem('milestoneDates', '{}');
-  localStorage.setItem('alerts', '[]');
-  localStorage.setItem('presets', '[]');
-  localStorage.setItem('localVersion', 0);
-  localStorage.setItem('lastBackedUpVersion', -1);
-  localStorage.removeItem('lastKnownRemote');
-  updateUI(false);
-  if(remote && !remote.empty){
-    perm = remote.perm || 0;
-    trip = remote.trip || 0;
-    milestoneDates = remote.milestoneDates || {};
-    if(remote.alerts) alerts = remote.alerts;
-    if(remote.presets) presets = remote.presets;
-    if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
-    localVersion = remote.version || 0;
-    lastBackedUpVersion = localVersion;
-    lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
-    localStorage.setItem('permCount', perm);
-    localStorage.setItem('tripCount', trip);
-    localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-    localStorage.setItem('alerts', JSON.stringify(alerts));
-    localStorage.setItem('presets', JSON.stringify(presets));
-    localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-    localStorage.setItem('localVersion', localVersion);
-    localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
-    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
-    updateUI(false);
-    showToast(`✓ Reset complete: ${fmtNum(perm)} japs restored`, 'success', 4000);
-    closeModal('settings');
-  } else {
-    showToast('✓ Local wiped (no remote to restore)', 'info', 4000);
-  }
+  // Wipe
+  const ghOwner = localStorage.getItem('ghOwner');
+  const ghRepoV = localStorage.getItem('ghRepo');
+  const ghToken = localStorage.getItem('ghToken');
+  const ghBackupAudio = localStorage.getItem('ghBackupAudio');
+  const devId = localStorage.getItem('deviceId');
+  localStorage.clear();
+  localStorage.setItem('ghOwner', ghOwner);
+  localStorage.setItem('ghRepo', ghRepoV);
+  localStorage.setItem('ghToken', ghToken);
+  if(ghBackupAudio !== null) localStorage.setItem('ghBackupAudio', ghBackupAudio);
+  localStorage.setItem('deviceId', devId);
+  // Apply
+  perm = remote.perm || 0;
+  trip = remote.trip || 0;
+  milestoneDates = remote.milestoneDates || {};
+  alerts = remote.alerts || [];
+  presets = remote.presets || [];
+  dailyStats = remote.dailyStats || {};
+  SETTINGS = { ...DEFAULT_SETTINGS, ...(remote.settings || {}) };
+  localVersion = remote.version || 0;
+  lastBackedUpVersion = localVersion;
+  lastKnownRemote = { perm, trip, version: localVersion };
+  localStorage.setItem('permCount', perm);
+  localStorage.setItem('tripCount', trip);
+  localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+  localStorage.setItem('alerts', JSON.stringify(alerts));
+  localStorage.setItem('presets', JSON.stringify(presets));
+  localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
+  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+  localStorage.setItem('localVersion', localVersion);
+  localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
+  localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
   lastSyncTs = Date.now();
   localStorage.setItem('lastSyncTs', lastSyncTs);
   sessionReconciled = true;
-  lastVisibilityCheckTs = Date.now();
-  setSyncStatus('synced', 'now');
+  syncLocked = false;
+  conflictPending = null;
+  updateUI(false);
+  hideStartup();
+  showToast(`✓ Reset complete — ${fmtNum(perm)} japs restored`, 'success', 4000);
+  closeModal('settings');
 }
 
-/* ============ INIT ============ */
-async function init(){
+/* ============ STARTUP ============ */
+async function initApp(){
   updateUI(false);
   updateModeBadge();
   renderPresets();
-  document.getElementById('nowTime').textContent = fmtTime(new Date());
+  renderAlerts();
+  updateReverseCount();
+
+  // Load audio metadata (not decoded yet)
   await loadAudioFromStorage();
 
+  if(!firstStartTs){
+    document.getElementById('startTime').textContent = '--:--';
+  }
+
   if(ghConfigured()){
-    showStartup('Checking GitHub for updates...', 'Har Har Mahadev 🔱');
-    setSyncStatus('syncing', 'checking');
-    try{
-      const res = await safePullFromGitHub(true);
-      const stored = await idbGet('chantAudio').catch(()=>null);
-      if(!stored){
-        showStartup('Downloading chant audio...', 'One-time only');
-        await ghDownloadAudio();
-      }
-      // v12.1: Only mark reconciled if no conflict shown
-      if(res.ok && !res.conflict){
-        sessionReconciled = true;
-        lastVisibilityCheckTs = Date.now();
-        if(localVersion > lastBackedUpVersion){
-          showStartup('Uploading local changes...', '');
-          await safePushToGitHub(true);
-        }
-      }
-    }catch(e){
-      console.warn('Startup sync error:', e);
-      // Network fail — fail open so chanting isn't blocked
-      sessionReconciled = true;
-    }
+    showStartup('☁ Syncing with GitHub...', 'Checking for updates');
+    const res = await safePullFromGitHub(false);
     hideStartup();
+    if(res.ok && !res.conflict){
+      sessionReconciled = true;
+      lastVisibilityCheckTs = Date.now();
+      if(res.empty) setSyncStatus('synced', 'no backup');
+      else setSyncStatus('synced', 'now');
+    } else if(res.conflict){
+      // Modal already shown
+    } else {
+      setSyncStatus('error', 'offline');
+      showToast('⚠ Could not sync with GitHub — working offline', 'error', 4000);
+    }
   } else {
     setSyncStatus('offline', 'offline');
-    sessionReconciled = true;
   }
 }
 
-window.addEventListener('load', ()=>{ init(); });
-</script>
+document.addEventListener('DOMContentLoaded', ()=>{
+  initApp();
+});
 
+// Ensure audio context resumes on any user interaction
+document.addEventListener('click', ()=>{ if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { once:false });
+document.addEventListener('touchstart', ()=>{ if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { once:false });
+
+</script>
 </body>
 </html>
