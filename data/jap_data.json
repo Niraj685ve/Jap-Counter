@@ -1,18 +1,18 @@
 {
-  "version": 123,
+  "version": 135,
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-01T01:05:16.328Z",
-  "perm": 18,
-  "trip": 18,
+  "updatedAt": "2026-09-01T01:13:26.513Z",
+  "perm": 29,
+  "trip": 29,
   "milestoneDates": {},
   "alerts": [
     {
       "id": 1788176117092,
       "type": "time",
-      "delta": 15000,
-      "target": 24694,
-      "label": "After 00:00:15",
-      "triggered": true
+      "delta": 2100000,
+      "target": 2114834,
+      "label": "After 00:35:00",
+      "triggered": false
     }
   ],
   "presets": [
