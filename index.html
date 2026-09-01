@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>🔱 Mahadev Jap Counter Pro v11</title>
+<title>🔱 Mahadev Jap Counter Pro v12</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow-x: hidden; }
@@ -39,7 +39,7 @@
   }
   @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity:0; } }
 
-  /* ===== TOP BAR with sync dot LEFT of settings ===== */
+  /* ===== TOP BAR — GRID for perfect centering ===== */
   .top-bar {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -52,7 +52,6 @@
   .top-bar .om-corner { justify-self: start; }
   .top-bar h1 { justify-self: center; text-align: center; }
   .top-bar .top-right-tools { justify-self: end; }
-  
   .om-corner { font-size: 26px; color:#ff9933; animation: glow 1.5s infinite alternate; }
   @keyframes glow {
     from{ text-shadow: 0 0 8px #ff6600; }
@@ -82,8 +81,10 @@
   .sync-dot.synced { background: #10b981; box-shadow: 0 0 6px #10b981; }
   .sync-dot.syncing { background: #f59e0b; animation: pulseSync 1s infinite; }
   .sync-dot.error   { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  .sync-dot.conflict{ background: #ef4444; animation: conflictPulse 0.6s infinite; box-shadow: 0 0 10px #ef4444; }
   .sync-dot.offline { background: #666; }
   @keyframes pulseSync { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes conflictPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
   .sync-mini .sync-txt { font-size: 10px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .icon-btn {
@@ -134,7 +135,6 @@
   @keyframes pulseTap { 0%,100%{opacity:0.6} 50%{opacity:1} }
   .mandala svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events: none; }
 
-  /* Rings ALWAYS rotate — even on pause */
   .ring1 { animation: spin 25s linear infinite; filter: drop-shadow(0 0 6px #ff6600); }
   .ring2 { animation: spinRev 30s linear infinite; filter: drop-shadow(0 0 5px #ffcc00); }
   .ring3 { animation: spin 35s linear infinite; filter: drop-shadow(0 0 5px #ff9933); }
@@ -178,7 +178,6 @@
     to  { box-shadow: 0 0 40px rgba(255,80,0,.9), inset 0 0 25px rgba(255,220,0,.4);}
   }
 
-  /* PAUSE state: ONLY counters blink red-yellow, rings keep spinning */
   .paused .circle {
     animation: pauseBlink 0.7s ease-in-out infinite !important;
     border-color: #ff3300 !important;
@@ -318,6 +317,121 @@
   .modal-body .panel { margin: 0 0 10px; max-width: 100%; background: rgba(0,0,0,0.4); }
   .modal-body .panel:last-child { margin-bottom: 0; }
 
+  /* ===== CONFLICT MODAL (NEW in v12) ===== */
+  .conflict-modal .modal-box {
+    border-color: #ef4444;
+    box-shadow: 0 10px 60px rgba(239,68,68,0.6);
+    animation: alertPulse 1s ease-in-out infinite;
+  }
+  @keyframes alertPulse {
+    0%,100% { box-shadow: 0 10px 60px rgba(239,68,68,0.6); }
+    50% { box-shadow: 0 10px 80px rgba(239,68,68,0.9); }
+  }
+  .conflict-modal .modal-header {
+    background: linear-gradient(90deg, rgba(239,68,68,0.4), rgba(220,38,38,0.2));
+    border-bottom-color: rgba(239,68,68,0.6);
+  }
+  .conflict-modal .modal-header h2 {
+    background: linear-gradient(90deg,#fca5a5,#ef4444,#fca5a5);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .conflict-cards {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .conflict-card {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,140,0,0.4);
+    border-radius: 12px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .conflict-card.local {
+    border-color: #3b82f6;
+    box-shadow: 0 0 15px rgba(59,130,246,0.4);
+  }
+  .conflict-card.remote {
+    border-color: #10b981;
+    box-shadow: 0 0 15px rgba(16,185,129,0.4);
+  }
+  .conflict-card.recommended {
+    border-width: 3px;
+    animation: recommendedGlow 1.2s ease-in-out infinite alternate;
+  }
+  @keyframes recommendedGlow {
+    from { box-shadow: 0 0 15px rgba(16,185,129,0.4); }
+    to   { box-shadow: 0 0 25px rgba(16,185,129,0.9); }
+  }
+  .cc-label {
+    font-size: 10px; letter-spacing: 1px;
+    color: #ffcc80; font-weight: bold;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .cc-perm {
+    font-size: 22px; font-weight: bold; color: #ffcc00;
+    text-shadow: 0 0 10px rgba(255,204,0,0.6);
+    line-height: 1;
+  }
+  .cc-trip {
+    font-size: 14px; font-weight: bold; color: #ff9933;
+    margin-top: 3px;
+  }
+  .cc-sub {
+    font-size: 9px; color: #aaa; text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .cc-diff {
+    font-size: 10px; color: #ef4444;
+    background: rgba(239,68,68,0.15);
+    padding: 2px 4px; border-radius: 4px;
+    margin-top: 4px; font-weight: bold;
+  }
+  .cc-badge {
+    display: inline-block;
+    font-size: 8px; padding: 2px 5px;
+    border-radius: 8px; margin-top: 3px;
+    font-weight: bold; letter-spacing: 0.5px;
+  }
+  .cc-badge.rec { background: #10b981; color: white; }
+  .cc-badge.warn { background: #f59e0b; color: white; }
+  .conflict-vs {
+    font-size: 20px; font-weight: bold;
+    color: #ef4444; text-shadow: 0 0 10px rgba(239,68,68,0.8);
+  }
+  .conflict-hint {
+    font-size: 12px; color: #ffcc80;
+    background: rgba(239,68,68,0.15);
+    border: 1px dashed rgba(239,68,68,0.5);
+    padding: 8px 10px; border-radius: 8px;
+    margin: 8px 0; line-height: 1.4;
+  }
+  .conflict-actions button {
+    display: block; width: 100%; margin: 6px 0;
+    padding: 10px 12px; font-size: 13px;
+    border-radius: 8px; border: none;
+    font-weight: bold; cursor: pointer;
+    color: white;
+  }
+  .conflict-actions .btn-push {
+    background: linear-gradient(135deg, #3b82f6, #1e40af);
+    border: 1px solid #60a5fa;
+  }
+  .conflict-actions .btn-pull {
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: 1px solid #34d399;
+    box-shadow: 0 0 15px rgba(16,185,129,0.4);
+  }
+  .conflict-actions .btn-cancel {
+    background: linear-gradient(135deg, #666, #333);
+    border: 1px solid #888;
+  }
+  .conflict-meta {
+    font-size: 10px; color: #aaa;
+    text-align: center; margin-top: 6px;
+  }
+
   .alert-popup {
     position: fixed; inset: 0; z-index: 200;
     background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
@@ -439,7 +553,6 @@
   <div class="sub-msg" id="startupSubMsg">Har Har Mahadev 🔱</div>
 </div>
 
-<!-- TOP BAR with sync dot LEFT of settings -->
 <div class="top-bar">
   <div class="om-corner">🔱</div>
   <h1>॥ 🔱 ॐ नमः शिवाय 🔱 ॥</h1>
@@ -492,10 +605,22 @@
   <svg viewBox="0 0 400 400" class="ring4">
     <defs><path id="c4" d="M 200,200 m -112,0 a 112,112 0 1,1 224,0 a 112,112 0 1,1 -224,0"/></defs>
     <text class="ring-text r4"><textPath href="#c4" startOffset="0">
-      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥
+      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ 
     </textPath></text>
   </svg>
   <svg viewBox="0 0 400 400" class="ring5">
+    <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
+    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
+      ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
+    </textPath></text>
+  </svg>
+    <svg viewBox="0 0 400 400" class="ring5">
+    <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
+    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
+      ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
+    </textPath></text>
+  </svg>
+    <svg viewBox="0 0 400 400" class="ring5">
     <defs><path id="c5" d="M 200,200 m -90,0 a 90,90 0 1,1 180,0 a 90,90 0 1,1 -180,0"/></defs>
     <text class="ring-text r5"><textPath href="#c5" startOffset="0">
       ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ ॐ
@@ -538,6 +663,50 @@
 </div>
 
 <div class="row"><div class="status" id="status">🙏 Har Har Mahadev.</div></div>
+
+<!-- ===== CONFLICT MODAL (NEW in v12) ===== -->
+<div class="modal conflict-modal" id="conflictModal" data-name="conflict">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚠ Data Mismatch Detected</h2>
+    </div>
+    <div class="modal-body">
+      <div class="panel">
+        <p class="conflict-hint" id="conflictHint">
+          Local device data does not match GitHub. Choose which side to trust.
+        </p>
+        <div class="conflict-cards">
+          <div class="conflict-card local" id="conflictCardLocal">
+            <div class="cc-label">📱 LOCAL</div>
+            <div class="cc-perm" id="conflictLocalPerm">0</div>
+            <div class="cc-sub">Permanent</div>
+            <div class="cc-trip" id="conflictLocalTrip">0</div>
+            <div class="cc-sub">Trip</div>
+            <div class="cc-badge warn" id="conflictLocalBadge" style="display:none;">HIGHER</div>
+          </div>
+          <div class="conflict-vs">VS</div>
+          <div class="conflict-card remote" id="conflictCardRemote">
+            <div class="cc-label">☁ GITHUB</div>
+            <div class="cc-perm" id="conflictRemotePerm">0</div>
+            <div class="cc-sub">Permanent</div>
+            <div class="cc-trip" id="conflictRemoteTrip">0</div>
+            <div class="cc-sub">Trip</div>
+            <div class="cc-badge rec" id="conflictRemoteBadge" style="display:none;">RECOMMENDED</div>
+          </div>
+        </div>
+        <div class="conflict-meta" id="conflictMeta"></div>
+        <div class="conflict-actions">
+          <button class="btn-pull" onclick="resolveConflict('pull')">☁ Use GITHUB — Overwrite Local</button>
+          <button class="btn-push" onclick="resolveConflict('push')">📱 Use LOCAL — Push to GitHub</button>
+          <button class="btn-cancel" onclick="resolveConflict('cancel')">✕ Cancel — Do Nothing</button>
+        </div>
+        <p class="help-text" style="text-align:center;margin-top:8px;">
+          💡 GitHub is your master DB. When in doubt, choose GitHub.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ADJUST TRIP MODAL -->
 <div class="modal" id="adjustModal" data-name="adjust">
@@ -722,6 +891,8 @@
           </label>
         </div>
         <button class="main gh" onclick="saveGhSettings()">💾 Save Settings</button>
+        <button class="main danger" onclick="dangerResetLocal()" style="margin-top:8px;">🔥 Reset Local & Pull from GitHub</button>
+        <p class="help-text">Use if local data is corrupted. Wipes local + restores from GitHub.</p>
       </div>
 
       <div class="panel">
@@ -740,7 +911,7 @@
         <div style="font-size:12px;color:#ffcc00;margin-bottom:8px;font-weight:bold;">🔒 LIFETIME DATA PROTECTION</div>
         <div class="protected-badge">
           🛡 Permanent count + milestone dates are LIFETIME data.<br>
-          No reset options. Adjust Trip is password-protected.<br>
+          GitHub is master DB. Mismatches ask for permission.<br>
           Har Har Mahadev! 🔱
         </div>
       </div>
@@ -845,7 +1016,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-
 /* ============ ADVANCED SETTINGS ============ */
 const DEFAULT_SETTINGS = {
   audioDuration: 5.4,
@@ -897,6 +1067,7 @@ let presets = JSON.parse(localStorage.getItem('presets') || '[]');
 let lastSyncTs = parseInt(localStorage.getItem('lastSyncTs') || '0');
 let localVersion = parseInt(localStorage.getItem('localVersion') || '0');
 let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') || '-1');
+let lastKnownRemote = JSON.parse(localStorage.getItem('lastKnownRemote') || 'null');
 
 let running = false, wakeLock = null;
 let elapsedMs = 0, sessionStart = null, firstStartTs = null;
@@ -907,6 +1078,10 @@ let backupInProgress = false;
 let backupDebounceTimer = null;
 let japsSinceBackup = 0;
 let japTimer = null;
+let conflictPending = null;
+let syncLocked = false;
+let sessionReconciled = false;      // v12.1: true after startup conflict check completes
+let lastVisibilityCheckTs = 0;      // v12.1: throttle re-checks on tab focus
 
 let chantMode = localStorage.getItem('chantMode') || 'audio';
 if(!MODES.includes(chantMode)) chantMode = 'audio';
@@ -971,7 +1146,6 @@ async function ensureAudioCtx(){
   if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state === 'suspended') await audioCtx.resume();
 }
-
 async function loadAudioFromBlob(blob, name){
   await ensureAudioCtx();
   const arr = await blob.arrayBuffer();
@@ -1036,9 +1210,7 @@ function stopSilentKeepAlive(){ if(silentAudioEl){ silentAudioEl.pause(); } }
 function setupMediaSession(){
   if(!('mediaSession' in navigator)) return;
   navigator.mediaSession.metadata = new MediaMetadata({
-    title: '🕉 Om Namah Shivay',
-    artist: 'Mahadev Jap Counter',
-    album: 'Sacred Chant'
+    title: '🕉 Om Namah Shivay', artist: 'Mahadev Jap Counter', album: 'Sacred Chant'
   });
   navigator.mediaSession.setActionHandler('play', ()=>{ if(!running) onStartClick(); });
   navigator.mediaSession.setActionHandler('pause', ()=>{ if(running) onStartClick(); });
@@ -1264,7 +1436,6 @@ function saveAdvancedSettings(){
   };
   SETTINGS = { ...SETTINGS, ...s };
   localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-  // Restart timer with new interval if running in audio/mansik mode
   if(running && (chantMode === 'audio' || chantMode === 'mansik')){
     if(japTimer) clearInterval(japTimer);
     japTimer = setInterval(tickJap, getJapInterval());
@@ -1282,10 +1453,7 @@ function resetAdvancedSettings(){
 
 /* ============ MODE TOGGLE + VIBRATION + BG AUDIO ============ */
 function toggleMode(){
-  if(running){
-    showToast('⏸ Pause first to switch mode', 'error');
-    return;
-  }
+  if(running){ showToast('⏸ Pause first to switch mode', 'error'); return; }
   const idx = MODES.indexOf(chantMode);
   chantMode = MODES[(idx + 1) % MODES.length];
   localStorage.setItem('chantMode', chantMode);
@@ -1301,9 +1469,7 @@ function saveBgAudioPref(){
   bgAudioOn = document.getElementById('bgAudioToggle').checked;
   localStorage.setItem('bgAudioOn', bgAudioOn);
 }
-function doVibrate(){
-  if(vibrationOn && navigator.vibrate) navigator.vibrate(SETTINGS.vibrationMs);
-}
+function doVibrate(){ if(vibrationOn && navigator.vibrate) navigator.vibrate(SETTINGS.vibrationMs); }
 
 /* ============ CLOCK ============ */
 function getElapsedMs(){ return elapsedMs + (sessionStart ? Date.now() - sessionStart : 0); }
@@ -1315,18 +1481,15 @@ setInterval(()=>{
 },500);
 function updateSyncBar(){
   if(backupInProgress) return;
+  if(conflictPending){ setSyncStatus('conflict', 'CONFLICT!'); return; }
   const rel = fmtRelative(lastSyncTs);
   const pending = localVersion > lastBackedUpVersion;
-  if(!ghConfigured()){
-    setSyncStatus('offline', 'offline');
-  } else if(pending){
-    setSyncStatus('syncing', `pending ${rel}`);
-  } else if(lastSyncTs){
-    setSyncStatus('synced', rel);
-  }
+  if(!ghConfigured()){ setSyncStatus('offline', 'offline'); }
+  else if(pending){ setSyncStatus('syncing', `pending ${rel}`); }
+  else if(lastSyncTs){ setSyncStatus('synced', rel); }
 }
 
-/* ============ JAP CORE — FIXED ============ */
+/* ============ JAP CORE ============ */
 function tickJap(){
   perm++; trip++; japsSinceBackup++;
   updateUI();
@@ -1338,24 +1501,17 @@ function tickJap(){
 }
 
 async function onStartClick(){
-  // TOGGLE: if running, pause
   if(running){
     running = false;
     applyRunningState();
     scheduleAutoBackup(true);
     return;
   }
-  // STARTING
-  if(ghConfigured()){
-    const btn = document.getElementById('startBtn');
-    btn.disabled = true;
-    const originalText = btn.textContent;
-    btn.textContent = '⏳ SYNCING...';
-    try{ await pullFromGitHub(false); }catch(e){ console.warn('Pre-start sync failed:', e); }
-    btn.disabled = false;
-    btn.textContent = originalText;
+  if(conflictPending){
+    showToast('⚠ Resolve data conflict first', 'error');
+    openModal('conflict');
+    return;
   }
-  // Audio mode needs audio; manual & mansik don't
   if(chantMode === 'audio'){
     if(!audioBuffer){
       const ok = await decodeStoredAudio();
@@ -1363,19 +1519,13 @@ async function onStartClick(){
         if(ghConfigured()){
           showToast('☁ Fetching chant from GitHub...', 'info');
           const gh = await ghDownloadAudio();
-          if(!gh){ showToast('📂 Select chant audio'); pendingStart = true; pickAudio(); resetStartBtn(); return; }
-        } else { showToast('📂 Select chant audio'); pendingStart = true; pickAudio(); resetStartBtn(); return; }
+          if(!gh){ showToast('📂 Select chant audio'); pendingStart = true; pickAudio(); return; }
+        } else { showToast('📂 Select chant audio'); pendingStart = true; pickAudio(); return; }
       }
     }
   }
   running = true;
   applyRunningState();
-}
-function resetStartBtn(){
-  const btn = document.getElementById('startBtn');
-  btn.disabled = false;
-  btn.textContent = '▶ START JAP';
-  btn.classList.remove('running','manual','mansik');
 }
 
 function applyRunningState(){
@@ -1384,14 +1534,12 @@ function applyRunningState(){
   const elBlock = document.getElementById('elapsedBlock');
   const pauseTag = document.getElementById('pauseTag');
 
-  // Clear existing timers first — CRITICAL FIX
   if(japTimer){ clearInterval(japTimer); japTimer = null; }
   stopSeamlessAudio();
 
   btn.classList.remove('running','manual','mansik');
 
   if(running){
-    // === STARTING / RESUMING ===
     const info = MODE_LABELS[chantMode];
     btn.textContent = `⏸ PAUSE (${info.icon} ${info.name.split(' ')[0]})`;
     btn.classList.add('running');
@@ -1399,8 +1547,6 @@ function applyRunningState(){
     if(chantMode === 'mansik') btn.classList.add('mansik');
     mandala.classList.remove('paused');
     elBlock.classList.remove('paused');
-    document.querySelector('.counters').parentElement.classList.remove('paused');
-    // Remove paused class from body-level
     document.body.classList.remove('paused');
     pauseTag.style.display = 'none';
 
@@ -1420,7 +1566,6 @@ function applyRunningState(){
     } else if(chantMode === 'manual'){
       showToast('🖐 Tap the mandala to count', 'info', 3000);
     } else if(chantMode === 'mansik'){
-      // Silent auto-count — no audio, no tap required
       startSilentKeepAlive();
       setupMediaSession();
       tickJap();
@@ -1428,7 +1573,6 @@ function applyRunningState(){
       showToast('🧘 Mansik jap — silent auto-count active', 'info', 3000);
     }
   } else {
-    // === PAUSING ===
     btn.textContent = '▶ RESUME JAP';
     mandala.classList.add('paused');
     elBlock.classList.add('paused');
@@ -1439,7 +1583,6 @@ function applyRunningState(){
   }
 }
 
-/* Manual tap handler */
 function onMandalaTap(e){
   if(chantMode !== 'manual' || !running) return;
   if(e.target.classList.contains('reset-btn')) return;
@@ -1447,16 +1590,13 @@ function onMandalaTap(e){
   if(now - lastTapTs < SETTINGS.tapCooldown) return;
   lastTapTs = now;
   const c = document.getElementById('permCircle');
-  c.classList.remove('tap-flash');
-  void c.offsetWidth;
-  c.classList.add('tap-flash');
+  c.classList.remove('tap-flash'); void c.offsetWidth; c.classList.add('tap-flash');
   setTimeout(()=> c.classList.remove('tap-flash'), 150);
   doVibrate();
   if(screenWasOff){
     trip++; screenOffJapCount++;
     localStorage.setItem('tripCount', trip);
-    markDirty();
-    updateUI(false);
+    markDirty(); updateUI(false);
   } else {
     tickJap();
   }
@@ -1476,24 +1616,28 @@ async function requestWakeLock(){
 }
 function releaseWakeLock(){ if(wakeLock){wakeLock.release(); wakeLock=null;} }
 
-document.addEventListener('visibilitychange',()=>{
+document.addEventListener('visibilitychange', async ()=>{
   if(document.visibilityState === 'hidden'){
-    if(running){
-      screenWasOff = true;
-      screenOffJapCount = 0;
-    }
+    if(running){ screenWasOff = true; screenOffJapCount = 0; }
     if(localVersion > lastBackedUpVersion) scheduleAutoBackup(true);
   } else if(document.visibilityState === 'visible'){
     if(running){ requestWakeLock(); startWakeVideo(); }
-    if(screenWasOff && chantMode === 'manual' && screenOffJapCount > 0){
-      showScreenoffPrompt();
-    }
+    if(screenWasOff && chantMode === 'manual' && screenOffJapCount > 0){ showScreenoffPrompt(); }
     screenWasOff = false;
+
+    // v12.1: If tab was hidden 10+ min AND we're NOT actively chanting, silent re-check
+    const gap = Date.now() - lastVisibilityCheckTs;
+    if(!running && sessionReconciled && ghConfigured() && gap > 10*60*1000 && !syncLocked){
+      lastVisibilityCheckTs = Date.now();
+      sessionReconciled = false;
+      const res = await safePullFromGitHub(false);
+      if(res.ok && !res.conflict) sessionReconciled = true;
+    }
   }
 });
 window.addEventListener('beforeunload', ()=>{
-  if(localVersion > lastBackedUpVersion && ghConfigured()){
-    try{ pushToGitHub(true); }catch(e){}
+  if(localVersion > lastBackedUpVersion && ghConfigured() && !conflictPending){
+    try{ safePushToGitHub(true); }catch(e){}
   }
 });
 
@@ -1726,17 +1870,29 @@ function openModal(name){
   if(name==='adjust'){ document.getElementById('adjCurrent').textContent = fmtNum(trip); }
 }
 function closeModal(name){
+  if(name === 'conflict' && conflictPending){
+    showToast('⚠ Please choose an option to resolve', 'error');
+    return;
+  }
   document.getElementById(name+'Modal').classList.remove('open');
   if(name==='alerts') editingAlertId = null;
 }
 document.querySelectorAll('.modal').forEach(m => {
   m.addEventListener('click', e => {
-    if(e.target === m){ const name = m.getAttribute('data-name'); if(name) closeModal(name); }
+    if(e.target === m){
+      const name = m.getAttribute('data-name');
+      if(name === 'conflict') return;
+      if(name) closeModal(name);
+    }
   });
 });
 document.addEventListener('keydown', e => {
   if(e.key === 'Escape'){
-    document.querySelectorAll('.modal.open').forEach(m => { const name = m.getAttribute('data-name'); if(name) closeModal(name); });
+    document.querySelectorAll('.modal.open').forEach(m => {
+      const name = m.getAttribute('data-name');
+      if(name === 'conflict') return;
+      if(name) closeModal(name);
+    });
   }
 });
 
@@ -1774,7 +1930,7 @@ function runCalc(){
   }
 }
 
-/* ============ GITHUB SYNC ============ */
+/* ============ GITHUB API HELPERS ============ */
 const GH_DATA_PATH = 'data/jap_data.json';
 const GH_AUDIO_PATH = 'data/chant_audio.bin';
 const GH_AUDIO_META_PATH = 'data/chant_audio_meta.json';
@@ -1925,81 +2081,265 @@ async function ghDownloadAudio(){
   }catch(e){ console.error(e); showToast('❌ Audio download: '+e.message,'error'); return false; }
 }
 
-/* ============ SYNC CORE ============ */
-function buildPayload(){
-  return {
-    version: localVersion,
-    deviceId: DEVICE_ID,
-    updatedAt: new Date().toISOString(),
-    perm, trip, milestoneDates, alerts, presets,
-    settings: SETTINGS
-  };
-}
-function mergeRemote(remote){
-  const newPerm = Math.max(perm, remote.perm || 0);
-  const newTrip = Math.max(trip, remote.trip || 0);
-  const merged = { ...(remote.milestoneDates || {}) };
-  Object.keys(milestoneDates).forEach(k => {
-    if(!merged[k] || new Date(milestoneDates[k]) < new Date(merged[k])) merged[k] = milestoneDates[k];
-  });
-  const changed = newPerm !== perm || newTrip !== trip || JSON.stringify(merged) !== JSON.stringify(milestoneDates);
-  perm = newPerm; trip = newTrip; milestoneDates = merged;
-  if(!alerts.length && remote.alerts) alerts = remote.alerts;
-  if(!presets.length && remote.presets) presets = remote.presets;
-  if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
-  localStorage.setItem('permCount', perm);
-  localStorage.setItem('tripCount', trip);
-  localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-  saveAlertsLocal(); savePresets();
-  return changed;
+/* ============ CONFLICT DETECTION CORE ============ */
+async function fetchRemoteData(){
+  if(!ghConfigured()) return null;
+  const info = await ghGetFileInfo(GH_DATA_PATH);
+  if(!info) return { empty: true };
+  try{
+    const jsonStr = decodeURIComponent(escape(atob(info.content.replace(/\n/g,''))));
+    return JSON.parse(jsonStr);
+  }catch(e){
+    console.error('Parse remote error:', e);
+    return null;
+  }
 }
 
-async function pullFromGitHub(showUI=true){
+function detectConflict(remote){
+  if(!remote || remote.empty) return { conflict:false, reason:'no_remote' };
+  const rp = remote.perm || 0, rt = remote.trip || 0;
+  const lp = perm, lt = trip;
+  if(rp === lp && rt === lt) return { conflict:false, reason:'match' };
+  if(lp < rp){
+    return {
+      conflict: true, severity: 'high',
+      reason: `Local Permanent (${fmtNum(lp)}) is LESS than GitHub (${fmtNum(rp)}). You may have chanted on another device.`
+    };
+  }
+  if(lastKnownRemote && (rp !== (lastKnownRemote.perm || 0) || rt !== (lastKnownRemote.trip || 0))){
+    return {
+      conflict: true, severity: 'high',
+      reason: `GitHub was updated by another device (last seen: ${fmtNum(lastKnownRemote.perm||0)}, now: ${fmtNum(rp)}).`
+    };
+  }
+  if(!lastKnownRemote && (lp !== rp || lt !== rt)){
+    return {
+      conflict: true, severity: 'high',
+      reason: `First sync on this session shows mismatch. Local: ${fmtNum(lp)}, GitHub: ${fmtNum(rp)}. Choose carefully.`
+    };
+  }
+  return { conflict:false, reason:'local_ahead_safe' };
+}
+
+function showConflictModal(remote, reason){
+  const wasRunning = running;
+  if(wasRunning) forcePause();
+  conflictPending = { remote, wasRunning };
+  syncLocked = true;
+
+  const lp = perm, lt = trip;
+  const rp = remote.perm || 0, rt = remote.trip || 0;
+
+  document.getElementById('conflictLocalPerm').textContent = fmtNum(lp);
+  document.getElementById('conflictLocalTrip').textContent = fmtNum(lt);
+  document.getElementById('conflictRemotePerm').textContent = fmtNum(rp);
+  document.getElementById('conflictRemoteTrip').textContent = fmtNum(rt);
+
+  const localBadge = document.getElementById('conflictLocalBadge');
+  const remoteBadge = document.getElementById('conflictRemoteBadge');
+  const localCard = document.getElementById('conflictCardLocal');
+  const remoteCard = document.getElementById('conflictCardRemote');
+
+  localBadge.style.display = 'none';
+  remoteBadge.style.display = 'none';
+  localCard.classList.remove('recommended');
+  remoteCard.classList.remove('recommended');
+
+  if(rp > lp){
+    remoteBadge.style.display = 'inline-block';
+    remoteCard.classList.add('recommended');
+    localBadge.textContent = 'BEHIND';
+    localBadge.style.display = 'inline-block';
+    localBadge.className = 'cc-badge warn';
+  } else if(lp > rp){
+    localBadge.textContent = 'HIGHER';
+    localBadge.style.display = 'inline-block';
+    localBadge.className = 'cc-badge warn';
+    remoteBadge.textContent = 'OLDER';
+    remoteBadge.style.display = 'inline-block';
+    remoteBadge.className = 'cc-badge warn';
+  }
+
+  document.getElementById('conflictHint').innerHTML = `⚠ ${reason}<br><b>Chanting has been paused.</b> Choose which side is correct.`;
+
+  const remoteDate = remote.updatedAt ? new Date(remote.updatedAt).toLocaleString('en-GB') : 'unknown';
+  const remoteDevice = remote.deviceId || 'unknown';
+  document.getElementById('conflictMeta').innerHTML = `GitHub last updated: <b>${remoteDate}</b> by device <code>${remoteDevice}</code>`;
+
+  setSyncStatus('conflict', 'CONFLICT!');
+  document.getElementById('conflictModal').classList.add('open');
+  playBeep();
+  setTimeout(stopBeep, 2000);
+}
+
+async function resolveConflict(action){
+  if(!conflictPending){
+    document.getElementById('conflictModal').classList.remove('open');
+    syncLocked = false;
+    return;
+  }
+  const { remote } = conflictPending;
+
+  if(action === 'cancel'){
+    document.getElementById('conflictModal').classList.remove('open');
+    conflictPending = null;
+    syncLocked = false;
+    showToast('Cancelled — data unchanged. Sync stays blocked until resolved.', 'info', 4000);
+    return;
+  }
+
+  if(action === 'pull'){
+    perm = remote.perm || 0;
+    trip = remote.trip || 0;
+    milestoneDates = remote.milestoneDates || {};
+    if(remote.alerts) alerts = remote.alerts;
+    if(remote.presets) presets = remote.presets;
+    if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
+    localVersion = remote.version || 0;
+    lastBackedUpVersion = localVersion;
+    lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
+
+    localStorage.setItem('permCount', perm);
+    localStorage.setItem('tripCount', trip);
+    localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+    localStorage.setItem('alerts', JSON.stringify(alerts));
+    localStorage.setItem('presets', JSON.stringify(presets));
+    localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+    localStorage.setItem('localVersion', localVersion);
+    localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
+    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
+
+    lastSyncTs = Date.now();
+    localStorage.setItem('lastSyncTs', lastSyncTs);
+    updateUI(false);
+
+    document.getElementById('conflictModal').classList.remove('open');
+    conflictPending = null;
+    syncLocked = false;
+    sessionReconciled = true;
+    lastVisibilityCheckTs = Date.now();
+    setSyncStatus('synced', 'now');
+    showToast(`✓ Restored from GitHub: ${fmtNum(perm)} japs`, 'success', 4000);
+    return;
+  }
+
+  if(action === 'push'){
+    if(!confirm(`⚠ This will OVERWRITE GitHub with local values (${fmtNum(perm)} perm, ${fmtNum(trip)} trip).\n\nGitHub currently has ${fmtNum(remote.perm||0)} perm. Are you SURE?`)){
+      return;
+    }
+    document.getElementById('conflictModal').classList.remove('open');
+    conflictPending = null;
+    syncLocked = false;
+    localVersion = Math.max(localVersion, (remote.version || 0)) + 1;
+    localStorage.setItem('localVersion', localVersion);
+    const ok = await doPushToGitHub(false, true);
+    if(ok){
+      sessionReconciled = true;
+      lastVisibilityCheckTs = Date.now();
+      showToast(`✓ GitHub overwritten with local: ${fmtNum(perm)} japs`, 'success', 4000);
+    }
+    return;
+  }
+}
+
+/* ============ SAFE SYNC (v12.1) ============ */
+
+/**
+ * Safe pull — always fetches remote first, checks conflict.
+ * Used at startup, manual sync, and 10+ min tab-return.
+ */
+async function safePullFromGitHub(showUI=true){
   if(!ghConfigured()) return { ok:false, reason:'not_configured' };
+  if(syncLocked){ return { ok:false, reason:'locked' }; }
   if(showUI) setSyncStatus('syncing', 'pulling');
   try{
-    const info = await ghGetFileInfo(GH_DATA_PATH);
-    if(!info){
+    const remote = await fetchRemoteData();
+    if(!remote){
+      if(showUI) setSyncStatus('error', 'fetch failed');
+      return { ok:false, reason:'fetch_failed' };
+    }
+    if(remote.empty){
       if(showUI) setSyncStatus('synced', 'no backup');
       return { ok:true, empty:true };
     }
-    const jsonStr = decodeURIComponent(escape(atob(info.content.replace(/\n/g,''))));
-    const remote = JSON.parse(jsonStr);
-    const remoteVer = remote.version || 0;
-    if(remoteVer > localVersion || (remote.deviceId !== DEVICE_ID && remoteVer >= localVersion)){
-      const changed = mergeRemote(remote);
-      localVersion = Math.max(localVersion, remoteVer);
-      localStorage.setItem('localVersion', localVersion);
-      lastBackedUpVersion = localVersion;
-      localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
-      lastSyncTs = Date.now();
-      localStorage.setItem('lastSyncTs', lastSyncTs);
-      updateUI(false);
-      if(showUI){
-        setSyncStatus('synced', 'now');
-        if(changed) showToast(`⬇ Pulled: ${fmtNum(perm)} japs`);
-      }
-      return { ok:true, changed };
+    const conflict = detectConflict(remote);
+    if(conflict.conflict){
+      showConflictModal(remote, conflict.reason);
+      return { ok:true, conflict:true };
     }
-    if(showUI) setSyncStatus('synced', 'up to date');
+    const remoteVer = remote.version || 0;
+    let changed = false;
+    if(remoteVer > localVersion){
+      perm = remote.perm || 0;
+      trip = remote.trip || 0;
+      milestoneDates = remote.milestoneDates || {};
+      if(remote.alerts) alerts = remote.alerts;
+      if(remote.presets) presets = remote.presets;
+      if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
+      localVersion = remoteVer;
+      lastBackedUpVersion = localVersion;
+      localStorage.setItem('permCount', perm);
+      localStorage.setItem('tripCount', trip);
+      localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+      localStorage.setItem('alerts', JSON.stringify(alerts));
+      localStorage.setItem('presets', JSON.stringify(presets));
+      localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+      localStorage.setItem('localVersion', localVersion);
+      localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
+      updateUI(false);
+      changed = true;
+    }
+    lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
+    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
     lastSyncTs = Date.now();
     localStorage.setItem('lastSyncTs', lastSyncTs);
-    return { ok:true, changed:false };
+    if(showUI){
+      setSyncStatus('synced', 'now');
+      if(changed) showToast(`⬇ Pulled: ${fmtNum(perm)} japs`);
+    }
+    return { ok:true, changed };
   }catch(e){
-    console.error('Pull error:', e);
+    console.error('Safe pull error:', e);
     if(showUI) setSyncStatus('error', 'failed');
     return { ok:false, error:e.message };
   }
 }
 
-async function pushToGitHub(silent=false){
+/**
+ * Safe push (v12.1):
+ * - If session already reconciled → DIRECT PUSH (no fetch, no conflict check)
+ * - Only very first push before reconcile does pre-flight fetch
+ * This keeps Mansik/Audio jap running smoothly without every-2-min interruption.
+ */
+async function safePushToGitHub(silent=false){
   if(!ghConfigured()) return false;
-  if(backupInProgress) return false;
+  if(backupInProgress || syncLocked) return false;
   if(localVersion <= lastBackedUpVersion){
     if(!silent) setSyncStatus('synced', 'up to date');
     return true;
   }
+  if(sessionReconciled){
+    return doPushToGitHub(silent, false);
+  }
+  const remote = await fetchRemoteData();
+  if(!remote){
+    if(!silent) showToast('❌ Cannot reach GitHub','error');
+    setSyncStatus('error', 'fetch failed');
+    return false;
+  }
+  if(!remote.empty){
+    const conflict = detectConflict(remote);
+    if(conflict.conflict){
+      showConflictModal(remote, conflict.reason);
+      return false;
+    }
+  }
+  return doPushToGitHub(silent, false);
+}
+
+async function doPushToGitHub(silent=false, forceOverwrite=false){
+  if(!ghConfigured()) return false;
+  if(backupInProgress) return false;
   backupInProgress = true;
   setSyncStatus('syncing', 'pushing');
   const versionAtStart = localVersion;
@@ -2007,11 +2347,16 @@ async function pushToGitHub(silent=false){
     const payload = buildPayload();
     const jsonStr = JSON.stringify(payload, null, 2);
     const content = btoa(unescape(encodeURIComponent(jsonStr)));
-    await ghPutFile(GH_DATA_PATH, content, `v${payload.version} • ${fmtNum(perm)} japs • ${DEVICE_ID}`);
+    const msg = forceOverwrite
+      ? `⚠ FORCE OVERWRITE v${payload.version} • ${fmtNum(perm)} japs • ${DEVICE_ID}`
+      : `v${payload.version} • ${fmtNum(perm)} japs • ${DEVICE_ID}`;
+    await ghPutFile(GH_DATA_PATH, content, msg);
     lastBackedUpVersion = versionAtStart;
     localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
     lastSyncTs = Date.now();
     localStorage.setItem('lastSyncTs', lastSyncTs);
+    lastKnownRemote = { perm, trip, version: versionAtStart };
+    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
     setSyncStatus('synced', 'now');
     if(!silent) showToast('☁ Synced');
     if(localStorage.getItem('ghBackupAudio') !== 'false'){
@@ -2032,33 +2377,115 @@ async function pushToGitHub(silent=false){
   }
 }
 
-function scheduleAutoBackup(immediate=false){
-  if(!ghConfigured()) return;
-  clearTimeout(backupDebounceTimer);
-  const delay = immediate ? 100 : SETTINGS.backupDebounce;
-  backupDebounceTimer = setTimeout(()=>{ pushToGitHub(true); }, delay);
+function buildPayload(){
+  return {
+    version: localVersion,
+    deviceId: DEVICE_ID,
+    updatedAt: new Date().toISOString(),
+    perm, trip, milestoneDates, alerts, presets,
+    settings: SETTINGS
+  };
 }
 
+function scheduleAutoBackup(immediate=false){
+  if(!ghConfigured()) return;
+  if(syncLocked || conflictPending) return;
+  clearTimeout(backupDebounceTimer);
+  const delay = immediate ? 100 : SETTINGS.backupDebounce;
+  backupDebounceTimer = setTimeout(()=>{ safePushToGitHub(true); }, delay);
+}
+
+/* ============ MANUAL BUTTONS ============ */
 async function manualBackup(){
   if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
-  const ok = await pushToGitHub(false);
-  if(ok && localVersion === lastBackedUpVersion) showToast('✓ All data on GitHub');
+  if(syncLocked){ showToast('⚠ Resolve conflict first','error'); openModal('conflict'); return; }
+  // Manual button = full pre-flight check (user initiated, so it's OK to be slow)
+  const savedFlag = sessionReconciled;
+  sessionReconciled = false; // force full check
+  const ok = await safePushToGitHub(false);
+  if(ok){
+    sessionReconciled = true;
+    if(localVersion === lastBackedUpVersion) showToast('✓ All data on GitHub');
+  } else {
+    sessionReconciled = savedFlag; // restore on failure
+  }
 }
+
 async function manualRestore(){
   if(!ghConfigured()){ showToast('Configure GitHub first','error'); openModal('settings'); return; }
-  if(localVersion > lastBackedUpVersion){
-    if(!confirm('You have unsynced local changes. Restore will merge (keep max counters). Continue?')) return;
-  }
-  const res = await pullFromGitHub(true);
-  if(res.ok){
-    const stored = await idbGet('chantAudio').catch(()=>null);
-    if(!stored) await ghDownloadAudio();
-  }
+  if(syncLocked){ showToast('⚠ Resolve conflict first','error'); openModal('conflict'); return; }
+  const remote = await fetchRemoteData();
+  if(!remote){ showToast('❌ Cannot reach GitHub','error'); return; }
+  if(remote.empty){ showToast('No backup exists on GitHub yet','info'); return; }
+  showConflictModal(remote, 'Manual restore — please confirm which side is correct.');
 }
+
 async function manualSync(){
   if(!ghConfigured()){ openModal('settings'); return; }
-  await pullFromGitHub(true);
-  await pushToGitHub(false);
+  if(syncLocked){ openModal('conflict'); return; }
+  const savedFlag = sessionReconciled;
+  sessionReconciled = false;
+  const res = await safePullFromGitHub(true);
+  if(res.ok && !res.conflict){
+    sessionReconciled = true;
+    await safePushToGitHub(false);
+  } else if(!res.conflict){
+    sessionReconciled = savedFlag;
+  }
+}
+
+/* ============ DANGER: Reset local & pull from GitHub ============ */
+async function dangerResetLocal(){
+  if(!ghConfigured()){ showToast('Configure GitHub first','error'); return; }
+  const remote = await fetchRemoteData();
+  if(!remote || remote.empty){
+    if(!confirm('⚠ No GitHub backup found. Reset will wipe local data with NO restore. Continue?')) return;
+  } else {
+    if(!confirm(`🔥 RESET LOCAL & PULL FROM GITHUB\n\nThis will WIPE local data:\n  📱 Local Perm: ${fmtNum(perm)}\n  📱 Local Trip: ${fmtNum(trip)}\n\nAnd restore from GitHub:\n  ☁ GitHub Perm: ${fmtNum(remote.perm||0)}\n  ☁ GitHub Trip: ${fmtNum(remote.trip||0)}\n\nContinue?`)) return;
+  }
+  perm = 0; trip = 0; milestoneDates = {};
+  alerts = []; presets = [];
+  localVersion = 0; lastBackedUpVersion = -1;
+  lastKnownRemote = null;
+  localStorage.setItem('permCount', 0);
+  localStorage.setItem('tripCount', 0);
+  localStorage.setItem('milestoneDates', '{}');
+  localStorage.setItem('alerts', '[]');
+  localStorage.setItem('presets', '[]');
+  localStorage.setItem('localVersion', 0);
+  localStorage.setItem('lastBackedUpVersion', -1);
+  localStorage.removeItem('lastKnownRemote');
+  updateUI(false);
+  if(remote && !remote.empty){
+    perm = remote.perm || 0;
+    trip = remote.trip || 0;
+    milestoneDates = remote.milestoneDates || {};
+    if(remote.alerts) alerts = remote.alerts;
+    if(remote.presets) presets = remote.presets;
+    if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
+    localVersion = remote.version || 0;
+    lastBackedUpVersion = localVersion;
+    lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
+    localStorage.setItem('permCount', perm);
+    localStorage.setItem('tripCount', trip);
+    localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+    localStorage.setItem('alerts', JSON.stringify(alerts));
+    localStorage.setItem('presets', JSON.stringify(presets));
+    localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+    localStorage.setItem('localVersion', localVersion);
+    localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
+    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
+    updateUI(false);
+    showToast(`✓ Reset complete: ${fmtNum(perm)} japs restored`, 'success', 4000);
+    closeModal('settings');
+  } else {
+    showToast('✓ Local wiped (no remote to restore)', 'info', 4000);
+  }
+  lastSyncTs = Date.now();
+  localStorage.setItem('lastSyncTs', lastSyncTs);
+  sessionReconciled = true;
+  lastVisibilityCheckTs = Date.now();
+  setSyncStatus('synced', 'now');
 }
 
 /* ============ INIT ============ */
@@ -2070,28 +2497,38 @@ async function init(){
   await loadAudioFromStorage();
 
   if(ghConfigured()){
-    showStartup('Syncing with GitHub...', 'Har Har Mahadev 🔱');
-    setSyncStatus('syncing', 'pulling');
+    showStartup('Checking GitHub for updates...', 'Har Har Mahadev 🔱');
+    setSyncStatus('syncing', 'checking');
     try{
-      await pullFromGitHub(true);
+      const res = await safePullFromGitHub(true);
       const stored = await idbGet('chantAudio').catch(()=>null);
       if(!stored){
         showStartup('Downloading chant audio...', 'One-time only');
         await ghDownloadAudio();
       }
-      if(localVersion > lastBackedUpVersion){
-        showStartup('Uploading local changes...', '');
-        await pushToGitHub(true);
+      // v12.1: Only mark reconciled if no conflict shown
+      if(res.ok && !res.conflict){
+        sessionReconciled = true;
+        lastVisibilityCheckTs = Date.now();
+        if(localVersion > lastBackedUpVersion){
+          showStartup('Uploading local changes...', '');
+          await safePushToGitHub(true);
+        }
       }
-    }catch(e){ console.warn('Startup sync error:', e); }
+    }catch(e){
+      console.warn('Startup sync error:', e);
+      // Network fail — fail open so chanting isn't blocked
+      sessionReconciled = true;
+    }
     hideStartup();
   } else {
     setSyncStatus('offline', 'offline');
+    sessionReconciled = true;
   }
 }
 
 window.addEventListener('load', ()=>{ init(); });
-
 </script>
+
 </body>
 </html>
