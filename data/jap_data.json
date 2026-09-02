@@ -1,7 +1,7 @@
 {
-  "perm": 1197,
-  "trip": 0,
-  "version": 2265,
+  "perm": 1199,
+  "trip": 2,
+  "version": 2268,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
@@ -29,6 +29,14 @@
       "target": 168977,
       "label": "After 00:00:20",
       "triggered": true
+    },
+    {
+      "id": 1788310528201,
+      "type": "time",
+      "delta": 35000,
+      "target": 35000,
+      "label": "After 00:00:35",
+      "triggered": false
     }
   ],
   "presets": [
@@ -39,7 +47,8 @@
     }
   ],
   "dailyStats": {
-    "2026-09-01": 1810
+    "2026-09-01": 1810,
+    "2026-09-02": 2
   },
   "settings": {
     "audioDuration": 5.4,
@@ -51,6 +60,6 @@
     "vibrationMs": 30
   },
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-02T00:54:57.446Z",
+  "updatedAt": "2026-09-02T00:55:55.826Z",
   "appVersion": "v13"
 }
