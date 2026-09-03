@@ -5,8 +5,6 @@
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
-  "alerts": [],
-  "presets": [],
   "dailyStats": {
     "2026-09-01": 1810,
     "2026-09-02": 1618,
@@ -22,6 +20,6 @@
     "vibrationMs": 30
   },
   "deviceId": "dev_i4hbwie4",
-  "updatedAt": "2026-09-03T09:52:54.832Z",
-  "appVersion": "v13"
+  "updatedAt": "2026-09-03T09:54:24.865Z",
+  "appVersion": "v20"
 }
