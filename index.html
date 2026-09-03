@@ -1370,6 +1370,7 @@
 <div class="embers" id="embers"></div>
 <video id="wakeVideo" loop muted playsinline></video>
 <audio id="silentAudio" loop></audio>
+<audio id="omAudio" loop preload="auto"></audio>
 
 <div class="startup-overlay" id="startupOverlay">
   <div class="om-big">🕉</div>
@@ -1735,6 +1736,7 @@
           </div>
           <button class="sp-load" onclick="pickSound('om')" title="Upload Om file">📂</button>
           <button class="sp-test" onclick="testSound('om')" title="Play / Stop">▶</button>
+          <button class="sp-load" onclick="restoreOmFromGitHub()" title="GitHub se restore" style="background:linear-gradient(135deg,#0ea5e9,#0369a1);">☁</button>
           <button class="sp-del"  onclick="clearSound('om')" title="Delete">🗑</button>
         </div>
 
@@ -4436,7 +4438,7 @@ function applyBmSettings(){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🔔 v20 / v20.3: TICK SOUND + MALA BELL + OM BACKGROUND
+   🔔 v20.4: TICK SOUND + MALA BELL + OM BACKGROUND (streaming)
    ═══════════════════════════════════════════════════════════════ */
 const SOUND_DEFS = {
   tick: { idbKey:'tickSound', ghBin:'data/tick_sound.bin', ghMeta:'data/tick_sound_meta.json', label:'Tick' },
@@ -4444,6 +4446,7 @@ const SOUND_DEFS = {
   om:   { idbKey:'omSound',   ghBin:'data/om_sound.bin',   ghMeta:'data/om_sound_meta.json',   label:'Om' }
 };
 
+// Short sounds → Web Audio buffers (fast, low latency)
 let tickBuffer = null, tickName = '', tickDecodeTried = false;
 let bellBuffer = null, bellName = '', bellDecodeTried = false;
 let tickSoundOn = localStorage.getItem('tickSoundOn') === 'true';
@@ -4455,14 +4458,24 @@ let bellPlaying = false;
 
 const BELL_GAP_MS   = 400;
 const BELL_RELAX_MS = 3000;
+const DECODE_MAX_BYTES = 8 * 1024 * 1024;   // tick/bell: 8MB se badi decode nahi karenge
+const GH_SOUND_MAX     = 45 * 1024 * 1024;  // GitHub backup limit
 
-/* ═══ OM BACKGROUND LOOP (plays when idle / paused) ═══ */
-let omBuffer = null, omName = '', omDecodeTried = false;
-let omSource = null, omGainNode = null, omLooping = false;
-let omBgOn  = localStorage.getItem('omBgOn') === 'true';
+/* ═══ v20.4: OM = STREAMING <audio> (NO decodeAudioData!)
+   20MB MP3 ko decode karne pe ~400MB RAM lagti thi → crash.
+   <audio> stream karta hai → sirf ~2MB. ═══ */
+let omEl = null, omURL = null, omName = '', omReady = false, omLooping = false;
+let omFadeTimer = null, omGestureArmed = false;
+let omBgOn   = localStorage.getItem('omBgOn') === 'true';
 let omVolume = parseFloat(localStorage.getItem('omVolume')) || 0.5;
 
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+function fmtSize(bytes){
+  return bytes > 1048576
+    ? (bytes/1048576).toFixed(2) + ' MB'
+    : Math.round(bytes/1024) + ' KB';
+}
 
 async function playSoundBuffer(buffer, volume){
   if(!buffer) return 0;
@@ -4524,16 +4537,21 @@ function playTickSound(){
   synthTick();
 }
 
+/* Sirf tick/bell ke liye — Om NEVER decoded */
 async function decodeSound(kind){
+  if(kind === 'om') return false;
   const def = SOUND_DEFS[kind];
   const stored = await idbGet(def.idbKey).catch(()=>null);
   if(!stored || !stored.blob) return false;
+  if(stored.blob.size > DECODE_MAX_BYTES){
+    console.warn(`${kind}: ${fmtSize(stored.blob.size)} too big to decode`);
+    return false;
+  }
   try{
     await ensureAudioCtx();
     const arr = await stored.blob.arrayBuffer();
     const buf = await audioCtx.decodeAudioData(arr.slice(0));
     if(kind === 'tick'){ tickBuffer = buf; tickName = stored.name; }
-    else if(kind === 'om'){ omBuffer = buf; omName = stored.name; }
     else { bellBuffer = buf; bellName = stored.name; }
     return true;
   }catch(e){ console.warn('decodeSound '+kind, e); return false; }
@@ -4544,32 +4562,60 @@ function pickSound(kind){
   document.getElementById(map[kind]).click();
 }
 
+/* ✅ v20.4 FIX: SAVE FIRST, then play.
+   Pehle decode hota tha → 20MB pe crash → idbSet skip → "upload karo" loop. */
 async function handleSoundPick(kind, e){
   const file = e.target.files[0];
   if(!file) return;
   const def = SOUND_DEFS[kind];
+  const szTxt = fmtSize(file.size);
+
+  // ═══ STEP 1: IndexedDB me SAVE — sabse pehle, har haal me ═══
   try{
-    await ensureAudioCtx();
-    const arr = await file.arrayBuffer();
-    const buf = await audioCtx.decodeAudioData(arr.slice(0));
-    if(kind === 'tick'){ tickBuffer = buf; tickName = file.name; tickDecodeTried = true; }
-    else if(kind === 'om'){ omBuffer = buf; omName = file.name; omDecodeTried = true; }
-    else { bellBuffer = buf; bellName = file.name; bellDecodeTried = true; }
     await idbSet(def.idbKey, { blob: file, name: file.name });
-    updateSoundInfo(kind);
-    showToast(`✓ ${def.label} sound loaded`);
+    await updateSoundInfo(kind);
+    showToast(`✓ ${def.label} saved (${szTxt})`);
+  }catch(err){
+    console.error('idbSet failed', err);
+    showToast(`❌ Save failed: ${err.message}`, 'error', 5000);
+    e.target.value = '';
+    return;
+  }
+
+  // ═══ STEP 2: Use karo ═══
+  try{
     if(kind === 'om'){
-      if(omBgOn && !running){ stopOmLoop(); startOmLoop(); }
-      else showToast('🕉 Om saved — toggle ON karo idle pe bajane ke liye', 'info', 3500);
+      attachOmBlob(file, file.name);           // stream — no decode
+      if(omBgOn && !running){
+        stopOmLoop();
+        setTimeout(()=> startOmLoop(), 400);
+        showToast('🕉 Om chalu — jap start karne pe band ho jayega', 'info', 3500);
+      } else {
+        showToast('🕉 Om saved — toggle ON karo idle/pause pe bajane ke liye', 'info', 4000);
+      }
+    } else if(file.size > DECODE_MAX_BYTES){
+      showToast(`⚠ ${def.label} ${szTxt} — bahut badi! 1-2 sec ki chhoti file use karo`, 'error', 5000);
     } else {
+      await ensureAudioCtx();
+      const arr = await file.arrayBuffer();
+      const buf = await audioCtx.decodeAudioData(arr.slice(0));
+      if(kind === 'tick'){ tickBuffer = buf; tickName = file.name; tickDecodeTried = true; }
+      else { bellBuffer = buf; bellName = file.name; bellDecodeTried = true; }
       playSoundBuffer(buf, kind === 'tick' ? tickVolume : bellVolume);
     }
-    if(ghConfigured() && localStorage.getItem('ghBackupAudio') !== 'false'){
+  }catch(err){
+    console.error('play/decode failed', err);
+    showToast(`⚠ ${def.label} saved hai, par play nahi hua — format badlo (MP3/M4A)`, 'error', 5000);
+  }
+
+  // ═══ STEP 3: GitHub backup ═══
+  if(ghConfigured() && localStorage.getItem('ghBackupAudio') !== 'false'){
+    if(file.size > GH_SOUND_MAX){
+      showToast(`⚠ ${szTxt} — GitHub backup skip (45MB max). Local pe safe hai.`, 'error', 5000);
+    } else {
+      showToast(`☁ ${def.label} upload ho raha hai (${szTxt})...`, 'info', 4000);
       ghUploadSound(kind, file);
     }
-  }catch(err){
-    console.error(err);
-    showToast(`❌ ${def.label} load failed — try MP3/WAV`, 'error');
   }
   e.target.value = '';
 }
@@ -4585,15 +4631,33 @@ async function ghUploadSound(kind, blob){
     } else {
       await ghPutLargeFile(def.ghBin, blob, `${def.label} sound: ${blob.name} (${sizeMB}MB)`);
     }
-    const meta = { name: blob.name, size: blob.size, type: blob.type, date: new Date().toISOString() };
+    const meta = { name: blob.name, size: blob.size, type: blob.type || 'audio/mpeg', date: new Date().toISOString() };
     await ghPutFile(def.ghMeta, btoa(unescape(encodeURIComponent(JSON.stringify(meta)))), `${def.label} meta`);
-    showToast(`☁ ${def.label} backed up (${sizeMB}MB)`);
+    showToast(`☁ ${def.label} backed up (${sizeMB}MB)`, 'success', 4000);
     return true;
   }catch(e){
     console.error(e);
-    showToast(`❌ ${def.label} upload: ${e.message}`, 'error', 5000);
+    showToast(`❌ ${def.label} upload: ${e.message}`, 'error', 6000);
     return false;
   }
+}
+
+/* ✅ v20.4 FIX: raw media type — 1MB+ files ke liye ye ZAROORI hai.
+   Purana `application/vnd.github+json` 20MB pe fail hota tha. */
+async function ghFetchRawBlob(path){
+  const {o,r} = ghRepo();
+  try{
+    const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, {
+      headers: ghHeaders({ Accept: 'application/vnd.github.raw' })
+    });
+    if(res.ok){
+      const b = await res.blob();
+      if(b && b.size > 0) return b;
+    } else {
+      console.warn('ghFetchRawBlob', path, res.status);
+    }
+  }catch(e){ console.warn('ghFetchRawBlob', e); }
+  return null;
 }
 
 async function ghDownloadSound(kind){
@@ -4601,28 +4665,48 @@ async function ghDownloadSound(kind){
   const def = SOUND_DEFS[kind];
   try{
     const metaInfo = await ghGetFileInfo(def.ghMeta);
-    if(!metaInfo) return false;
+    if(!metaInfo || !metaInfo.content) return false;
     const meta = JSON.parse(decodeURIComponent(escape(atob(metaInfo.content.replace(/\n/g,'')))));
-    const binInfo = await ghGetFileInfo(def.ghBin);
-    if(!binInfo) return false;
-    let blob;
-    if(binInfo.download_url){
-      blob = await (await fetch(binInfo.download_url)).blob();
-    } else if(binInfo.content){
-      const bin = atob(binInfo.content.replace(/\n/g,''));
-      const arr = new Uint8Array(bin.length);
-      for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-      blob = new Blob([arr]);
-    } else return false;
+
+    // 1) raw (kisi bhi size ke liye kaam karta hai)
+    let blob = await ghFetchRawBlob(def.ghBin);
+
+    // 2) fallback: download_url / base64 content
+    if(!blob){
+      const binInfo = await ghGetFileInfo(def.ghBin);
+      if(binInfo && binInfo.download_url){
+        blob = await (await fetch(binInfo.download_url)).blob();
+      } else if(binInfo && binInfo.content){
+        const bin = atob(binInfo.content.replace(/\n/g,''));
+        const arr = new Uint8Array(bin.length);
+        for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+        blob = new Blob([arr]);
+      }
+    }
+    if(!blob || !blob.size) return false;
+
     const typed = new Blob([blob], { type: meta.type || 'audio/mpeg' });
     await idbSet(def.idbKey, { blob: typed, name: meta.name });
-    if(kind === 'tick') tickName = meta.name;
-    else if(kind === 'om') omName = meta.name;
-    else bellName = meta.name;
-    updateSoundInfo(kind);
-    showToast(`✓ ${def.label} restored from GitHub`);
+
+    if(kind === 'tick'){ tickName = meta.name; tickBuffer = null; tickDecodeTried = false; }
+    else if(kind === 'om'){ attachOmBlob(typed, meta.name); }
+    else { bellName = meta.name; bellBuffer = null; bellDecodeTried = false; }
+
+    await updateSoundInfo(kind);
+    showToast(`✓ ${def.label} restored from GitHub (${fmtSize(typed.size)})`, 'success', 4000);
     return true;
   }catch(e){ console.error('ghDownloadSound '+kind, e); return false; }
+}
+
+async function restoreOmFromGitHub(){
+  if(!ghConfigured()){ showToast('⚙ Pehle GitHub settings bharo', 'error'); return; }
+  showToast('☁ Om GitHub se laa rahe hain...', 'info', 4000);
+  const ok = await ghDownloadSound('om');
+  if(ok){
+    if(omBgOn && !running){ stopOmLoop(); setTimeout(()=> startOmLoop(), 400); }
+  } else {
+    showToast('❌ GitHub pe Om file nahi mili — ek baar 📂 se upload karo', 'error', 5000);
+  }
 }
 
 async function updateSoundInfo(kind){
@@ -4630,9 +4714,15 @@ async function updateSoundInfo(kind){
   const el = document.getElementById(ids[kind]);
   if(!el) return;
   const stored = await idbGet(SOUND_DEFS[kind].idbKey).catch(()=>null);
-  if(stored && stored.blob) el.innerHTML = `✓ <b>${stored.name}</b> (${Math.round(stored.blob.size/1024)} KB)`;
-  else if(kind === 'om') el.innerHTML = '⚠ No Om file — upload karo';
-  else el.innerHTML = `⚠ No ${SOUND_DEFS[kind].label.toLowerCase()} — built-in use hoga`;
+  if(stored && stored.blob){
+    el.innerHTML = `✓ <b>${stored.name}</b> (${fmtSize(stored.blob.size)})`;
+  } else if(kind === 'om'){
+    el.innerHTML = ghConfigured()
+      ? '⚠ No Om file — 📂 upload ya ☁ restore karo'
+      : '⚠ No Om file — 📂 se upload karo';
+  } else {
+    el.innerHTML = `⚠ No ${SOUND_DEFS[kind].label.toLowerCase()} — built-in use hoga`;
+  }
 }
 
 async function clearSound(kind){
@@ -4641,27 +4731,102 @@ async function clearSound(kind){
   if(!confirm(`Delete saved ${def.label} sound?${extra}`)) return;
   await idbDel(def.idbKey);
   if(kind === 'tick'){ tickBuffer = null; tickName = ''; tickDecodeTried = false; }
-  else if(kind === 'om'){ stopOmLoop(); omBuffer = null; omName = ''; omDecodeTried = false; }
+  else if(kind === 'om'){ detachOm(); }
   else { bellBuffer = null; bellName = ''; bellDecodeTried = false; }
-  updateSoundInfo(kind);
+  await updateSoundInfo(kind);
   showToast(`${def.label} sound cleared`);
 }
 
 async function testSound(kind){
   if(kind === 'tick'){ playTickSound(); return; }
+
   if(kind === 'om'){
-    if(!omBuffer && !omDecodeTried){ omDecodeTried = true; await decodeSound('om').catch(()=>{}); }
-    if(!omBuffer){ showToast('⚠ Pehle Om file upload karo', 'error'); return; }
+    if(!omReady){
+      const ok = await loadOmFromIDB();
+      if(!ok && ghConfigured()){
+        showToast('☁ Om GitHub se laa rahe hain...', 'info', 3000);
+        await ghDownloadSound('om');
+      }
+    }
+    if(!omReady){ showToast('⚠ Pehle Om file 📂 se upload karo', 'error', 4000); return; }
     if(omLooping){ stopOmLoop(); showToast('🕉 Om stopped', 'info'); }
     else { await startOmLoopForced(); showToast('🕉 Om playing — dobara ▶ dabao band karne ke liye', 'info', 3500); }
     return;
   }
+
   if(!bellBuffer && !bellDecodeTried){ bellDecodeTried = true; await decodeSound('bell').catch(()=>{}); }
   if(bellBuffer) playSoundBuffer(bellBuffer, bellVolume);
   else { synthBell(); showToast('▶ Built-in bell (upload your own mandir ghanti)', 'info'); }
 }
 
-/* ═══ OM LOOP ENGINE ═══ */
+/* ═══════════ OM STREAMING ENGINE (v20.4) ═══════════ */
+function getOmEl(){
+  if(!omEl) omEl = document.getElementById('omAudio');
+  return omEl;
+}
+
+function attachOmBlob(blob, name){
+  const el = getOmEl();
+  if(!el || !blob) return false;
+  if(omURL){ try{ URL.revokeObjectURL(omURL); }catch(e){} }
+  omURL = URL.createObjectURL(blob);
+  el.src = omURL;
+  el.loop = true;
+  el.volume = 0;
+  el.load();
+  omName = name || '';
+  omReady = true;
+  return true;
+}
+
+function detachOm(){
+  stopOmLoop();
+  const el = getOmEl();
+  if(el){ try{ el.pause(); el.removeAttribute('src'); el.load(); }catch(e){} }
+  if(omURL){ try{ URL.revokeObjectURL(omURL); }catch(e){} }
+  omURL = null; omName = ''; omReady = false; omLooping = false;
+}
+
+async function loadOmFromIDB(){
+  if(omReady) return true;
+  const stored = await idbGet(SOUND_DEFS.om.idbKey).catch(()=>null);
+  if(!stored || !stored.blob) return false;
+  return attachOmBlob(stored.blob, stored.name);
+}
+
+function omFadeTo(target, ms, onDone){
+  const el = getOmEl();
+  if(!el){ if(onDone) onDone(); return; }
+  if(omFadeTimer){ clearInterval(omFadeTimer); omFadeTimer = null; }
+  const steps  = 18;
+  const stepMs = Math.max(20, ms / steps);
+  const start  = el.volume;
+  const diff   = target - start;
+  let i = 0;
+  omFadeTimer = setInterval(()=>{
+    i++;
+    try{ el.volume = Math.max(0, Math.min(1, start + diff * (i/steps))); }catch(e){}
+    if(i >= steps){
+      clearInterval(omFadeTimer); omFadeTimer = null;
+      if(onDone) onDone();
+    }
+  }, stepMs);
+}
+
+// Autoplay policy: pehle user gesture ke baad hi audio chal sakta hai
+function armOmGestureUnlock(){
+  if(omGestureArmed) return;
+  omGestureArmed = true;
+  const fn = ()=>{
+    document.removeEventListener('pointerdown', fn);
+    document.removeEventListener('touchstart', fn);
+    omGestureArmed = false;
+    if(omBgOn && !running) startOmLoop();
+  };
+  document.addEventListener('pointerdown', fn, { passive:true });
+  document.addEventListener('touchstart', fn, { passive:true });
+}
+
 function saveOmBgPref(){
   omBgOn = document.getElementById('omBgToggle').checked;
   localStorage.setItem('omBgOn', omBgOn);
@@ -4673,69 +4838,68 @@ function saveOmBgPref(){
     showToast('🕉 Om background OFF', 'info');
   }
 }
+
 function saveOmVolumePref(){
   omVolume = parseFloat(document.getElementById('omVolumeSel').value) || 0.5;
   localStorage.setItem('omVolume', omVolume);
-  if(omGainNode && audioCtx){
-    omGainNode.gain.setTargetAtTime(omVolume, audioCtx.currentTime, 0.1);
+  const el = getOmEl();
+  if(el && omLooping){
+    if(omFadeTimer){ clearInterval(omFadeTimer); omFadeTimer = null; }
+    try{ el.volume = omVolume; }catch(e){}
   }
 }
 
 async function startOmLoop(){
-  if(!omBgOn || omLooping || running) return;
-  if(!omBuffer && !omDecodeTried){
-    omDecodeTried = true;
-    await decodeSound('om').catch(()=>{});
+  if(!omBgOn || running) return;
+  if(!omReady){
+    const ok = await loadOmFromIDB();
+    if(!ok) return;                 // koi file nahi — chup raho
   }
-  if(!omBuffer) return;   // no file uploaded — stay silent
+  const el = getOmEl();
+  if(!el) return;
   try{
-    await ensureAudioCtx();
-    stopOmLoop();
-    omSource = audioCtx.createBufferSource();
-    omGainNode = audioCtx.createGain();
-    omSource.buffer = omBuffer;
-    omSource.loop = true;
-    omGainNode.gain.value = 0;
-    omSource.connect(omGainNode);
-    omGainNode.connect(audioCtx.destination);
-    omSource.start();
-    omGainNode.gain.setTargetAtTime(omVolume, audioCtx.currentTime, 0.6);  // gentle fade in
+    el.loop = true;
+    el.volume = 0;
+    await el.play();
     omLooping = true;
+    omFadeTo(omVolume, 700);
     startSilentKeepAlive();
-  }catch(e){ console.warn('startOmLoop', e); }
+  }catch(err){
+    omLooping = false;
+    if(err && err.name === 'NotAllowedError'){
+      armOmGestureUnlock();         // screen touch hone pe apne aap chalu
+    } else {
+      console.warn('startOmLoop', err);
+    }
+  }
 }
 
-// Test-play bypassing the omBgOn / running guards
 async function startOmLoopForced(){
-  if(!omBuffer) return;
+  if(!omReady){
+    const ok = await loadOmFromIDB();
+    if(!ok) return;
+  }
+  const el = getOmEl();
+  if(!el) return;
   try{
-    await ensureAudioCtx();
-    stopOmLoop();
-    omSource = audioCtx.createBufferSource();
-    omGainNode = audioCtx.createGain();
-    omSource.buffer = omBuffer;
-    omSource.loop = true;
-    omGainNode.gain.value = 0;
-    omSource.connect(omGainNode);
-    omGainNode.connect(audioCtx.destination);
-    omSource.start();
-    omGainNode.gain.setTargetAtTime(omVolume, audioCtx.currentTime, 0.4);
+    el.loop = true;
+    el.volume = 0;
+    await el.play();
     omLooping = true;
-  }catch(e){ console.warn('startOmLoopForced', e); }
+    omFadeTo(omVolume, 400);
+  }catch(err){
+    omLooping = false;
+    showToast('⚠ Om play block hua — screen pe ek baar tap karo', 'error', 4000);
+    console.warn('startOmLoopForced', err);
+  }
 }
 
 function stopOmLoop(){
-  if(!omLooping && !omSource) return;
-  try{
-    if(omGainNode && audioCtx){
-      omGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.25);   // fade out then stop
-      const src = omSource;
-      setTimeout(()=>{ try{ src && src.stop(); }catch(e){} }, 700);
-    } else if(omSource){
-      omSource.stop();
-    }
-  }catch(e){}
-  omSource = null; omGainNode = null; omLooping = false;
+  const el = getOmEl();
+  if(!el){ omLooping = false; return; }
+  if(!omLooping && el.paused){ omLooping = false; return; }
+  omLooping = false;
+  omFadeTo(0, 300, ()=>{ try{ el.pause(); }catch(e){} });
 }
 
 async function initCustomSounds(){
@@ -4744,16 +4908,18 @@ async function initCustomSounds(){
     const local = await idbGet(def.idbKey).catch(()=>null);
     if(local && local.blob){
       if(kind === 'tick') tickName = local.name;
-      else if(kind === 'om') omName = local.name;
+      else if(kind === 'om') attachOmBlob(local.blob, local.name);
       else bellName = local.name;
-      updateSoundInfo(kind);
+      await updateSoundInfo(kind);
     } else if(ghConfigured()){
-      await ghDownloadSound(kind);
+      const ok = await ghDownloadSound(kind);
+      if(!ok) await updateSoundInfo(kind);
     } else {
-      updateSoundInfo(kind);
+      await updateSoundInfo(kind);
     }
   }
-  // Restore Om prefs in UI + auto-start if idle
+
+  // Om prefs restore
   const omTg = document.getElementById('omBgToggle');
   if(omTg) omTg.checked = omBgOn;
   const omSel = document.getElementById('omVolumeSel');
