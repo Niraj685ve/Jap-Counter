@@ -1,7 +1,7 @@
 {
-  "perm": 2816,
-  "trip": 0,
-  "version": 4342,
+  "perm": 2838,
+  "trip": 22,
+  "version": 4365,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
@@ -61,6 +61,14 @@
       "target": 2100000,
       "label": "After 00:35:00",
       "triggered": false
+    },
+    {
+      "id": 1788401444942,
+      "type": "time",
+      "delta": 2100000,
+      "target": 2100000,
+      "label": "After 00:35:00",
+      "triggered": false
     }
   ],
   "presets": [
@@ -73,18 +81,18 @@
   "dailyStats": {
     "2026-09-01": 1810,
     "2026-09-02": 1618,
-    "2026-09-03": 1
+    "2026-09-03": 23
   },
   "settings": {
-    "audioDuration": 5.4,
-    "japsPerAudio": 4,
+    "audioDuration": 1.4,
+    "japsPerAudio": 1,
     "tapCooldown": 150,
     "backupEvery": 20,
     "backupDebounce": 3000,
     "chantHours": 4,
-    "vibrationMs": 30
+    "vibrationMs": 0
   },
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-03T02:10:26.162Z",
+  "updatedAt": "2026-09-03T02:12:57.712Z",
   "appVersion": "v13"
 }
