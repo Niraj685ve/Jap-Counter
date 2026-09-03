@@ -1,10 +1,12 @@
 {
   "perm": 4730,
   "trip": 0,
-  "version": 6262,
+  "version": 6269,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
+  "alerts": [],
+  "presets": [],
   "dailyStats": {
     "2026-09-01": 1810,
     "2026-09-02": 1618,
@@ -19,7 +21,7 @@
     "chantHours": 4,
     "vibrationMs": 30
   },
-  "deviceId": "dev_38e7zgo0",
-  "updatedAt": "2026-09-03T09:52:07.696Z",
-  "appVersion": "v20"
+  "deviceId": "dev_i4hbwie4",
+  "updatedAt": "2026-09-03T09:52:54.832Z",
+  "appVersion": "v13"
 }
