@@ -1497,6 +1497,7 @@
     <input type="file" id="audioFile" accept="audio/*" onchange="handleAudioPick(event)">
     <input type="file" id="tickFile" accept="audio/*" style="display:none;" onchange="handleSoundPick('tick', event)">
     <input type="file" id="bellFile" accept="audio/*" style="display:none;" onchange="handleSoundPick('bell', event)">
+    <input type="file" id="omFile"   accept="audio/*" style="display:none;" onchange="handleSoundPick('om', event)">
   </div>
   <div class="row">
     <button class="main gh" onclick="manualBackup()">💾 GitHub Backup</button>
@@ -1620,11 +1621,52 @@
           <label>Alert Type</label>
           <select id="alertType" onchange="toggleAlertInputs()">
             <option value="count">📿 After N japs</option>
-            <option value="time">⏰ After time (HH:MM:SS)</option>
+            <option value="time">⏰ After time</option>
           </select>
         </div>
+
         <div class="form-group" id="countInputGroup"><label>Number of japs</label><input type="number" id="alertCount" placeholder="e.g. 108"></div>
-        <div class="form-group" id="timeInputGroup" style="display:none;"><label>Time (HH:MM:SS)</label><input type="text" id="alertTime" placeholder="00:10:00"></div>
+
+        <!-- ═══ v20.3: TIME DROPDOWNS (base × multiplier) ═══ -->
+        <div class="form-group" id="timeInputGroup" style="display:none;">
+          <label>⏰ Alert Timer</label>
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
+            <select id="alertTimeBase" onchange="updateAlertTimePreview()" style="width:100%;padding:9px;font-size:14px;">
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="25">25 min</option>
+              <option value="30">30 min</option>
+              <option value="35">35 min</option>
+              <option value="40">40 min</option>
+              <option value="45">45 min</option>
+              <option value="50">50 min</option>
+              <option value="55">55 min</option>
+              <option value="60">60 min (1 hr)</option>
+            </select>
+            <span style="color:#ffcc00;font-weight:bold;font-size:16px;">×</span>
+            <select id="alertTimeMult" onchange="updateAlertTimePreview()" style="width:100%;padding:9px;font-size:14px;">
+              <option value="1" selected>× 1</option>
+              <option value="2">× 2</option>
+              <option value="3">× 3</option>
+              <option value="4">× 4</option>
+              <option value="5">× 5</option>
+              <option value="6">× 6</option>
+              <option value="7">× 7</option>
+              <option value="8">× 8</option>
+              <option value="9">× 9</option>
+              <option value="10">× 10</option>
+              <option value="11">× 11</option>
+              <option value="12">× 12</option>
+            </select>
+          </div>
+          <div id="alertTimePreview" style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,0.15);border:1px dashed #10b981;border-radius:8px;font-size:13px;color:#6ee7b7;font-weight:bold;text-align:center;">
+            ⏰ 10 × 1 = <b>10 min</b> → 00:10:00
+          </div>
+          <small>💡 35 min = <b>35 × 1</b> &nbsp;•&nbsp; 1 hr 10 min = <b>35 × 2</b> &nbsp;•&nbsp; 6 hr = <b>30 × 12</b></small>
+        </div>
+
         <div class="toggle-switch"><label>💾 Save as preset</label><label class="switch"><input type="checkbox" id="saveAsPreset"><span class="slider"></span></label></div>
         <button class="main alert-btn" onclick="addAlert()" style="width:100%;margin-top:8px;">➕ Add Alert</button>
       </div>
@@ -1683,6 +1725,40 @@
           <button class="sp-load" onclick="pickSound('bell')" title="Upload">📂</button>
           <button class="sp-test" onclick="testSound('bell')" title="Test">▶</button>
           <button class="sp-del"  onclick="clearSound('bell')" title="Delete">🗑</button>
+        </div>
+
+        <!-- ═══ v20.3: OM BACKGROUND (idle / pause) ═══ -->
+        <div class="sound-panel-row" style="border-color:rgba(167,139,250,0.55);background:rgba(30,10,45,0.5);">
+          <div class="sp-label" style="color:#c4b5fd;">
+            🕉 Om Background (idle/pause)
+            <small id="omInfo">Loading...</small>
+          </div>
+          <button class="sp-load" onclick="pickSound('om')" title="Upload Om file">📂</button>
+          <button class="sp-test" onclick="testSound('om')" title="Play / Stop">▶</button>
+          <button class="sp-del"  onclick="clearSound('om')" title="Delete">🗑</button>
+        </div>
+
+        <div class="toggle-switch" style="background:rgba(139,92,246,0.14);border:1px solid rgba(167,139,250,0.45);border-radius:8px;padding:8px;margin:5px 0;">
+          <label style="color:#c4b5fd;">
+            🕉 Play Om when idle / paused
+            <small style="display:block;font-size:9px;color:#aaa;font-weight:normal;margin-top:2px;">Jap band ho to Om loop chalega, START pe auto-stop</small>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="omBgToggle" onchange="saveOmBgPref()">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group">
+          <label>🔊 Om Volume</label>
+          <select id="omVolumeSel" onchange="saveOmVolumePref()" style="width:100%;padding:9px;font-size:14px;">
+            <option value="0.15">🔈 Very Low — 15%</option>
+            <option value="0.3">🔈 Low — 30%</option>
+            <option value="0.5" selected>🔉 Medium — 50%</option>
+            <option value="0.7">🔊 High — 70%</option>
+            <option value="1">🔊 Max — 100%</option>
+          </select>
+          <small>Live change hota hai — Om bajte waqt bhi adjust kar sakte ho</small>
         </div>
 
         <div class="bell-rule-box">
@@ -1812,9 +1888,43 @@
     <div class="modal-body">
 
       <div class="form-group">
-        <label>⏰ Alert Time (optional)</label>
-        <input type="text" id="mansikAlertTime" class="alert-time-input" placeholder="00:00:00">
-        <small>HH:MM:SS format - jap complete hone pe alert bajega. Blank = no alert.</small>
+        <label>⏰ Alert Timer (optional)</label>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
+          <select id="mansikAlertBase" onchange="updateMansikAlertPreview()" style="width:100%;padding:9px;font-size:14px;">
+            <option value="0">🔇 Off</option>
+            <option value="5">5 min</option>
+            <option value="10" selected>10 min</option>
+            <option value="15">15 min</option>
+            <option value="20">20 min</option>
+            <option value="25">25 min</option>
+            <option value="30">30 min</option>
+            <option value="35">35 min</option>
+            <option value="40">40 min</option>
+            <option value="45">45 min</option>
+            <option value="50">50 min</option>
+            <option value="55">55 min</option>
+            <option value="60">60 min (1 hr)</option>
+          </select>
+          <span style="color:#ffcc00;font-weight:bold;font-size:16px;">×</span>
+          <select id="mansikAlertMult" onchange="updateMansikAlertPreview()" style="width:100%;padding:9px;font-size:14px;">
+            <option value="1" selected>× 1</option>
+            <option value="2">× 2</option>
+            <option value="3">× 3</option>
+            <option value="4">× 4</option>
+            <option value="5">× 5</option>
+            <option value="6">× 6</option>
+            <option value="7">× 7</option>
+            <option value="8">× 8</option>
+            <option value="9">× 9</option>
+            <option value="10">× 10</option>
+            <option value="11">× 11</option>
+            <option value="12">× 12</option>
+          </select>
+        </div>
+        <div id="mansikAlertPreview" style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,0.15);border:1px dashed #10b981;border-radius:8px;font-size:13px;color:#6ee7b7;font-weight:bold;text-align:center;">
+          ⏰ 10 min → 00:10:00
+        </div>
+        <small>💡 35 min = <b>35 × 1</b> &nbsp;•&nbsp; 1 hr 10 min = <b>35 × 2</b> &nbsp;•&nbsp; 6 hr = <b>30 × 12</b> ya <b>60 × 6</b></small>
       </div>
 
       <div class="toggle-switch">
@@ -2013,6 +2123,43 @@
     <div id="alertNewBtns" style="display:none;">
       <div class="new-input-box" id="newInputBox">
         <input type="text" id="newAlertInput">
+
+        <!-- ═══ v20.3: TIME DROPDOWNS inside popup ═══ -->
+        <div id="newAlertTimeWrap" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center;">
+            <select id="newAlertBase" onchange="updateNewAlertPreview()" style="width:100%;padding:7px;font-size:13px;background:rgba(0,0,0,0.6);color:#fff;border:1px solid #ffcc00;border-radius:6px;">
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="20">20 min</option>
+              <option value="25">25 min</option>
+              <option value="30">30 min</option>
+              <option value="35">35 min</option>
+              <option value="40">40 min</option>
+              <option value="45">45 min</option>
+              <option value="50">50 min</option>
+              <option value="55">55 min</option>
+              <option value="60">60 min</option>
+            </select>
+            <span style="color:#ffcc00;font-weight:bold;">×</span>
+            <select id="newAlertMult" onchange="updateNewAlertPreview()" style="width:100%;padding:7px;font-size:13px;background:rgba(0,0,0,0.6);color:#fff;border:1px solid #ffcc00;border-radius:6px;">
+              <option value="1" selected>× 1</option>
+              <option value="2">× 2</option>
+              <option value="3">× 3</option>
+              <option value="4">× 4</option>
+              <option value="5">× 5</option>
+              <option value="6">× 6</option>
+              <option value="7">× 7</option>
+              <option value="8">× 8</option>
+              <option value="9">× 9</option>
+              <option value="10">× 10</option>
+              <option value="11">× 11</option>
+              <option value="12">× 12</option>
+            </select>
+          </div>
+          <div id="newAlertPreview" style="margin-top:6px;font-size:11px;color:#6ee7b7;font-weight:bold;">⏰ 10 × 1 = <b>10 min</b> → 00:10:00</div>
+        </div>
+
         <small id="newAlertHint" style="color:#aaa;font-size:10px;"></small>
       </div>
       <div class="btn-row">
@@ -2085,7 +2232,7 @@ let trip = parseInt(localStorage.getItem('tripCount') || '0');
 let milestoneDates = JSON.parse(localStorage.getItem('milestoneDates') || '{}');
 let alerts = JSON.parse(localStorage.getItem('alerts') || '[]');
 let presets = JSON.parse(localStorage.getItem('presets') || '[]');
-let dailyStats = JSON.parse(localStorage.getItem('dailyStats') || '{}'); // v13: {"2026-09-01": 1234}
+let dailyStats = JSON.parse(localStorage.getItem('dailyStats') || '{}');
 let lastSyncTs = parseInt(localStorage.getItem('lastSyncTs') || '0');
 let localVersion = parseInt(localStorage.getItem('localVersion') || '0');
 let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') || '-1');
@@ -2105,10 +2252,10 @@ let syncLocked = false;
 let sessionReconciled = false;
 let lastVisibilityCheckTs = 0;
 
-/* v13: BACKGROUND JAP TRACKING */
-let backgroundStartTs = null;    // When screen went off / tab hidden
-let backgroundStartCount = 0;    // Perm value when going background
-let statsView = 'daily';         // 'daily' | 'weekly' | 'monthly'
+/* BACKGROUND JAP TRACKING */
+let backgroundStartTs = null;
+let backgroundStartCount = 0;
+let statsView = 'daily';
 
 let chantMode = localStorage.getItem('chantMode') || 'audio';
 if(!MODES.includes(chantMode)) chantMode = 'audio';
@@ -2408,14 +2555,13 @@ function renderMilestones(){
   wrap.innerHTML = summaryHtml + html;
 }
 
-/* ============ REVERSE COUNT (v13) ============ */
+/* ============ REVERSE COUNT ============ */
 function updateReverseCount(){
   const nextT = findNextTarget();
   const targetName = findNextTargetName(nextT);
   const japInterval = getJapInterval();
   const chantHrs = SETTINGS.chantHours;
 
-  // Bottom widget
   if(!nextT){
     document.getElementById('cdTargetName').textContent = '🎉 All Milestones Done!';
     document.getElementById('cdRemaining').textContent = '0';
@@ -2435,7 +2581,6 @@ function updateReverseCount(){
     document.getElementById('cdPercent').textContent = pct.toFixed(1) + '%';
   }
 
-  // Modal (only if open)
   if(document.getElementById('reverseCountModal').classList.contains('open')){
     if(!nextT){
       document.getElementById('rcTargetName').textContent = '🎉 All Done!';
@@ -2473,7 +2618,6 @@ function updateReverseCount(){
       document.getElementById('rcMalasLeft').textContent = fmtNum(malasLeft);
       document.getElementById('rcPerDay').textContent = fmtNum(perDay);
 
-      // Motivational message
       let motiv = '';
       if(pct >= 90) motiv = '🔥 So close! Push the final stretch! Har Har Mahadev 🔱';
       else if(pct >= 75) motiv = '⚡ 3/4th complete! Momentum is unstoppable now!';
@@ -2495,7 +2639,7 @@ function getPrevMilestone(nextT){
   return 0;
 }
 
-/* ============ DAILY STATS (v13) ============ */
+/* ============ DAILY STATS ============ */
 function recordJapForToday(count=1){
   const key = todayKey();
   dailyStats[key] = (dailyStats[key] || 0) + count;
@@ -2511,15 +2655,13 @@ function renderDailyStats(){
   const chart = document.getElementById('statsChart');
   const summary = document.getElementById('statsSummary');
 
-  const entries = Object.entries(dailyStats).sort((a,b) => a[0].localeCompare(b[0]));
   const now = new Date();
   const todayK = todayKey();
 
-  let data = [];       // [{label, key, count, isToday}]
+  let data = [];
   let periodLabel = '';
 
   if(statsView === 'daily'){
-    // Last 14 days
     periodLabel = 'Last 14 days';
     for(let i=13; i>=0; i--){
       const d = new Date(now); d.setDate(d.getDate() - i);
@@ -2532,7 +2674,6 @@ function renderDailyStats(){
       });
     }
   } else if(statsView === 'weekly'){
-    // Last 8 weeks
     periodLabel = 'Last 8 weeks';
     for(let i=7; i>=0; i--){
       const end = new Date(now); end.setDate(end.getDate() - i*7);
@@ -2549,7 +2690,6 @@ function renderDailyStats(){
       });
     }
   } else {
-    // Last 6 months
     periodLabel = 'Last 6 months';
     for(let i=5; i>=0; i--){
       const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
@@ -2570,7 +2710,6 @@ function renderDailyStats(){
 
   chartLabel.textContent = periodLabel;
 
-  // Summary cards
   const totalToday = dailyStats[todayK] || 0;
   let weekTotal = 0;
   for(let i=0; i<7; i++){
@@ -2592,7 +2731,6 @@ function renderDailyStats(){
     <div class="m-card"><div class="lbl">Avg / Active Day</div><div class="val">${fmtNum(avgPerActive)}</div><div class="sub">${activeDays} active days</div></div>
   `;
 
-  // Chart
   const maxCount = Math.max(...data.map(d => d.count), 1);
   const bestCount = maxCount;
   if(data.every(d => d.count === 0)){
@@ -2611,7 +2749,7 @@ function renderDailyStats(){
   }).join('');
 }
 
-/* ============ BEST DAY (v13) ============ */
+/* ============ BEST DAY ============ */
 function renderBestDay(){
   const entries = Object.entries(dailyStats).sort((a,b) => b[1] - a[1]);
   const todayK = todayKey();
@@ -2629,17 +2767,14 @@ function renderBestDay(){
 
   const [bestKey, bestCount] = entries[0];
   const bestDate = new Date(bestKey).toLocaleDateString('en-GB',{weekday:'long', day:'2-digit', month:'short', year:'numeric'});
-  const chantHrs = SETTINGS.chantHours;
   const japInterval = getJapInterval();
   const bestHrs = (bestCount * (japInterval/1000) / 3600).toFixed(1);
 
   document.getElementById('bdRecordCount').textContent = fmtNum(bestCount);
   document.getElementById('bdRecordDate').textContent = bestDate;
   document.getElementById('bdRecordSub').textContent = `${bestCount.toLocaleString()} japs • ~${bestHrs} hrs of chanting`;
-
   document.getElementById('bdToday').textContent = todayCount.toLocaleString();
 
-  // Today vs record
   let vsMsg = '';
   if(bestKey === todayK){
     vsMsg = '🔥 Today IS your record day! Keep it going!';
@@ -2654,7 +2789,6 @@ function renderBestDay(){
   }
   document.getElementById('bdTodayVs').innerHTML = vsMsg;
 
-  // Top 10
   const top10 = entries.slice(0, 10);
   document.getElementById('bdTopDays').innerHTML = top10.map(([k, v], i) => {
     const rank = i+1;
@@ -2733,7 +2867,6 @@ function loadAdvancedIntoForm(){
   document.getElementById('advChantHours').value = SETTINGS.chantHours;
   document.getElementById('advVibrationMs').value = SETTINGS.vibrationMs;
 }
-// Helper: parse vibration input (number OR "100,50,200" pattern)
 function parseVibrationInput(str){
   if(typeof str === 'number') return str;
   const s = String(str).trim();
@@ -2792,7 +2925,6 @@ function doVibrate(){
   // v20: Headphone tick mode replaces vibration entirely
   if(tickSoundOn){ playTickSound(); return; }
   if(!navigator.vibrate) return;
-  // Black Mode always vibrates (bypass toggle) so meditation is never silent
   const shouldVibrate = blackModeActive || vibrationOn;
   if(!shouldVibrate) return;
   const v = SETTINGS.vibrationMs;
@@ -2837,22 +2969,22 @@ function updateSyncBar(){
 function tickJap(){
   perm++; trip++; japsSinceBackup++;
   recordJapForToday(1);
-  doVibrate();       // v20: vibration OR headphone tick sound
+  doVibrate();
   updateUI();
   checkCountAlerts();
   if(japsSinceBackup >= SETTINGS.backupEvery){
     japsSinceBackup = 0;
     scheduleAutoBackup();
   }
-  bmOnJapFired();    // v19: black mode counter
-  checkMalaBell();   // 🔔 v20: 108-mala ghanti
+  bmOnJapFired();
+  checkMalaBell();
 }
 
 async function onStartClick(){
   if(running){
     running = false;
     applyRunningState();
-    if(blackModeActive){ await exitBlackMode(); }   // 🖤 v19
+    if(blackModeActive){ await exitBlackMode(); }
     scheduleAutoBackup(true);
     return;
   }
@@ -2861,7 +2993,6 @@ async function onStartClick(){
     openModal('conflict');
     return;
   }
-  // 🖤 v19: For mansik mode, always show picker first
   if(chantMode === 'mansik'){
     openMansikPicker();
     return;
@@ -2894,6 +3025,7 @@ function applyRunningState(){
   btn.classList.remove('running','manual','mansik');
 
   if(running){
+    stopOmLoop();                    // v20.3: jap start → Om band
     const info = MODE_LABELS[chantMode];
     btn.textContent = `⏸ PAUSE (${info.icon} ${info.name.split(' ')[0]})`;
     btn.classList.add('running');
@@ -2934,6 +3066,7 @@ function applyRunningState(){
     pauseTag.style.display = 'inline-block';
     if(sessionStart){ elapsedMs += Date.now() - sessionStart; sessionStart = null; }
     releaseWakeLock(); stopWakeVideo();
+    startOmLoop();                   // v20.3: pause/idle → Om chalu
   }
 }
 
@@ -2970,21 +3103,12 @@ async function requestWakeLock(){
 }
 function releaseWakeLock(){ if(wakeLock){wakeLock.release(); wakeLock=null;} }
 
-/* ============ VISIBILITY: BACKGROUND CONTINUE (v13) ============
-   Key change: When screen goes off / tab hidden while running:
-   - Audio mode: seamless audio keeps playing (Web Audio API works in bg)
-   - Mansik mode: keep silent audio + let interval run (silent audio keeps CPU alive on most devices)
-   - Manual mode: track taps as before
-   When coming back visible:
-   - Compute time gap and CATCH UP missed japs for audio/mansik mode
-   - This ensures counter stays accurate even if browser throttled the timer
-*/
+/* ============ VISIBILITY: BACKGROUND CONTINUE ============ */
 document.addEventListener('visibilitychange', async ()=>{
   if(document.visibilityState === 'hidden'){
     if(running){
       backgroundStartTs = Date.now();
       backgroundStartCount = perm;
-      // Keep silent audio playing to prevent OS from suspending
       startSilentKeepAlive();
       if(chantMode === 'manual'){ screenWasOff = true; screenOffJapCount = 0; }
     }
@@ -2993,7 +3117,6 @@ document.addEventListener('visibilitychange', async ()=>{
     if(running){
       requestWakeLock();
       startWakeVideo();
-      // v13: CATCH-UP for audio/mansik mode if timer was throttled
       if((chantMode === 'audio' || chantMode === 'mansik') && backgroundStartTs){
         const gap = Date.now() - backgroundStartTs;
         const expected = Math.floor(gap / getJapInterval());
@@ -3010,7 +3133,6 @@ document.addEventListener('visibilitychange', async ()=>{
           showToast(`⚡ Caught up ${missed} japs from background`, 'info', 3000);
           scheduleAutoBackup(true);
         }
-        // Restart timer clean
         if(japTimer){ clearInterval(japTimer); japTimer = null; }
         japTimer = setInterval(tickJap, getJapInterval());
         backgroundStartTs = null;
@@ -3019,7 +3141,6 @@ document.addEventListener('visibilitychange', async ()=>{
     if(screenWasOff && chantMode === 'manual' && screenOffJapCount > 0){ showScreenoffPrompt(); }
     screenWasOff = false;
 
-    // 10+ min hidden AND not chanting → silent re-check with GitHub
     const gap = Date.now() - lastVisibilityCheckTs;
     if(!running && sessionReconciled && ghConfigured() && gap > 10*60*1000 && !syncLocked){
       lastVisibilityCheckTs = Date.now();
@@ -3069,9 +3190,29 @@ function toggleAlertInputs(){
   const t = document.getElementById('alertType').value;
   document.getElementById('countInputGroup').style.display = t==='count' ? 'block' : 'none';
   document.getElementById('timeInputGroup').style.display = t==='time' ? 'block' : 'none';
+  if(t === 'time') updateAlertTimePreview();
 }
-function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); markDirty(); }
-function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); markDirty(); }
+
+/* v20.3: Alerts modal time dropdowns (base × multiplier) */
+function getAlertTimeMinutes(){
+  const base = parseInt(document.getElementById('alertTimeBase').value) || 0;
+  const mult = parseInt(document.getElementById('alertTimeMult').value) || 1;
+  return base * mult;
+}
+function updateAlertTimePreview(){
+  const base = parseInt(document.getElementById('alertTimeBase').value) || 0;
+  const mult = parseInt(document.getElementById('alertTimeMult').value) || 1;
+  const total = base * mult;
+  const h = Math.floor(total / 60), m = total % 60;
+  const hms = `${pad(h)}:${pad(m)}:00`;
+  const human = h > 0 ? (m > 0 ? `${h} hr ${m} min` : `${h} hr`) : `${m} min`;
+  const box = document.getElementById('alertTimePreview');
+  if(box) box.innerHTML = `⏰ ${base} × ${mult} = <b>${human}</b> → ${hms}`;
+}
+
+// v20.2: no markDirty() — alerts/presets are local-only, must not trigger GitHub sync
+function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); }
+function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); }
 
 function addAlert(){
   const type = document.getElementById('alertType').value;
@@ -3084,12 +3225,13 @@ function addAlert(){
     presetData = { type:'count', delta: n, label: `${fmtNum(n)} japs` };
     document.getElementById('alertCount').value = '';
   } else {
-    const str = document.getElementById('alertTime').value;
-    const ms = parseHMS(str);
-    if(!ms){ showToast('Format: HH:MM:SS', 'error'); return; }
+    const totalMin = getAlertTimeMinutes();
+    if(!totalMin || totalMin < 1){ showToast('Select a valid timer', 'error'); return; }
+    const ms = totalMin * 60000;
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+    const str = `${pad(h)}:${pad(m)}:00`;
     a = { id: Date.now(), type:'time', delta: ms, target: getElapsedMs() + ms, label: `After ${str}`, triggered:false };
     presetData = { type:'time', delta: ms, label: `After ${str}` };
-    document.getElementById('alertTime').value = '';
   }
   alerts.push(a);
   if(saveAsPreset && !presets.some(p => p.type===presetData.type && p.delta===presetData.delta)){
@@ -3197,10 +3339,46 @@ function alertShowNewInput(){
   document.getElementById('newInputBox').style.display = 'block';
   const isCount = currentAlert.type === 'count';
   const inp = document.getElementById('newAlertInput');
-  inp.placeholder = isCount ? 'e.g. 500' : '00:10:00';
-  inp.value = '';
-  document.getElementById('newAlertHint').textContent = isCount ? 'Number of japs' : 'HH:MM:SS format';
-  setTimeout(()=> inp.focus(), 100);
+  const sel = document.getElementById('newAlertTimeWrap');
+  if(isCount){
+    inp.style.display = 'block';
+    if(sel) sel.style.display = 'none';
+    inp.placeholder = 'e.g. 500';
+    inp.value = '';
+    document.getElementById('newAlertHint').textContent = 'Number of japs';
+    setTimeout(()=> inp.focus(), 100);
+  } else {
+    inp.style.display = 'none';
+    if(sel) sel.style.display = 'block';
+    const mins = Math.round((currentAlert.delta || 600000) / 60000);
+    const bSel = document.getElementById('newAlertBase');
+    const mSel = document.getElementById('newAlertMult');
+    const bOpts = Array.from(bSel.options).map(o => parseInt(o.value));
+    let base = bOpts.includes(mins) ? mins : 10, mult = 1;
+    if(!bOpts.includes(mins)){
+      for(const b of bOpts){
+        if(mins % b === 0 && mins / b >= 1 && mins / b <= 12){ base = b; mult = mins / b; break; }
+      }
+    }
+    bSel.value = String(base);
+    mSel.value = String(mult);
+    updateNewAlertPreview();
+    document.getElementById('newAlertHint').textContent = 'Pick base × multiplier';
+  }
+}
+function getNewAlertMinutes(){
+  const base = parseInt(document.getElementById('newAlertBase').value) || 0;
+  const mult = parseInt(document.getElementById('newAlertMult').value) || 1;
+  return base * mult;
+}
+function updateNewAlertPreview(){
+  const base = parseInt(document.getElementById('newAlertBase').value) || 0;
+  const mult = parseInt(document.getElementById('newAlertMult').value) || 1;
+  const total = base * mult;
+  const h = Math.floor(total / 60), m = total % 60;
+  const human = h > 0 ? (m > 0 ? `${h} hr ${m} min` : `${h} hr`) : `${m} min`;
+  const box = document.getElementById('newAlertPreview');
+  if(box) box.innerHTML = `⏰ ${base} × ${mult} = <b>${human}</b> → ${pad(h)}:${pad(m)}:00`;
 }
 function alertCancelNew(){
   document.getElementById('alertMainBtns').style.display = 'block';
@@ -3208,15 +3386,19 @@ function alertCancelNew(){
   document.getElementById('newInputBox').style.display = 'none';
 }
 function alertApplyNew(){
-  const val = document.getElementById('newAlertInput').value.trim();
-  if(!val){ showToast('Enter value', 'error'); return; }
   const a = currentAlert;
   if(a.type==='count'){
+    const val = document.getElementById('newAlertInput').value.trim();
+    if(!val){ showToast('Enter value', 'error'); return; }
     const n = parseInt(val); if(!n || n<1){ showToast('Invalid','error'); return; }
     a.delta = n; a.target = trip + n; a.label = `${fmtNum(n)} japs`;
   } else {
-    const ms = parseHMS(val); if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
-    a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${val}`;
+    const totalMin = getNewAlertMinutes();
+    if(!totalMin || totalMin < 1){ showToast('Select a valid timer','error'); return; }
+    const ms = totalMin * 60000;
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+    const str = `${pad(h)}:${pad(m)}:00`;
+    a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${str}`;
   }
   a.triggered = false; saveAlertsLocal(); closeAlertPopup(); forceResume();
   showToast('✓ New alert set');
@@ -3260,7 +3442,17 @@ function openModal(name){
     document.getElementById('ghBackupAudio').checked = localStorage.getItem('ghBackupAudio') !== 'false';
     document.getElementById('vibrationToggle').checked = vibrationOn;
     document.getElementById('bgAudioToggle').checked = bgAudioOn;
+    // v20.3: sound prefs
+    const tst = document.getElementById('tickSoundToggle'); if(tst) tst.checked = tickSoundOn;
+    const blt = document.getElementById('bellToggle');      if(blt) blt.checked = bellEnabled;
+    const omTg = document.getElementById('omBgToggle');     if(omTg) omTg.checked = omBgOn;
+    const omSel = document.getElementById('omVolumeSel');
+    if(omSel){
+      const opts = Array.from(omSel.options).map(o => o.value);
+      omSel.value = opts.includes(String(omVolume)) ? String(omVolume) : '0.5';
+    }
     updateAudioInfo();
+    updateSoundInfo('tick'); updateSoundInfo('bell'); updateSoundInfo('om');
   }
   if(name==='advanced') loadAdvancedIntoForm();
   if(name==='search') runCalc();
@@ -3590,8 +3782,6 @@ async function resolveConflict(action){
     perm = remote.perm || 0;
     trip = remote.trip || 0;
     milestoneDates = remote.milestoneDates || {};
-    if(remote.alerts) alerts = remote.alerts;
-    if(remote.presets) presets = remote.presets;
     if(remote.dailyStats) dailyStats = remote.dailyStats;
     if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
     localVersion = remote.version || 0;
@@ -3601,8 +3791,6 @@ async function resolveConflict(action){
     localStorage.setItem('permCount', perm);
     localStorage.setItem('tripCount', trip);
     localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-    localStorage.setItem('alerts', JSON.stringify(alerts));
-    localStorage.setItem('presets', JSON.stringify(presets));
     localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
     localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
     localStorage.setItem('localVersion', localVersion);
@@ -3668,8 +3856,6 @@ async function safePullFromGitHub(showUI=true){
       perm = remote.perm || 0;
       trip = remote.trip || 0;
       milestoneDates = remote.milestoneDates || {};
-      if(remote.alerts) alerts = remote.alerts;
-      if(remote.presets) presets = remote.presets;
       if(remote.dailyStats) dailyStats = remote.dailyStats;
       if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
       localVersion = remoteVer;
@@ -3677,8 +3863,6 @@ async function safePullFromGitHub(showUI=true){
       localStorage.setItem('permCount', perm);
       localStorage.setItem('tripCount', trip);
       localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-      localStorage.setItem('alerts', JSON.stringify(alerts));
-      localStorage.setItem('presets', JSON.stringify(presets));
       localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
       localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
       localStorage.setItem('localVersion', localVersion);
@@ -3747,7 +3931,7 @@ async function doPushToGitHub(silent=false, forceOverwrite=false){
     lastSyncTs = Date.now();
     localStorage.setItem('lastSyncTs', lastSyncTs);
     lastKnownRemote = { perm, trip, version: versionAtStart };
-        localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
+    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
     sessionReconciled = true;
     setSyncStatus('synced', 'now');
     if(!silent) showToast(`☁ Backed up: ${fmtNum(perm)} japs`);
@@ -3763,17 +3947,17 @@ async function doPushToGitHub(silent=false, forceOverwrite=false){
 }
 
 function buildPayload(){
+  // v20.2: Only LIFETIME data goes to GitHub.
+  // alerts + presets are session/UI state — kept local only.
   return {
     perm, trip,
     version: localVersion,
     milestoneDates,
-    alerts,
-    presets,
     dailyStats,
     settings: SETTINGS,
     deviceId: DEVICE_ID,
     updatedAt: new Date().toISOString(),
-    appVersion: 'v13'
+    appVersion: 'v20'
   };
 }
 
@@ -3832,24 +4016,36 @@ async function dangerResetLocal(){
     showToast('❌ No GitHub backup found - aborted', 'error', 5000);
     return;
   }
-  // Wipe
+  // Preserve GitHub config + device id + local-only sound prefs
   const ghOwner = localStorage.getItem('ghOwner');
   const ghRepoV = localStorage.getItem('ghRepo');
   const ghToken = localStorage.getItem('ghToken');
   const ghBackupAudio = localStorage.getItem('ghBackupAudio');
   const devId = localStorage.getItem('deviceId');
+  const keepTickOn  = localStorage.getItem('tickSoundOn');
+  const keepTickVol = localStorage.getItem('tickVolume');
+  const keepBellOn  = localStorage.getItem('bellEnabled');
+  const keepBellVol = localStorage.getItem('bellVolume');
+  const keepOmOn    = localStorage.getItem('omBgOn');
+  const keepOmVol   = localStorage.getItem('omVolume');
   localStorage.clear();
   localStorage.setItem('ghOwner', ghOwner);
   localStorage.setItem('ghRepo', ghRepoV);
   localStorage.setItem('ghToken', ghToken);
   if(ghBackupAudio !== null) localStorage.setItem('ghBackupAudio', ghBackupAudio);
   localStorage.setItem('deviceId', devId);
-  // Apply
+  if(keepTickOn  !== null) localStorage.setItem('tickSoundOn', keepTickOn);
+  if(keepTickVol !== null) localStorage.setItem('tickVolume', keepTickVol);
+  if(keepBellOn  !== null) localStorage.setItem('bellEnabled', keepBellOn);
+  if(keepBellVol !== null) localStorage.setItem('bellVolume', keepBellVol);
+  if(keepOmOn    !== null) localStorage.setItem('omBgOn', keepOmOn);
+  if(keepOmVol   !== null) localStorage.setItem('omVolume', keepOmVol);
+  // Apply — v20.2: alerts/presets are local-only, reset to empty
   perm = remote.perm || 0;
   trip = remote.trip || 0;
   milestoneDates = remote.milestoneDates || {};
-  alerts = remote.alerts || [];
-  presets = remote.presets || [];
+  alerts = [];
+  presets = [];
   dailyStats = remote.dailyStats || {};
   SETTINGS = { ...DEFAULT_SETTINGS, ...(remote.settings || {}) };
   localVersion = remote.version || 0;
@@ -3870,6 +4066,7 @@ async function dangerResetLocal(){
   sessionReconciled = true;
   syncLocked = false;
   conflictPending = null;
+  renderAlerts(); renderPresets();
   updateUI(false);
   hideStartup();
   showToast(`✓ Reset complete - ${fmtNum(perm)} japs restored`, 'success', 4000);
@@ -3877,7 +4074,7 @@ async function dangerResetLocal(){
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   🕉 v19.2: MANSIK BLACK MODE - Integration Layer
+   🕉 v19.2 / v20.3: MANSIK BLACK MODE - Integration Layer
    ═══════════════════════════════════════════════════════════════ */
 let blackModeActive = false;
 let blackModePaused = false;
@@ -3890,44 +4087,84 @@ let bmOrigVibrationMs = null;
 let bmSettingsOpen = false;
 
 function openMansikPicker(){
-  const savedAlert = localStorage.getItem('mansikAlertTime') || '';
-  document.getElementById('mansikAlertTime').value = savedAlert;
+  const savedBase = localStorage.getItem('mansikAlertBase') || '10';
+  const savedMult = localStorage.getItem('mansikAlertMult') || '1';
+  const baseSel = document.getElementById('mansikAlertBase');
+  const multSel = document.getElementById('mansikAlertMult');
+  const baseOpts = Array.from(baseSel.options).map(o => o.value);
+  const multOpts = Array.from(multSel.options).map(o => o.value);
+  baseSel.value = baseOpts.includes(savedBase) ? savedBase : '10';
+  multSel.value = multOpts.includes(savedMult) ? savedMult : '1';
   document.getElementById('mansikSavePreset').checked = false;
+  updateMansikAlertPreview();
   openModal('mansikPicker');
 }
 
+function getMansikAlertMinutes(){
+  const base = parseInt(document.getElementById('mansikAlertBase').value) || 0;
+  const mult = parseInt(document.getElementById('mansikAlertMult').value) || 1;
+  return base * mult;
+}
+
+function updateMansikAlertPreview(){
+  const base = parseInt(document.getElementById('mansikAlertBase').value) || 0;
+  const mult = parseInt(document.getElementById('mansikAlertMult').value) || 1;
+  const total = base * mult;
+  const box = document.getElementById('mansikAlertPreview');
+  const multSel = document.getElementById('mansikAlertMult');
+
+  if(base === 0){
+    multSel.disabled = true;
+    box.style.background = 'rgba(120,120,120,0.15)';
+    box.style.borderColor = '#777';
+    box.style.color = '#999';
+    box.innerHTML = '🔇 No alert — jap chalta rahega';
+    return;
+  }
+  multSel.disabled = false;
+  box.style.background = 'rgba(16,185,129,0.15)';
+  box.style.borderColor = '#10b981';
+  box.style.color = '#6ee7b7';
+
+  const h = Math.floor(total / 60), m = total % 60;
+  const hms = `${pad(h)}:${pad(m)}:00`;
+  const human = h > 0 ? (m > 0 ? `${h} hr ${m} min` : `${h} hr`) : `${m} min`;
+  box.innerHTML = `⏰ ${base} × ${mult} = <b>${human}</b> → ${hms}`;
+}
+
 function startMansikChoice(choice){
-  const alertStr = document.getElementById('mansikAlertTime').value.trim();
   const saveAsPreset = document.getElementById('mansikSavePreset').checked;
+  const totalMin = getMansikAlertMinutes();
   let alertAdded = null;
 
-  if(alertStr){
-    const ms = parseHMS(alertStr);
-    if(!ms){
-      showToast('⚠ Alert format: HH:MM:SS', 'error');
-      return;
-    }
-    const a = {
+  // v20.2: Remove any previous mansik-created alert so the array never grows
+  alerts = alerts.filter(a => a.src !== 'mansik');
+
+  if(totalMin > 0){
+    const ms = totalMin * 60000;
+    const h = Math.floor(totalMin / 60), m = totalMin % 60;
+    const label = `After ${pad(h)}:${pad(m)}:00`;
+    alerts.push({
       id: Date.now(),
       type: 'time',
       delta: ms,
       target: getElapsedMs() + ms,
-      label: `After ${alertStr}`,
-      triggered: false
-    };
-    alerts.push(a);
-    saveAlertsLocal();
-    if(typeof renderAlerts === 'function') renderAlerts();
+      label,
+      triggered: false,
+      src: 'mansik'
+    });
     if(saveAsPreset && !presets.some(p => p.type==='time' && p.delta===ms)){
-      presets.push({ type:'time', delta: ms, label: `After ${alertStr}` });
+      presets.push({ type:'time', delta: ms, label });
       if(typeof savePresets === 'function') savePresets();
       if(typeof renderPresets === 'function') renderPresets();
     }
-    localStorage.setItem('mansikAlertTime', alertStr);
-    alertAdded = alertStr;
-  } else {
-    localStorage.removeItem('mansikAlertTime');
+    alertAdded = `${pad(h)}:${pad(m)}:00`;
   }
+
+  saveAlertsLocal();
+  if(typeof renderAlerts === 'function') renderAlerts();
+  localStorage.setItem('mansikAlertBase', document.getElementById('mansikAlertBase').value);
+  localStorage.setItem('mansikAlertMult', document.getElementById('mansikAlertMult').value);
 
   closeModal('mansikPicker');
 
@@ -3945,16 +4182,13 @@ function startMansikChoice(choice){
 
 function showBlackModeOverlay(alertTime){
   const overlay = document.getElementById('blackModeOverlay');
-  
-  // ═══ DEBUG: Confirm vibration API + trigger test buzz ═══
+
   if(!navigator.vibrate){
     showToast('⚠ Ye browser vibration support nahi karta', 'error', 4000);
   } else {
-    // Test buzz on entry so user knows it works
     navigator.vibrate([100, 50, 100]);
   }
-  
-  
+
   updateBmInfoDisplay();
 
   const alertInfo = document.getElementById('bmAlertInfo');
@@ -3975,7 +4209,7 @@ function showBlackModeOverlay(alertTime){
   // Tap ANYWHERE (except top-right buttons) = pause/resume
   overlay.onclick = (e) => {
     if(bmSettingsOpen) return;
-    if(e.target.closest('.bm-icon-btn')) return; // ignore settings/exit clicks
+    if(e.target.closest('.bm-icon-btn')) return;
     toggleBlackModePause(e);
   };
 }
@@ -3986,7 +4220,6 @@ function updateBmInfoDisplay(){
   if(txt) txt.textContent = `Every ${intervalSec}s`;
 }
 
-// Ripple feedback on tap
 function spawnTapRipple(x, y){
   const effects = document.getElementById('bmEffects');
   if(!effects) return;
@@ -4014,8 +4247,6 @@ function toggleBlackModePause(e){
   applyRunningState();
   blackModePaused = !running;
 
-  // Visual ripple only - NO vibration on tap
-  // (Vibration on tap was cancelling the jap vibration mid-buzz)
   if(e && e.clientX){
     spawnTapRipple(e.clientX, e.clientY);
   }
@@ -4025,6 +4256,31 @@ function toggleBlackModePause(e){
   } else {
     overlay.classList.remove('paused');
   }
+}
+
+async function acquireBmWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      blackModeWakeLock = await navigator.wakeLock.request('screen');
+      blackModeWakeLock.addEventListener('release', ()=>{
+        if(blackModeActive && document.visibilityState === 'visible') acquireBmWakeLock();
+      });
+    }
+  }catch(e){}
+}
+async function releaseBmWakeLock(){
+  try{
+    if(blackModeWakeLock){ await blackModeWakeLock.release(); blackModeWakeLock = null; }
+  }catch(e){ blackModeWakeLock = null; }
+}
+
+function restoreBmSessionOverrides(){
+  if(bmOrigAudioDuration !== null) SETTINGS.audioDuration = bmOrigAudioDuration;
+  if(bmOrigJapsPerAudio  !== null) SETTINGS.japsPerAudio  = bmOrigJapsPerAudio;
+  if(bmOrigVibrationMs   !== null) SETTINGS.vibrationMs   = bmOrigVibrationMs;
+  bmOrigAudioDuration = null;
+  bmOrigJapsPerAudio  = null;
+  bmOrigVibrationMs   = null;
 }
 
 async function exitBlackMode(e){
@@ -4092,8 +4348,20 @@ function openBmSettings(e){
 }
 
 function closeBmSettings(){
-  document.getElementById('bmSettingsModal').classList.remove('show');
   bmSettingsOpen = false;
+  document.getElementById('bmSettingsModal').classList.remove('show');
+}
+
+function toggleTickSoundMode(){
+  const on      = document.getElementById('bmTickEnabled').checked;
+  const vibSel  = document.getElementById('bmSessionVibration');
+  const vibWrap = document.getElementById('bmVibWrap');
+  const tkSel   = document.getElementById('bmTickVolume');
+  const tkWrap  = document.getElementById('bmTickVolWrap');
+  vibSel.disabled = on;
+  tkSel.disabled  = !on;
+  vibWrap.classList.toggle('bm-disabled', on);
+  tkWrap.classList.toggle('bm-disabled', !on);
 }
 
 function applyBmSettings(){
@@ -4147,7 +4415,7 @@ function applyBmSettings(){
   if(tickOn){
     ensureAudioCtx().then(()=>{
       if(!tickBuffer && !tickDecodeTried){ tickDecodeTried = true; decodeSound('tick').catch(()=>{}); }
-      playTickSound();   // confirmation
+      playTickSound();
     });
   }
 
@@ -4167,50 +4435,13 @@ function applyBmSettings(){
   if(blackModePaused){ toggleBlackModePause(); }
 }
 
-function restoreBmSessionOverrides(){
-  if(bmOrigAudioDuration !== null){
-    // Reload from localStorage (source of truth - advanced was never touched)
-    const stored = JSON.parse(localStorage.getItem('advSettings') || '{}');
-    SETTINGS.audioDuration = stored.audioDuration ?? bmOrigAudioDuration;
-    SETTINGS.japsPerAudio  = stored.japsPerAudio  ?? bmOrigJapsPerAudio;
-    SETTINGS.vibrationMs   = stored.vibrationMs   ?? bmOrigVibrationMs;
-    bmOrigAudioDuration = null;
-    bmOrigJapsPerAudio = null;
-    bmOrigVibrationMs = null;
-  }
-}
-
-/* ═══ Wake Lock ═══ */
-async function acquireBmWakeLock(){
-  try {
-    if('wakeLock' in navigator){
-      blackModeWakeLock = await navigator.wakeLock.request('screen');
-      blackModeWakeLock.addEventListener('release', ()=> {
-        if(blackModeActive && document.visibilityState === 'visible'){
-          setTimeout(acquireBmWakeLock, 500);
-        }
-      });
-    }
-  } catch(e){ console.warn('WakeLock failed', e); }
-  if(typeof startWakeVideo === 'function') startWakeVideo();
-}
-async function releaseBmWakeLock(){
-  try { if(blackModeWakeLock){ await blackModeWakeLock.release(); blackModeWakeLock = null; } } catch(e){}
-}
-
-document.addEventListener('visibilitychange', async ()=>{
-  if(document.visibilityState === 'visible' && blackModeActive){
-    await acquireBmWakeLock();
-  }
-});
-
-
 /* ═══════════════════════════════════════════════════════════════
-   🔔 v20: TICK SOUND (headphone) + MALA BELL (108 ghanti)
+   🔔 v20 / v20.3: TICK SOUND + MALA BELL + OM BACKGROUND
    ═══════════════════════════════════════════════════════════════ */
 const SOUND_DEFS = {
   tick: { idbKey:'tickSound', ghBin:'data/tick_sound.bin', ghMeta:'data/tick_sound_meta.json', label:'Tick' },
-  bell: { idbKey:'bellSound', ghBin:'data/bell_sound.bin', ghMeta:'data/bell_sound_meta.json', label:'Bell' }
+  bell: { idbKey:'bellSound', ghBin:'data/bell_sound.bin', ghMeta:'data/bell_sound_meta.json', label:'Bell' },
+  om:   { idbKey:'omSound',   ghBin:'data/om_sound.bin',   ghMeta:'data/om_sound_meta.json',   label:'Om' }
 };
 
 let tickBuffer = null, tickName = '', tickDecodeTried = false;
@@ -4224,6 +4455,12 @@ let bellPlaying = false;
 
 const BELL_GAP_MS   = 400;
 const BELL_RELAX_MS = 3000;
+
+/* ═══ OM BACKGROUND LOOP (plays when idle / paused) ═══ */
+let omBuffer = null, omName = '', omDecodeTried = false;
+let omSource = null, omGainNode = null, omLooping = false;
+let omBgOn  = localStorage.getItem('omBgOn') === 'true';
+let omVolume = parseFloat(localStorage.getItem('omVolume')) || 0.5;
 
 function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
 
@@ -4296,13 +4533,15 @@ async function decodeSound(kind){
     const arr = await stored.blob.arrayBuffer();
     const buf = await audioCtx.decodeAudioData(arr.slice(0));
     if(kind === 'tick'){ tickBuffer = buf; tickName = stored.name; }
-    else               { bellBuffer = buf; bellName = stored.name; }
+    else if(kind === 'om'){ omBuffer = buf; omName = stored.name; }
+    else { bellBuffer = buf; bellName = stored.name; }
     return true;
   }catch(e){ console.warn('decodeSound '+kind, e); return false; }
 }
 
 function pickSound(kind){
-  document.getElementById(kind === 'tick' ? 'tickFile' : 'bellFile').click();
+  const map = { tick:'tickFile', bell:'bellFile', om:'omFile' };
+  document.getElementById(map[kind]).click();
 }
 
 async function handleSoundPick(kind, e){
@@ -4314,11 +4553,17 @@ async function handleSoundPick(kind, e){
     const arr = await file.arrayBuffer();
     const buf = await audioCtx.decodeAudioData(arr.slice(0));
     if(kind === 'tick'){ tickBuffer = buf; tickName = file.name; tickDecodeTried = true; }
-    else               { bellBuffer = buf; bellName = file.name; bellDecodeTried = true; }
+    else if(kind === 'om'){ omBuffer = buf; omName = file.name; omDecodeTried = true; }
+    else { bellBuffer = buf; bellName = file.name; bellDecodeTried = true; }
     await idbSet(def.idbKey, { blob: file, name: file.name });
     updateSoundInfo(kind);
     showToast(`✓ ${def.label} sound loaded`);
-    playSoundBuffer(buf, kind === 'tick' ? tickVolume : bellVolume);
+    if(kind === 'om'){
+      if(omBgOn && !running){ stopOmLoop(); startOmLoop(); }
+      else showToast('🕉 Om saved — toggle ON karo idle pe bajane ke liye', 'info', 3500);
+    } else {
+      playSoundBuffer(buf, kind === 'tick' ? tickVolume : bellVolume);
+    }
     if(ghConfigured() && localStorage.getItem('ghBackupAudio') !== 'false'){
       ghUploadSound(kind, file);
     }
@@ -4371,7 +4616,9 @@ async function ghDownloadSound(kind){
     } else return false;
     const typed = new Blob([blob], { type: meta.type || 'audio/mpeg' });
     await idbSet(def.idbKey, { blob: typed, name: meta.name });
-    if(kind === 'tick') tickName = meta.name; else bellName = meta.name;
+    if(kind === 'tick') tickName = meta.name;
+    else if(kind === 'om') omName = meta.name;
+    else bellName = meta.name;
     updateSoundInfo(kind);
     showToast(`✓ ${def.label} restored from GitHub`);
     return true;
@@ -4379,36 +4626,126 @@ async function ghDownloadSound(kind){
 }
 
 async function updateSoundInfo(kind){
-  const el = document.getElementById(kind === 'tick' ? 'tickInfo' : 'bellInfo');
+  const ids = { tick:'tickInfo', bell:'bellInfo', om:'omInfo' };
+  const el = document.getElementById(ids[kind]);
   if(!el) return;
   const stored = await idbGet(SOUND_DEFS[kind].idbKey).catch(()=>null);
   if(stored && stored.blob) el.innerHTML = `✓ <b>${stored.name}</b> (${Math.round(stored.blob.size/1024)} KB)`;
+  else if(kind === 'om') el.innerHTML = '⚠ No Om file — upload karo';
   else el.innerHTML = `⚠ No ${SOUND_DEFS[kind].label.toLowerCase()} — built-in use hoga`;
 }
 
 async function clearSound(kind){
   const def = SOUND_DEFS[kind];
-  if(!confirm(`Delete saved ${def.label} sound?\n(Built-in fallback use hoga)`)) return;
+  const extra = kind === 'om' ? '' : '\n(Built-in fallback use hoga)';
+  if(!confirm(`Delete saved ${def.label} sound?${extra}`)) return;
   await idbDel(def.idbKey);
   if(kind === 'tick'){ tickBuffer = null; tickName = ''; tickDecodeTried = false; }
-  else               { bellBuffer = null; bellName = ''; bellDecodeTried = false; }
+  else if(kind === 'om'){ stopOmLoop(); omBuffer = null; omName = ''; omDecodeTried = false; }
+  else { bellBuffer = null; bellName = ''; bellDecodeTried = false; }
   updateSoundInfo(kind);
   showToast(`${def.label} sound cleared`);
 }
 
 async function testSound(kind){
   if(kind === 'tick'){ playTickSound(); return; }
+  if(kind === 'om'){
+    if(!omBuffer && !omDecodeTried){ omDecodeTried = true; await decodeSound('om').catch(()=>{}); }
+    if(!omBuffer){ showToast('⚠ Pehle Om file upload karo', 'error'); return; }
+    if(omLooping){ stopOmLoop(); showToast('🕉 Om stopped', 'info'); }
+    else { await startOmLoopForced(); showToast('🕉 Om playing — dobara ▶ dabao band karne ke liye', 'info', 3500); }
+    return;
+  }
   if(!bellBuffer && !bellDecodeTried){ bellDecodeTried = true; await decodeSound('bell').catch(()=>{}); }
   if(bellBuffer) playSoundBuffer(bellBuffer, bellVolume);
   else { synthBell(); showToast('▶ Built-in bell (upload your own mandir ghanti)', 'info'); }
 }
 
+/* ═══ OM LOOP ENGINE ═══ */
+function saveOmBgPref(){
+  omBgOn = document.getElementById('omBgToggle').checked;
+  localStorage.setItem('omBgOn', omBgOn);
+  if(omBgOn){
+    if(!running) startOmLoop();
+    showToast('🕉 Om background ON — idle/pause pe bajega', 'info');
+  } else {
+    stopOmLoop();
+    showToast('🕉 Om background OFF', 'info');
+  }
+}
+function saveOmVolumePref(){
+  omVolume = parseFloat(document.getElementById('omVolumeSel').value) || 0.5;
+  localStorage.setItem('omVolume', omVolume);
+  if(omGainNode && audioCtx){
+    omGainNode.gain.setTargetAtTime(omVolume, audioCtx.currentTime, 0.1);
+  }
+}
+
+async function startOmLoop(){
+  if(!omBgOn || omLooping || running) return;
+  if(!omBuffer && !omDecodeTried){
+    omDecodeTried = true;
+    await decodeSound('om').catch(()=>{});
+  }
+  if(!omBuffer) return;   // no file uploaded — stay silent
+  try{
+    await ensureAudioCtx();
+    stopOmLoop();
+    omSource = audioCtx.createBufferSource();
+    omGainNode = audioCtx.createGain();
+    omSource.buffer = omBuffer;
+    omSource.loop = true;
+    omGainNode.gain.value = 0;
+    omSource.connect(omGainNode);
+    omGainNode.connect(audioCtx.destination);
+    omSource.start();
+    omGainNode.gain.setTargetAtTime(omVolume, audioCtx.currentTime, 0.6);  // gentle fade in
+    omLooping = true;
+    startSilentKeepAlive();
+  }catch(e){ console.warn('startOmLoop', e); }
+}
+
+// Test-play bypassing the omBgOn / running guards
+async function startOmLoopForced(){
+  if(!omBuffer) return;
+  try{
+    await ensureAudioCtx();
+    stopOmLoop();
+    omSource = audioCtx.createBufferSource();
+    omGainNode = audioCtx.createGain();
+    omSource.buffer = omBuffer;
+    omSource.loop = true;
+    omGainNode.gain.value = 0;
+    omSource.connect(omGainNode);
+    omGainNode.connect(audioCtx.destination);
+    omSource.start();
+    omGainNode.gain.setTargetAtTime(omVolume, audioCtx.currentTime, 0.4);
+    omLooping = true;
+  }catch(e){ console.warn('startOmLoopForced', e); }
+}
+
+function stopOmLoop(){
+  if(!omLooping && !omSource) return;
+  try{
+    if(omGainNode && audioCtx){
+      omGainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.25);   // fade out then stop
+      const src = omSource;
+      setTimeout(()=>{ try{ src && src.stop(); }catch(e){} }, 700);
+    } else if(omSource){
+      omSource.stop();
+    }
+  }catch(e){}
+  omSource = null; omGainNode = null; omLooping = false;
+}
+
 async function initCustomSounds(){
-  for(const kind of ['tick','bell']){
+  for(const kind of ['tick','bell','om']){
     const def = SOUND_DEFS[kind];
     const local = await idbGet(def.idbKey).catch(()=>null);
     if(local && local.blob){
-      if(kind === 'tick') tickName = local.name; else bellName = local.name;
+      if(kind === 'tick') tickName = local.name;
+      else if(kind === 'om') omName = local.name;
+      else bellName = local.name;
       updateSoundInfo(kind);
     } else if(ghConfigured()){
       await ghDownloadSound(kind);
@@ -4416,6 +4753,15 @@ async function initCustomSounds(){
       updateSoundInfo(kind);
     }
   }
+  // Restore Om prefs in UI + auto-start if idle
+  const omTg = document.getElementById('omBgToggle');
+  if(omTg) omTg.checked = omBgOn;
+  const omSel = document.getElementById('omVolumeSel');
+  if(omSel){
+    const opts = Array.from(omSel.options).map(o => o.value);
+    omSel.value = opts.includes(String(omVolume)) ? String(omVolume) : '0.5';
+  }
+  if(omBgOn && !running) startOmLoop();
 }
 
 /* ═══ MALA BELL ENGINE ═══ */
@@ -4493,19 +4839,6 @@ function hideBellOverlay(){
   if(ov) ov.classList.remove('show');
 }
 
-function toggleTickSoundMode(){
-  const on      = document.getElementById('bmTickEnabled').checked;
-  const vibSel  = document.getElementById('bmSessionVibration');
-  const vibWrap = document.getElementById('bmVibWrap');
-  const tkSel   = document.getElementById('bmTickVolume');
-  const tkWrap  = document.getElementById('bmTickVolWrap');
-  vibSel.disabled = on;
-  tkSel.disabled  = !on;
-  vibWrap.classList.toggle('bm-disabled', on);
-  tkWrap.classList.toggle('bm-disabled', !on);
-}
-
-
 /* ============ STARTUP ============ */
 async function initApp(){
   updateUI(false);
@@ -4517,7 +4850,7 @@ async function initApp(){
   // Load audio metadata (not decoded yet)
   await loadAudioFromStorage();
 
-  // v20: restore sound toggles in main Settings
+  // v20.3: restore sound toggles in main Settings
   const tst = document.getElementById('tickSoundToggle');
   if(tst) tst.checked = tickSoundOn;
   const blt = document.getElementById('bellToggle');
@@ -4546,18 +4879,11 @@ async function initApp(){
     setSyncStatus('offline', 'offline');
   }
 
-  // 🔔 v20: Load tick + bell sounds (local first, else GitHub auto-restore)
+  // 🔔 v20.3: Load tick + bell + om sounds (local first, else GitHub auto-restore)
   await initCustomSounds();
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  initApp();
-});
-
-// Ensure audio context resumes on any user interaction
-document.addEventListener('click', ()=>{ if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { once:false });
-document.addEventListener('touchstart', ()=>{ if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { once:false });
-
+initApp();
 </script>
 </body>
 </html>
