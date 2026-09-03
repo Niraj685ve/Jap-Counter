@@ -957,11 +957,30 @@
 </div>
 <div class="toast" id="toast"></div>
 
+
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   🕉 MANSIK JAP - v1.0 (mansik.html)
+   🕉 MANSIK JAP - v1.5 HARDENED (mansik.html)
    Shares localStorage + IndexedDB('japDB') + GitHub jap_data.json
    with index.html. SAME ORIGIN = SAME DATA.
+   ─────────────────────────────────────────────────────────────
+   v1.5 FIXES:
+   #2  har resume pe muft tickJap() → free japs
+   #3  playMalaBell() resume → orphan timer
+   #4  visibilitychange unguarded timer
+   #5  getJapInterval()=0 → runaway counting (250 japs/sec)
+   #6  savePrefInterval() galat guard
+   #7  applyBmSettings() bell guard
+   #8  black mode tap-spam → free japs
+   #9  beep 30s safety kill + single-fire alert
+   #10 tickJap() running guard
+   #14 bm settings Cancel → stuck paused
+   #16 audio node leak
+   + alertContinue/alertApplyNew free jap
+   + storage event settings sanitise
+   ─────────────────────────────────────────────────────────────
+   4-LAYER TIMER DEFENCE:
+   L1 tickJap guard → L2 runToken → L3 setJapTimer() → L4 watchdog
    ═══════════════════════════════════════════════════════════════ */
 
 const $ = (id) => document.getElementById(id);
@@ -972,8 +991,44 @@ const DEFAULT_SETTINGS = {
   audioDuration: 5.4, japsPerAudio: 4, tapCooldown: 150,
   backupEvery: 20, backupDebounce: 3000, chantHours: 4, vibrationMs: 30
 };
-let SETTINGS = { ...DEFAULT_SETTINGS, ...(JSON.parse(localStorage.getItem('advSettings') || '{}')) };
-function getJapInterval(){ return (SETTINGS.audioDuration / SETTINGS.japsPerAudio) * 1000; }
+
+/* ═══ v1.5 FIX #5: SETTINGS SANITISER — runaway counting bomb defused ═══
+   Bug tha: audioDuration=0 ya japsPerAudio=0 → getJapInterval()=0
+   → setInterval(fn,0) ≈ 250 japs/sec → count explode.
+   Teeno raste sanitise: boot, GitHub pull, cross-page storage event. */
+function sanitizeSettings(raw){
+  const s = { ...DEFAULT_SETTINGS, ...(raw || {}) };
+  let d = parseFloat(s.audioDuration);
+  let j = parseInt(s.japsPerAudio);
+  if(!isFinite(d) || d <= 0) d = DEFAULT_SETTINGS.audioDuration;
+  if(!isFinite(j) || j < 1)  j = DEFAULT_SETTINGS.japsPerAudio;
+  const ms = (d / j) * 1000;
+  if(!isFinite(ms) || ms < 250 || ms > 600000){        // 0.25s – 10min
+    console.warn('[sanitize] bad interval reset →', ms);
+    d = DEFAULT_SETTINGS.audioDuration;
+    j = DEFAULT_SETTINGS.japsPerAudio;
+  }
+  s.audioDuration  = d;
+  s.japsPerAudio   = j;
+  s.tapCooldown    = Math.max(50,  parseInt(s.tapCooldown)    || DEFAULT_SETTINGS.tapCooldown);
+  s.backupEvery    = Math.max(1,   parseInt(s.backupEvery)    || DEFAULT_SETTINGS.backupEvery);
+  s.backupDebounce = Math.max(500, parseInt(s.backupDebounce) || DEFAULT_SETTINGS.backupDebounce);
+  s.chantHours     = Math.max(0.1, parseFloat(s.chantHours)   || DEFAULT_SETTINGS.chantHours);
+  if(s.vibrationMs === undefined || s.vibrationMs === null) s.vibrationMs = DEFAULT_SETTINGS.vibrationMs;
+  return s;
+}
+let SETTINGS = sanitizeSettings(JSON.parse(localStorage.getItem('advSettings') || '{}'));
+
+function getJapInterval(){
+  const ms = (SETTINGS.audioDuration / SETTINGS.japsPerAudio) * 1000;
+  if(!isFinite(ms) || ms < 250){
+    console.error('[getJapInterval] unsafe value → hard reset');
+    SETTINGS.audioDuration = DEFAULT_SETTINGS.audioDuration;
+    SETTINGS.japsPerAudio  = DEFAULT_SETTINGS.japsPerAudio;
+    return (DEFAULT_SETTINGS.audioDuration / DEFAULT_SETTINGS.japsPerAudio) * 1000;
+  }
+  return ms;
+}
 
 const chantMode = 'mansik';   // this page is mansik-only
 const DEVICE_ID = (function(){
@@ -1016,6 +1071,12 @@ let japTimer = null;
 let conflictPending = null, syncLocked = false, sessionReconciled = false;
 let lastVisibilityCheckTs = 0;
 let backgroundStartTs = null, backgroundStartCount = 0;
+
+/* ═══ v1.5: TIMER OWNERSHIP STATE ═══ */
+let runToken = 0;              // har start/pause pe badhta hai
+let startBusy = false;         // double-tap protection
+let primeJapPending = false;   // instant jap sirf FRESH start pe
+let bmTapBusy = false;         // black mode tap debounce
 
 let vibrationOn = localStorage.getItem('vibrationOn') === 'true';
 let bgAudioOn   = localStorage.getItem('bgAudioOn') !== 'false';
@@ -1102,8 +1163,13 @@ function fmtRelative(ts){
 }
 function todayKey(d){ d = d || new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
 function fmtSize(b){ return b > 1048576 ? (b/1048576).toFixed(2)+' MB' : Math.round(b/1024)+' KB'; }
+function parseHMS(str){
+  const m = String(str).trim().match(/^(\d{1,3}):(\d{2}):(\d{2})$/);
+  if(!m) return null;
+  return (parseInt(m[1])*3600 + parseInt(m[2])*60 + parseInt(m[3])) * 1000;
+}
 
-/* ============ MILESTONES (kept for payload parity - no UI) ============ */
+/* ============ MILESTONES (payload parity - no UI) ============ */
 function buildMilestones(){
   const groups = [];
   const g1 = { targets: [1000] };
@@ -1181,7 +1247,7 @@ function saveBgAudioPref(){ bgAudioOn = $('bgAudioToggle').checked; localStorage
 function saveTickSoundPref(){
   tickSoundOn = $('tickSoundToggle').checked;
   localStorage.setItem('tickSoundOn', tickSoundOn);
-  if(tickSoundOn){ ensureAudioCtx().then(()=> playTickSound()); showToast('🎧 Tick ON - vibration OFF','info'); }
+  if(tickSoundOn){ ensureAudioCtx().then(()=> playTickSound()).catch(()=>{}); showToast('🎧 Tick ON - vibration OFF','info'); }
   else showToast('📳 Vibration ON - tick OFF','info');
 }
 function saveBellPref(){
@@ -1191,11 +1257,18 @@ function saveBellPref(){
 }
 function savePrefInterval(){
   const v = parseFloat($('prefInterval').value);
-  if(!v || v < 0.3 || v > 60){ showToast('⚠ 0.3 – 60 sec','error'); return; }
+  if(!v || !isFinite(v) || v < 0.3 || v > 60){ showToast('⚠ 0.3 – 60 sec','error'); return; }
   SETTINGS.audioDuration = v;
   SETTINGS.japsPerAudio = 1;
+  SETTINGS = sanitizeSettings(SETTINGS);                 // v1.5 FIX #5
   localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-  if(running && japTimer){ clearInterval(japTimer); japTimer = setInterval(tickJap, getJapInterval()); }
+
+  /* v1.5 FIX #6: pehle `if(running && japTimer)` tha — agar japTimer
+     null hota (bell ke dauraan) to naya interval apply hi nahi hota.
+     Aur bell ke waqt do timer chal sakte the. Ab guarded. */
+  clearJapTimer();
+  if(running && !isBellBusy()) setJapTimer(runToken);
+
   updateBmInfoDisplay();
   showToast(`✓ Interval ${v}s saved`);
 }
@@ -1208,8 +1281,62 @@ function doVibrate(){
   try{ navigator.vibrate(v); }catch(e){}
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   ⏱ v1.5 SINGLE-OWNER TIMER GUARD  ← ASLI FIX
+   ─────────────────────────────────────────────────────────────
+   mansik.html me applyRunningState() SYNCHRONOUS hai, isliye
+   index.html wala audio async race (#1) yahan nahi tha.
+   LEKIN ye teen zombie-raste yahan bhi the:
+     • visibilitychange → raw setInterval (bell/pause check nahi)
+     • playMalaBell() ka aakhri `if(running) japTimer = setInterval(...)`
+       — bell ke 5-15s dauraan pause→resume hua to handle overwrite → ORPHAN
+     • applyBmSettings / savePrefInterval → bell guard nahi
+   Plus har resume pe `tickJap()` chalta tha → muft japs.
+
+   4-LAYER DEFENCE:
+     L1 tickJap() khud running/bell check
+     L2 runToken — purane callbacks invalid
+     L3 setJapTimer() — set se pehle hamesha clear
+     L4 watchdog — !running pe bacha timer 1s me maut
+   ═══════════════════════════════════════════════════════════════ */
+
+/* bellPlaying PART 2 me declare hota hai — try/catch se TDZ-safe */
+function isBellBusy(){ try{ return !!bellPlaying; }catch(e){ return false; } }
+
+function newRunToken(){ return ++runToken; }
+function tokenValid(t){ return t === runToken && running; }
+
+function clearJapTimer(){
+  if(japTimer) clearInterval(japTimer);
+  japTimer = null;
+}
+function setJapTimer(token){
+  clearJapTimer();                                  // L3
+  if(!tokenValid(token)){ console.warn('[timer] stale token — refused'); return false; }
+  if(isBellBusy()){ console.warn('[timer] bell busy — refused'); return false; }
+  japTimer = setInterval(()=>{
+    if(!running){ clearJapTimer(); return; }         // L1
+    if(isBellBusy()) return;
+    tickJap();
+  }, getJapInterval());
+  return true;
+}
+
+/* L4 WATCHDOG — koi bhi zombie 1 second me mar jayega */
+setInterval(()=>{
+  if(!running && japTimer){
+    console.warn('[watchdog] zombie japTimer killed');
+    clearJapTimer();
+  }
+}, 1000);
+
 /* ============ JAP CORE ============ */
-function tickJap(){
+/* v1.5 FIX #10: force=true sirf legitimate prime call ke liye */
+function tickJap(force=false){
+  if(!force){
+    if(!running){ console.warn('[tickJap] blocked — not running'); return; }
+    if(isBellBusy()) return;
+  }
   perm++; trip++; japsSinceBackup++;
   recordJapForToday(1);
   doVibrate();
@@ -1220,20 +1347,35 @@ function tickJap(){
 }
 
 async function onStartClick(){
-  if(running){
-    running = false;
-    applyRunningState();
-    if(blackModeActive) await exitBlackMode();
-    scheduleAutoBackup(true);
-    return;
+  if(startBusy) return;                              // double-tap block
+  startBusy = true;
+  try{
+    if(running){
+      running = false;
+      newRunToken();                                 // L2
+      clearJapTimer();
+      applyRunningState();
+      if(blackModeActive) await exitBlackMode();
+      scheduleAutoBackup(true);
+      return;
+    }
+    if(conflictPending){ showToast('⚠ Resolve data conflict first','error'); openModal('conflict'); return; }
+    if(isBellBusy()){ showToast('🔔 Bell baj rahi hai - ek pal ruko','info'); return; }
+    openMansikPicker();
+  } finally {
+    setTimeout(()=>{ startBusy = false; }, 350);
   }
-  if(conflictPending){ showToast('⚠ Resolve data conflict first','error'); openModal('conflict'); return; }
-  openMansikPicker();
 }
 
 function applyRunningState(){
   const btn = $('startBtn'), stage = $('omStage'), elB = $('elapsedBlock'), tag = $('pauseTag');
-  if(japTimer){ clearInterval(japTimer); japTimer = null; }
+
+  // ⚠ token SABSE PEHLE badhao — purane async callbacks turant invalid
+  const myToken = newRunToken();
+  const doPrime = primeJapPending;
+  primeJapPending = false;                 // consume — resume pe muft jap NAHI
+
+  clearJapTimer();
   btn.classList.remove('running');
 
   if(running){
@@ -1247,8 +1389,12 @@ function applyRunningState(){
     sessionStart = Date.now();
     requestWakeLock(); startWakeVideo();
     startSilentKeepAlive(); setupMediaSession();
-    tickJap();
-    japTimer = setInterval(tickJap, getJapInterval());
+
+    /* v1.5 FIX #2: pehle yahan bina shart `tickJap()` tha —
+       har pause/resume pe 1 muft jap. 20 resume = 20 extra japs.
+       Ab sirf FRESH session ke pehle start pe. */
+    if(doPrime && !isBellBusy()) tickJap(true);
+    setJapTimer(myToken);
   } else {
     btn.textContent = '▶ RESUME MANSIK JAP';
     stage.classList.add('paused');
@@ -1259,8 +1405,22 @@ function applyRunningState(){
     startOmLoop();
   }
 }
-function forcePause(){ if(running){ running = false; applyRunningState(); scheduleAutoBackup(true); } }
-function forceResume(){ if(!running){ running = true; applyRunningState(); } }
+function forcePause(){
+  if(running){
+    running = false;
+    newRunToken(); clearJapTimer();
+    applyRunningState();
+    scheduleAutoBackup(true);
+  }
+}
+function forceResume(){
+  if(!running){
+    if(isBellBusy()){ showToast('🔔 Bell ke baad resume hoga','info'); return; }
+    running = true;
+    primeJapPending = false;               // v1.5: resume pe muft jap nahi
+    applyRunningState();
+  }
+}
 
 /* ============ WAKE LOCK ============ */
 async function requestWakeLock(){
@@ -1277,7 +1437,7 @@ function startWakeVideo(){
   if(!v.src) v.src = "data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAA/G1kYXQAAAKtBgX//6ncRem95tlIt5Ys2CDZI+7veDI2NAAAAAA=";
   v.play().catch(()=>{});
 }
-function stopWakeVideo(){ $('wakeVideo').pause(); }
+function stopWakeVideo(){ try{ $('wakeVideo').pause(); }catch(e){} }
 
 /* ============ VISIBILITY CATCH-UP ============ */
 document.addEventListener('visibilitychange', async ()=>{
@@ -1291,7 +1451,7 @@ document.addEventListener('visibilitychange', async ()=>{
         const gap = Date.now() - backgroundStartTs;
         const expected = Math.floor(gap / getJapInterval());
         const missed = Math.max(0, expected - (perm - backgroundStartCount));
-        if(missed > 0){
+        if(missed > 0 && !isBellBusy()){
           perm += missed; trip += missed;
           recordJapForToday(missed);
           localStorage.setItem('permCount', perm);
@@ -1300,8 +1460,10 @@ document.addEventListener('visibilitychange', async ()=>{
           showToast(`⚡ Caught up ${missed} japs from background`,'info',3000);
           scheduleAutoBackup(true);
         }
-        if(japTimer){ clearInterval(japTimer); japTimer = null; }
-        japTimer = setInterval(tickJap, getJapInterval());
+        /* v1.5 FIX #4: pehle raw `japTimer = setInterval(tickJap,...)` tha —
+           bell ke dauraan ya pause hote hi zombie ban jata. Ab guarded. */
+        clearJapTimer();
+        if(running && !isBellBusy()) setJapTimer(runToken);
         backgroundStartTs = null;
       }
     }
@@ -1312,7 +1474,7 @@ document.addEventListener('visibilitychange', async ()=>{
       const res = await safePullFromGitHub(false);
       if(res.ok && !res.conflict) sessionReconciled = true;
     }
-    if(omBgOn && !running && !omLooping) startOmLoop();
+    if(omBgOn && !running && !omLooping && !isBellBusy()) startOmLoop();
   }
 });
 
@@ -1369,7 +1531,7 @@ function deletePreset(i){
   presets.splice(i,1); savePresets(); renderPresets();
 }
 function renderPresets(){
-  const box = $('presetChips');
+  const box = $('presetChips'); if(!box) return;
   if(!presets.length){ box.innerHTML = '<p style="color:#888;font-size:12px;">No presets yet.</p>'; return; }
   box.innerHTML = presets.map((p,i)=>{
     const icon = p.type==='count' ? '📿' : '⏰';
@@ -1385,11 +1547,6 @@ function reactivateAlert(id){
 }
 function startEditAlert(id){ editingAlertId = id; renderAlerts(); }
 function cancelEditAlert(){ editingAlertId = null; renderAlerts(); }
-function parseHMS(str){
-  const m = String(str).trim().match(/^(\d{1,3}):(\d{2}):(\d{2})$/);
-  if(!m) return null;
-  return (parseInt(m[1])*3600 + parseInt(m[2])*60 + parseInt(m[3])) * 1000;
-}
 function saveEditAlert(id){
   const a = alerts.find(x=>x.id===id); if(!a) return;
   const val = $('editAlertInput_'+id).value;
@@ -1404,7 +1561,7 @@ function saveEditAlert(id){
   saveAlertsLocal(); renderAlerts(); showToast('✓ Updated');
 }
 function renderAlerts(){
-  const box = $('alertsList');
+  const box = $('alertsList'); if(!box) return;
   if(!alerts.length){ box.innerHTML = '<p style="color:#888;font-size:12px;">No alerts yet</p>'; return; }
   box.innerHTML = alerts.map(a => {
     const icon = a.type==='count' ? '📿' : '⏰';
@@ -1430,6 +1587,7 @@ function renderAlerts(){
 }
 /* Handles BOTH time and count alerts (count alerts index.html se aa sakte hain) */
 function checkTimeAlerts(){
+  if(currentAlert) return;                    // v1.5: popup pehle se khula
   const cur = getElapsedMs();
   for(const a of alerts){
     if(a.triggered) continue;
@@ -1438,6 +1596,8 @@ function checkTimeAlerts(){
   }
 }
 function triggerAlert(a){
+  if(currentAlert && currentAlert.id !== a.id) return;   // v1.5: ek waqt me ek
+  stopBeep();                                           // purana beep pehle band
   currentAlert = a;
   const wasRunning = running;
   forcePause();
@@ -1457,7 +1617,9 @@ function alertContinue(){
   a.triggered = false;
   a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
   saveAlertsLocal(); closeAlertPopup();
-  running = true; applyRunningState();
+  /* v1.5: pehle `running = true; applyRunningState();` direct tha →
+     applyRunningState ka tickJap() chal jata → muft jap. Ab forceResume(). */
+  forceResume();
   if(blackModeActive){ $('blackModeOverlay').classList.remove('paused'); blackModePaused = false; }
   showToast('▶ Continuing: '+a.label);
 }
@@ -1504,7 +1666,7 @@ function alertApplyNew(){
   a.type = 'time'; a.delta = ms; a.target = getElapsedMs()+ms; a.label = `After ${str}`;
   a.triggered = false;
   saveAlertsLocal(); closeAlertPopup();
-  running = true; applyRunningState();
+  forceResume();                            // v1.5: muft jap nahi
   if(blackModeActive){ $('blackModeOverlay').classList.remove('paused'); blackModePaused = false; }
   showToast('✓ New timer set: '+str);
 }
@@ -1516,21 +1678,26 @@ function closeAlertPopup(){
 }
 
 /* ============ BEEP ============ */
-let beepCtx = null, beepInterval = null;
+let beepCtx = null, beepInterval = null, beepKillTimer = null;
 function playBeep(){
+  stopBeep();                               // v1.5: purana pehle band
   try{
     beepCtx = new (window.AudioContext||window.webkitAudioContext)();
     const beep = ()=>{
-      const o = beepCtx.createOscillator(), g = beepCtx.createGain();
-      o.frequency.value = 880; o.type = 'sine'; g.gain.value = 0.3;
-      o.connect(g); g.connect(beepCtx.destination);
-      o.start(); o.stop(beepCtx.currentTime + 0.3);
+      try{
+        const o = beepCtx.createOscillator(), g = beepCtx.createGain();
+        o.frequency.value = 880; o.type = 'sine'; g.gain.value = 0.3;
+        o.connect(g); g.connect(beepCtx.destination);
+        o.start(); o.stop(beepCtx.currentTime + 0.3);
+      }catch(e){}
     };
     beep(); beepInterval = setInterval(beep, 600);
+    beepKillTimer = setTimeout(stopBeep, 30000);   // v1.5 FIX #9: safety kill
   }catch(e){}
 }
 function stopBeep(){
   if(beepInterval){ clearInterval(beepInterval); beepInterval = null; }
+  if(beepKillTimer){ clearTimeout(beepKillTimer); beepKillTimer = null; }
   if(beepCtx){ try{ beepCtx.close(); }catch(e){} beepCtx = null; }
 }
 
@@ -1753,7 +1920,7 @@ async function resolveConflict(action){
     trip = remote.trip || 0;
     milestoneDates = remote.milestoneDates || {};
     if(remote.dailyStats) dailyStats = remote.dailyStats;
-    if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
+    if(remote.settings) SETTINGS = sanitizeSettings(remote.settings);   // v1.5 FIX #5
     localVersion = remote.version || 0;
     lastBackedUpVersion = localVersion;
     lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
@@ -1768,6 +1935,7 @@ async function resolveConflict(action){
     lastSyncTs = Date.now(); localStorage.setItem('lastSyncTs', lastSyncTs);
     lastBellMala = Math.floor(trip/108); saveBellState();
     updateUI(false);
+    updateBmInfoDisplay();                      // v1.5: naya interval overlay pe dikhe
     $('conflictModal').classList.remove('open');
     conflictPending = null; syncLocked = false;
     sessionReconciled = true; lastVisibilityCheckTs = Date.now();
@@ -1806,7 +1974,7 @@ async function safePullFromGitHub(showUI=true){
       trip = remote.trip || 0;
       milestoneDates = remote.milestoneDates || {};
       if(remote.dailyStats) dailyStats = remote.dailyStats;
-      if(remote.settings) SETTINGS = { ...DEFAULT_SETTINGS, ...remote.settings };
+      if(remote.settings) SETTINGS = sanitizeSettings(remote.settings);   // v1.5 FIX #5
       localVersion = remote.version || 0;
       lastBackedUpVersion = localVersion;
       localStorage.setItem('permCount', perm);
@@ -1818,6 +1986,7 @@ async function safePullFromGitHub(showUI=true){
       localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
       lastBellMala = Math.floor(trip/108); saveBellState();
       updateUI(false);
+      updateBmInfoDisplay();
       changed = true;
     }
     lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
@@ -1886,7 +2055,7 @@ function buildPayload(){
     settings: SETTINGS,
     deviceId: DEVICE_ID,
     updatedAt: new Date().toISOString(),
-    appVersion: 'v20'
+    appVersion: 'v20.5'
   };
 }
 function scheduleAutoBackup(immediate=false){
@@ -1923,6 +2092,7 @@ async function manualSync(){
 let blackModeActive = false, blackModePaused = false, blackModeWakeLock = null;
 let bmOrigAudioDuration = null, bmOrigJapsPerAudio = null, bmOrigVibrationMs = null;
 let bmSettingsOpen = false;
+let bmAutoPaused = false;         // v1.5 FIX #14: settings ne khud pause kiya tha?
 
 function openMansikPicker(){
   const b = localStorage.getItem('mansikAlertBase') || '10';
@@ -1980,6 +2150,7 @@ function startMansikChoice(choice){
   localStorage.setItem('mansikAlertMult', $('mansikAlertMult').value);
   closeModal('mansikPicker');
 
+  primeJapPending = !firstStartTs;        // v1.5 FIX #2: instant jap sirf fresh start pe
   running = true;
   blackModeActive = (choice === 'black');
   if(blackModeActive) showBlackModeOverlay(alertAdded);
@@ -1998,6 +2169,7 @@ function showBlackModeOverlay(alertTime){
   $('bmCountNum').textContent = fmtNum(trip);
   ov.classList.add('show'); ov.classList.remove('paused');
   blackModePaused = false;
+  bmAutoPaused = false;
   acquireBmWakeLock();
   ov.onclick = (e)=>{
     if(bmSettingsOpen) return;
@@ -2022,9 +2194,23 @@ function bmOnJapFired(){
   const el = $('bmCountNum');
   if(el) el.textContent = fmtNum(trip);
 }
-function toggleBlackModePause(e){
+
+/* ═══ v1.5 FIX #8: TAP DEBOUNCE
+   Bug tha: black overlay pe taabadtod tap karne pe running toggle hota
+   rehta tha, aur applyRunningState() ka tickJap() har resume pe fire hota
+   → 30 fast taps = ~15 muft japs. Ab 400ms debounce + primeJapPending=false.
+   `force` = programmatic call (settings open/close) ke liye bypass. ═══ */
+function toggleBlackModePause(e, force=false){
+  if(!force){
+    if(bmTapBusy) return;
+    if(isBellBusy()) return;
+    bmTapBusy = true;
+    setTimeout(()=>{ bmTapBusy = false; }, 400);
+  }
   const ov = $('blackModeOverlay');
   running = !running;
+  if(!running){ newRunToken(); clearJapTimer(); }     // L2
+  primeJapPending = false;                            // resume pe muft jap NAHI
   applyRunningState();
   blackModePaused = !running;
   if(e && e.clientX) spawnTapRipple(e.clientX, e.clientY);
@@ -2049,17 +2235,26 @@ function restoreBmSessionOverrides(){
   if(bmOrigJapsPerAudio  !== null) SETTINGS.japsPerAudio  = bmOrigJapsPerAudio;
   if(bmOrigVibrationMs   !== null) SETTINGS.vibrationMs   = bmOrigVibrationMs;
   bmOrigAudioDuration = bmOrigJapsPerAudio = bmOrigVibrationMs = null;
+  SETTINGS = sanitizeSettings(SETTINGS);        // v1.5: restore ke baad bhi safe
 }
 async function exitBlackMode(e){
   if(e) e.stopPropagation();
   blackModeActive = false;
+  bmSettingsOpen = false;
+  bmAutoPaused = false;
   const ov = $('blackModeOverlay');
   ov.classList.remove('show','paused');
   ov.onclick = null;
   const fx = $('bmEffects'); if(fx) fx.innerHTML = '';
+  const bms = $('bmSettingsModal'); if(bms) bms.classList.remove('show');
   await releaseBmWakeLock();
   restoreBmSessionOverrides();
-  if(running){ running = false; applyRunningState(); scheduleAutoBackup(true); }
+  if(running){
+    running = false;
+    newRunToken(); clearJapTimer();               // v1.5
+    applyRunningState();
+    scheduleAutoBackup(true);
+  }
   showToast('🕉 Meditation ended - Har Har Mahadev','info');
 }
 
@@ -2067,7 +2262,12 @@ async function exitBlackMode(e){
 function openBmSettings(e){
   if(e) e.stopPropagation();
   bmSettingsOpen = true;
-  if(running && !blackModePaused) toggleBlackModePause();
+
+  bmAutoPaused = false;
+  if(running && !blackModePaused){
+    toggleBlackModePause(null, true);            // force: debounce bypass
+    bmAutoPaused = true;
+  }
 
   const ivSel = $('bmSessionInterval'), vibSel = $('bmSessionVibration');
   const cur = parseFloat((getJapInterval()/1000).toFixed(1));
@@ -2092,9 +2292,23 @@ function openBmSettings(e){
   toggleTickSoundMode();
   $('bmSettingsModal').classList.add('show');
 }
+
+/* ═══ v1.5 FIX #14: Cancel dabane pe jap STUCK PAUSED reh jata tha.
+   Pehle closeBmSettings() sirf modal band karta tha; resume sirf
+   applyBmSettings() ke aakhir me `if(blackModePaused) toggleBlackModePause()`
+   se hota tha. Ab dono raste theek — aur sirf wahi resume hota hai
+   jo humne khud pause kiya tha. ═══ */
 function closeBmSettings(){
   bmSettingsOpen = false;
-  $('bmSettingsModal').classList.remove('show');
+  const bms = $('bmSettingsModal');
+  if(bms) bms.classList.remove('show');
+
+  if(bmAutoPaused && blackModeActive && blackModePaused && !isBellBusy()){
+    bmAutoPaused = false;
+    toggleBlackModePause(null, true);           // force
+  } else {
+    bmAutoPaused = false;
+  }
 }
 function toggleTickSoundMode(){
   const on = $('bmTickEnabled').checked;
@@ -2111,7 +2325,7 @@ function applyBmSettings(){
   const bOn = $('bmBellEnabled').checked;
   const bVol = parseFloat($('bmBellVolume').value);
 
-  if(!iv || iv < 0.3 || iv > 60){ showToast('⚠ Interval 0.3 – 60 sec','error'); return; }
+  if(!iv || !isFinite(iv) || iv < 0.3 || iv > 60){ showToast('⚠ Interval 0.3 – 60 sec','error'); return; }
 
   let vibPattern;
   if(vibRaw.includes(',')) vibPattern = vibRaw.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
@@ -2142,18 +2356,22 @@ function applyBmSettings(){
     ensureAudioCtx().then(()=>{
       if(!tickBuffer && !tickDecodeTried){ tickDecodeTried = true; decodeSound('tick').catch(()=>{}); }
       playTickSound();
-    });
+    }).catch(()=>{});
   }
-  if(japTimer){ clearInterval(japTimer); japTimer = null; }
-  if(running) japTimer = setInterval(tickJap, getJapInterval());
+
+  /* v1.5 FIX #7: pehle `if(running) japTimer = setInterval(...)` bina
+     bellPlaying guard ke tha — bell ke dauraan Apply dabane pe do timer
+     chal padte the (bell ke baad bhi ek naya banta tha). Ab guarded. */
+  clearJapTimer();
+  if(running && !isBellBusy()) setJapTimer(runToken);
 
   updateBmInfoDisplay();
-  closeBmSettings();
   const fb = tickOn ? `🎧 tick @${Math.round(tickVolume*100)}%`
     : (Array.isArray(vibPattern) ? `📳 ${vibPattern.length} pulses`
       : (vibPattern === 0 ? '🔇 silent' : `📳 ${vibPattern}ms`));
   showToast(`⚙ ${iv}s • ${fb} • 🔔 ${bOn?'on':'off'}`,'success',3000);
-  if(blackModePaused) toggleBlackModePause();
+
+  closeBmSettings();     // v1.5: yahi resume bhi kar dega (single path)
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2193,6 +2411,7 @@ async function playSoundBuffer(buffer, volume){
     src.buffer = buffer;
     src.connect(g); g.connect(audioCtx.destination);
     src.start();
+    src.onended = ()=>{ try{ src.disconnect(); g.disconnect(); }catch(e){} };   // v1.5 FIX #16
     return buffer.duration;
   }catch(e){ console.warn('playSoundBuffer', e); return 0; }
 }
@@ -2207,7 +2426,8 @@ function synthTick(){
       o.start(t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
       o.stop(t + 0.08);
-    });
+      o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
+    }).catch(()=>{});
   }catch(e){}
 }
 function synthBell(){
@@ -2222,8 +2442,9 @@ function synthBell(){
         o.start(t);
         g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
         o.stop(t + 1.75);
+        o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
       });
-    });
+    }).catch(()=>{});
   }catch(e){}
 }
 function playTickSound(){
@@ -2447,11 +2668,14 @@ function saveOmVolumePref(){
 }
 async function startOmLoop(){
   if(!omBgOn || running) return;
+  if(isBellBusy()) return;                          // v1.5: bell ke dauraan Om nahi
   if(!omReady){ const ok = await loadOmFromIDB(); if(!ok) return; }
+  if(running) return;                               // await ke baad dobara check
   const el = getOmEl(); if(!el) return;
   try{
     el.loop = true; el.volume = 0;
     await el.play();
+    if(running){ el.pause(); omLooping = false; return; }   // race guard
     omLooping = true;
     omFadeTo(omVolume, 700);
     startSilentKeepAlive();
@@ -2518,9 +2742,20 @@ function checkMalaBell(){
   const rings = (((mala - 1) / 2) % 5) + 1;         // 1,3,5,7,9 → 1..5
   playMalaBell(rings, mala);
 }
+
+/* ═══ v1.5 FIX #3: BELL ORPHAN TIMER
+   Bug tha: bell 5-15 sec chalti hai. Us dauraan user PAUSE (ya
+   pause→resume) kar deta, to bell ke aakhir me `if(running)` sach hone
+   par naya setInterval ban jata — aur beech me applyRunningState() ne jo
+   timer banaya tha uska handle overwrite ho jata → ORPHAN, jo reload ke
+   bina band nahi hota. Ab bellToken se check hota hai ki wahi session
+   chal raha hai ya nahi. ═══ */
 async function playMalaBell(rings, mala){
+  if(bellPlaying) return;                  // re-entry guard
   bellPlaying = true;
-  if(japTimer){ clearInterval(japTimer); japTimer = null; }
+  const bellToken = runToken;              // session fingerprint
+
+  clearJapTimer();
   showBellOverlay(rings, mala);
   if(!bellBuffer && !bellDecodeTried){ bellDecodeTried = true; await decodeSound('bell').catch(()=>{}); }
   for(let i=1;i<=rings;i++){
@@ -2535,7 +2770,14 @@ async function playMalaBell(rings, mala){
   await sleep(BELL_RELAX_MS);
   hideBellOverlay();
   bellPlaying = false;
-  if(running) japTimer = setInterval(tickJap, getJapInterval());
+
+  // Auto-resume — SIRF agar wahi session abhi bhi chal raha ho
+  if(!tokenValid(bellToken)){
+    console.warn('[bell] session changed during bell — no resume');
+    clearJapTimer();
+    return;
+  }
+  setJapTimer(bellToken);
 }
 function showBellOverlay(rings, mala){
   const ov = $('bellOverlay'); if(!ov) return;
@@ -2564,6 +2806,7 @@ window.addEventListener('storage', (e)=>{
     perm = parseInt(localStorage.getItem('permCount') || '0');
     trip = parseInt(localStorage.getItem('tripCount') || '0');
     lastBellMala = Math.floor(trip/108);
+    saveBellState();                          // v1.5: persist bhi karo
     $('permCount').textContent = fmtNum(perm);
     $('tripCount').textContent = fmtNum(trip);
     return;
@@ -2579,7 +2822,13 @@ window.addEventListener('storage', (e)=>{
   if(e.key === 'dailyStats'){ try{ dailyStats = JSON.parse(e.newValue || '{}'); }catch(err){} return; }
   if(e.key === 'milestoneDates'){ try{ milestoneDates = JSON.parse(e.newValue || '{}'); }catch(err){} return; }
   if(e.key === 'advSettings'){
-    try{ SETTINGS = { ...DEFAULT_SETTINGS, ...JSON.parse(e.newValue || '{}') }; updateBmInfoDisplay(); }catch(err){}
+    /* v1.5 FIX #5 (3rd raasta): dusre page se aaya 0/NaN interval
+       yahan runaway counting kara deta tha. Ab sanitise + guarded restart. */
+    try{
+      SETTINGS = sanitizeSettings(JSON.parse(e.newValue || '{}'));
+      updateBmInfoDisplay();
+      if(running && !isBellBusy()){ clearJapTimer(); setJapTimer(runToken); }
+    }catch(err){}
     return;
   }
   if(e.key === 'alerts'){ try{ alerts = JSON.parse(e.newValue || '[]'); if(isOpen('alerts')) renderAlerts(); }catch(err){} return; }
@@ -2595,6 +2844,14 @@ function pingOmChanged(){ localStorage.setItem('omStamp', Date.now()); }
 
 /* ============ STARTUP ============ */
 async function initApp(){
+  /* v1.5: boot pe hi safety — corrupt localStorage se aaya 0/NaN
+     interval ya stale bell state yahin theek ho jaye */
+  SETTINGS = sanitizeSettings(SETTINGS);
+  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
+  if(!isFinite(lastBellMala) || lastBellMala < 0) lastBellMala = 0;
+  if(lastBellMala > Math.floor(trip/108)){ lastBellMala = Math.floor(trip/108); saveBellState(); }
+  console.log('[mansik v1.5] jap interval =', getJapInterval(), 'ms');
+
   updateUI(false);
   renderPresets();
   renderAlerts();
@@ -2629,5 +2886,6 @@ async function initApp(){
 
 initApp();
 </script>
+
 </body>
 </html>
