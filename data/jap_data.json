@@ -1,7 +1,7 @@
 {
-  "perm": 4458,
-  "trip": 1642,
-  "version": 5988,
+  "perm": 4478,
+  "trip": 1662,
+  "version": 6008,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
@@ -89,7 +89,7 @@
   "dailyStats": {
     "2026-09-01": 1810,
     "2026-09-02": 1618,
-    "2026-09-03": 1643
+    "2026-09-03": 1663
   },
   "settings": {
     "audioDuration": 5.4,
@@ -101,6 +101,6 @@
     "vibrationMs": 30
   },
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-03T02:54:09.561Z",
+  "updatedAt": "2026-09-03T02:54:36.593Z",
   "appVersion": "v13"
 }
