@@ -1,14 +1,14 @@
 {
-  "perm": 4836,
-  "trip": 2020,
-  "version": 6414,
+  "perm": 4856,
+  "trip": 2040,
+  "version": 6434,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
   "dailyStats": {
     "2026-09-01": 1810,
     "2026-09-02": 1618,
-    "2026-09-03": 2021
+    "2026-09-03": 2041
   },
   "settings": {
     "audioDuration": 5.4,
@@ -20,6 +20,6 @@
     "vibrationMs": 30
   },
   "deviceId": "dev_i4hbwie4",
-  "updatedAt": "2026-09-03T16:15:06.346Z",
+  "updatedAt": "2026-09-03T16:15:19.825Z",
   "appVersion": "v20"
 }
