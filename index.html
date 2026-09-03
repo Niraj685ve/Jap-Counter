@@ -81,7 +81,38 @@
   .top-bar .om-corner { justify-self: start; }
   .top-bar h1 { justify-self: center; text-align: center; }
   .top-bar .top-right-tools { justify-self: end; }
-  .om-corner { font-size: 26px; color:#ff9933; animation: glow 1.5s infinite alternate; }
+    .om-corner {
+    font-size: 26px; color:#ff9933;
+    animation: glow 1.5s infinite alternate;
+    cursor: pointer;
+    position: relative;
+    padding: 3px 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(167,139,250,0.35);
+    background: rgba(139,92,246,0.12);
+    transition: all 0.2s;
+  }
+  .om-corner:hover {
+    background: rgba(139,92,246,0.28);
+    border-color: #c4b5fd;
+    transform: scale(1.08);
+  }
+  .om-corner:active { transform: scale(0.9); }
+  .om-corner::after {
+    content: '🧘';
+    position: absolute; bottom: -3px; right: -3px;
+    font-size: 10px;
+    background: #6d28d9; color: #fff;
+    border-radius: 50%;
+    width: 15px; height: 15px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #c4b5fd;
+    animation: mansikHintPulse 2s ease-in-out infinite;
+  }
+  @keyframes mansikHintPulse {
+    0%,100% { opacity: 0.65; transform: scale(1); }
+    50%     { opacity: 1;    transform: scale(1.15); }
+  }
   @keyframes glow {
     from{ text-shadow: 0 0 8px #ff6600; }
     to  { text-shadow: 0 0 25px #ffcc00, 0 0 40px #ff3300; }
@@ -146,7 +177,7 @@
     margin-left: 3px; vertical-align: middle;
   }
 
-  /* ===== MANDALA — BIG & CENTERED ===== */
+  /* ===== MANDALA - BIG & CENTERED ===== */
   .mandala-wrap {
     display: flex;
     justify-content: center;
@@ -168,7 +199,7 @@
     pointer-events: none; z-index: 5;
   }
   .mandala.mansik::after {
-    /*content: '🧘 MANSIK JAP — Silent auto-count'; position: absolute; bottom: 3%; left: 50%;*/
+    /*content: '🧘 MANSIK JAP - Silent auto-count'; position: absolute; bottom: 3%; left: 50%;*/
     transform: translateX(-50%); font-size: 10px; color: #c4b5fd;
     background: rgba(0,0,0,0.6); padding: 3px 8px; border-radius: 10px;
     border: 1px solid #8b5cf6; animation: pulseTap 2s infinite;
@@ -197,7 +228,7 @@
     from { filter: drop-shadow(0 0 8px #ffcc00) drop-shadow(0 0 18px #ff6600); }
     to   { filter: drop-shadow(0 0 25px #ffff00) drop-shadow(0 0 45px #ff3300) drop-shadow(0 0 60px #ff0000); }
   }
-  /* v18: Ring5 OM text — STATIC yellow on BOTH laptop & mobile (consistent look) */
+  /* v18: Ring5 OM text - STATIC yellow on BOTH laptop & mobile (consistent look) */
   .ring5 text { fill: #ffd700; }
 
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -295,7 +326,7 @@
     z-index: 3;
   }
 
-  /* v18: SUPER SMOOTH BREATHING GLOW — box-shadow-only pulse */
+  /* v18: SUPER SMOOTH BREATHING GLOW - box-shadow-only pulse */
   .circle.unified {
     width: 100%; height: 100%;
     border-radius: 50%;
@@ -308,14 +339,14 @@
     position: relative;
     overflow: hidden;
 
-    /* STATIC base — never jumps */
+    /* STATIC base - never jumps */
     background:
       radial-gradient(circle at 30% 25%, rgba(255,200,80,0.28), transparent 45%),
       radial-gradient(circle at 70% 75%, rgba(255,70,0,0.30), transparent 50%),
       radial-gradient(circle, rgba(70,20,0,0.92), rgba(15,2,0,0.98));
     border: 3px solid #e68a00;
 
-    /* Only shadow pulses — smooth like breathing */
+    /* Only shadow pulses - smooth like breathing */
     animation: divineBreath 5s ease-in-out infinite;
   }
 
@@ -337,7 +368,7 @@
     }
   }
 
-  /* Independent overlay glow — softly fades in/out */
+  /* Independent overlay glow - softly fades in/out */
   .circle.unified > .breath-glow {
     position: absolute; inset: 0;
     border-radius: 50%;
@@ -657,19 +688,19 @@
   .bar-chart {
     display: flex;
     align-items: flex-end;
-    height: 178px;                 /* was 140px — extra room for top labels */
+    height: 178px;                 /* was 140px - extra room for top labels */
     gap: 3px;
-    padding: 30px 10px 32px;       /* was 8px 4px 30px — 30px top clears the -16px label */
+    padding: 30px 10px 32px;       /* was 8px 4px 30px - 30px top clears the -16px label */
     background: rgba(0,0,0,0.4);
     border-radius: 8px;
     position: relative;
     overflow-x: auto;
-    overflow-y: hidden;            /* explicit — prevents surprise vertical scrollbar */
+    overflow-y: hidden;            /* explicit - prevents surprise vertical scrollbar */
     scrollbar-width: thin;
   }
   .bar-chart .bar-col {
     flex: 1;
-    min-width: 26px;               /* was 22px — wider so 4-5 digit numbers fit */
+    min-width: 26px;               /* was 22px - wider so 4-5 digit numbers fit */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -700,7 +731,7 @@
     top: -16px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 9px;                /* was 8px — better readability */
+    font-size: 9px;                /* was 8px - better readability */
     color: #fff;
     font-weight: bold;
     white-space: nowrap;
@@ -873,7 +904,7 @@
   .screenoff-modal .big-count { font-size: 42px; color: #ffcc00; text-align:center; text-shadow: 0 0 20px #ff6600; margin: 10px 0; font-weight: bold; }
 
   /* ==================================================================== */
-  /* 📱 v18 MOBILE-ONLY GPU OPTIMIZATION — FIXED
+  /* 📱 v18 MOBILE-ONLY GPU OPTIMIZATION - FIXED
      ✅ Rotation SPEED same as laptop (unchanged)
      ✅ NO transform overrides on rotating elements (bug from v16/v17 fixed)
      ✅ Only will-change hints on NON-transforming elements
@@ -882,7 +913,7 @@
   @media (hover: none) and (pointer: coarse) {
 
     /* GPU hints ONLY on elements that don't animate transform themselves.
-       Rotating elements are NOT listed here — their animation handles transform. */
+       Rotating elements are NOT listed here - their animation handles transform. */
     .circle.unified,
     .circle.unified > .breath-glow,
     .fire-layer,
@@ -895,7 +926,7 @@
     /* Isolate mandala repaints */
     .mandala { contain: layout style paint; }
 
-    /* Rings — SAME animation, only heavy drop-shadow softened */
+    /* Rings - SAME animation, only heavy drop-shadow softened */
     .ring1 { filter: drop-shadow(0 0 3px #ff6600); }
     .ring2 { filter: drop-shadow(0 0 3px #ffcc00); }
     .ring3 { filter: drop-shadow(0 0 3px #ff9933); }
@@ -918,24 +949,24 @@
     .countdown-bottom { background: linear-gradient(135deg, rgba(60,30,90,0.85), rgba(20,0,30,0.9)); }
     .modal { background: rgba(0,0,0,0.9); }
 
-    /* Bg-layer — remove blur filter */
+    /* Bg-layer - remove blur filter */
     .bg-layer { filter: brightness(0.5) saturate(1.3); }
 
-    /* Hypnotic rays — same speed, no blur, no blend */
+    /* Hypnotic rays - same speed, no blur, no blend */
     .hypnotic-rays {
       filter: none;
       mix-blend-mode: normal;
       opacity: 0.55;
     }
 
-    /* Kaleido — same speed, no blur, no blend */
+    /* Kaleido - same speed, no blur, no blend */
     .kaleido-core {
       filter: none;
       mix-blend-mode: normal;
       opacity: 0.4;
     }
 
-    /* Aura pulse — no blur, no blend */
+    /* Aura pulse - no blur, no blend */
     .aura-pulse {
       filter: none;
       mix-blend-mode: normal;
@@ -945,13 +976,13 @@
     .shockwave.delay1,
     .shockwave.delay2 { display: none; }
 
-    /* Unified circle rotating border — same speed, no blur */
+    /* Unified circle rotating border - same speed, no blur */
     .circle.unified::before {
       filter: none;
       opacity: 0.65;
     }
 
-    /* Value glow — 1 shadow instead of 3 */
+    /* Value glow - 1 shadow instead of 3 */
     .perm-section .value {
       animation: valueGlowLite 3s ease-in-out infinite alternate;
       text-shadow: 0 0 8px #ff6600;
@@ -1380,7 +1411,7 @@
 </div>
 
 <div class="top-bar">
-  <div class="om-corner">🔱</div>
+  <div class="om-corner" onclick="goMansik()" title="🧘 Mansik Jap Mode kholo">🔱</div>
   <h1>॥ 🔱 ॐ नमः शिवाय 🔱 ॥</h1>
   <div class="top-right-tools">
     <div class="sync-mini" onclick="manualSync()" title="Click to force sync">
@@ -1506,7 +1537,6 @@
   </div>
   <div class="row"><div class="status" id="status">🙏 Har Har Mahadev.</div></div>
 </div>
-
 <div class="countdown-bottom" id="countdownBottom" onclick="openModal('reverseCount')">
   <div class="cd-header">🎯 Countdown to Next Milestone</div>
   <div class="cd-target-name" id="cdTargetName">1 Lakh</div>
@@ -1754,20 +1784,20 @@
         <div class="form-group">
           <label>🔊 Om Volume</label>
           <select id="omVolumeSel" onchange="saveOmVolumePref()" style="width:100%;padding:9px;font-size:14px;">
-            <option value="0.15">🔈 Very Low — 15%</option>
-            <option value="0.3">🔈 Low — 30%</option>
-            <option value="0.5" selected>🔉 Medium — 50%</option>
-            <option value="0.7">🔊 High — 70%</option>
-            <option value="1">🔊 Max — 100%</option>
+            <option value="0.15">🔈 Very Low - 15%</option>
+            <option value="0.3">🔈 Low - 30%</option>
+            <option value="0.5" selected>🔉 Medium - 50%</option>
+            <option value="0.7">🔊 High - 70%</option>
+            <option value="1">🔊 Max - 100%</option>
           </select>
-          <small>Live change hota hai — Om bajte waqt bhi adjust kar sakte ho</small>
+          <small>Live change hota hai - Om bajte waqt bhi adjust kar sakte ho</small>
         </div>
 
         <div class="bell-rule-box">
           <b>🔔 Ghanti Rule (per 108 mala):</b><br>
           108×1 → <b>1 ring</b> &nbsp;•&nbsp; 108×3 → <b>2 rings</b> &nbsp;•&nbsp; 108×5 → <b>3 rings</b><br>
           108×7 → <b>4 rings</b> &nbsp;•&nbsp; 108×9 → <b>5 rings</b> &nbsp;•&nbsp; 108×11 → <b>1 ring</b> (repeat)<br>
-          ⏸ Bell ke time jap <b>auto-pause</b> hoga — relax karo, phir auto-resume.
+          ⏸ Bell ke time jap <b>auto-pause</b> hoga - relax karo, phir auto-resume.
         </div>
 
         <p class="help-text" style="text-align:center;margin-top:6px;">
@@ -2014,28 +2044,28 @@
       <div class="form-group">
         <label>⏱ Jap Interval (seconds)</label>
         <select id="bmSessionInterval" style="width:100%;padding:10px;font-size:14px;">
-          <option value="1.4">⚡ 1.4s — Very Fast</option>
-          <option value="1.5">⚡ 1.5s — Fast</option>
+          <option value="1.4">⚡ 1.4s - Very Fast</option>
+          <option value="1.5">⚡ 1.5s - Fast</option>
           <option value="1.6">1.6s</option>
           <option value="1.7">1.7s</option>
           <option value="1.8">1.8s</option>
           <option value="1.9">1.9s</option>
-          <option value="2.0">🔥 2.0s — Quick</option>
+          <option value="2.0">🔥 2.0s - Quick</option>
           <option value="2.1">2.1s</option>
           <option value="2.2">2.2s</option>
           <option value="2.3">2.3s</option>
           <option value="2.4">2.4s</option>
-          <option value="2.5" selected>⭐ 2.5s — Default (recommended)</option>
+          <option value="2.5" selected>⭐ 2.5s - Default (recommended)</option>
           <option value="2.6">2.6s</option>
           <option value="2.7">2.7s</option>
           <option value="2.8">2.8s</option>
           <option value="2.9">2.9s</option>
-          <option value="3.0">🧘 3.0s — Calm</option>
+          <option value="3.0">🧘 3.0s - Calm</option>
           <option value="3.1">3.1s</option>
           <option value="3.2">3.2s</option>
           <option value="3.3">3.3s</option>
           <option value="3.4">3.4s</option>
-          <option value="3.5">🕉 3.5s — Deep Meditation</option>
+          <option value="3.5">🕉 3.5s - Deep Meditation</option>
         </select>
         <small>Har jap ke beech ka gap</small>
       </div>
@@ -2054,13 +2084,13 @@
       <div class="form-group" id="bmVibWrap">
         <label>📳 Vibration Strength (per jap)</label>
         <select id="bmSessionVibration" style="width:100%;padding:10px;font-size:14px;">
-          <option value="0">🔇 Off — no vibration</option>
-          <option value="80">📳 Light — quick tap (80ms)</option>
-          <option value="200" selected>📳📳 Medium — clear buzz (200ms)</option>
-          <option value="400">📳📳📳 Strong — long buzz (400ms)</option>
-          <option value="100,50,150">💪 Double Pulse — buzz-pause-buzz</option>
-          <option value="150,60,150,60,250">💪💪 Triple Pulse — 3 buzzes (strongest)</option>
-          <option value="80,40,80,40,80,40,200">🔥 Rapid — 4 quick buzzes</option>
+          <option value="0">🔇 Off - no vibration</option>
+          <option value="80">📳 Light - quick tap (80ms)</option>
+          <option value="200" selected>📳📳 Medium - clear buzz (200ms)</option>
+          <option value="400">📳📳📳 Strong - long buzz (400ms)</option>
+          <option value="100,50,150">💪 Double Pulse - buzz-pause-buzz</option>
+          <option value="150,60,150,60,250">💪💪 Triple Pulse - 3 buzzes (strongest)</option>
+          <option value="80,40,80,40,80,40,200">🔥 Rapid - 4 quick buzzes</option>
         </select>
         <small>Har jap pe ye pattern chalega</small>
       </div>
@@ -2068,11 +2098,11 @@
       <div class="form-group bm-disabled" id="bmTickVolWrap">
         <label>🔊 Tick Volume</label>
         <select id="bmTickVolume" disabled style="width:100%;padding:10px;font-size:14px;">
-          <option value="0.2">🔈 Very Low — 20%</option>
-          <option value="0.4">🔈 Low — 40%</option>
-          <option value="0.7" selected>🔉 Normal — 70%</option>
-          <option value="0.9">🔊 High — 90%</option>
-          <option value="1">🔊 Max — 100%</option>
+          <option value="0.2">🔈 Very Low - 20%</option>
+          <option value="0.4">🔈 Low - 40%</option>
+          <option value="0.7" selected>🔉 Normal - 70%</option>
+          <option value="0.9">🔊 High - 90%</option>
+          <option value="1">🔊 Max - 100%</option>
         </select>
         <small>Headphone me comfortable rakho</small>
       </div>
@@ -2091,10 +2121,10 @@
       <div class="form-group">
         <label>🔊 Bell Volume</label>
         <select id="bmBellVolume" style="width:100%;padding:10px;font-size:14px;">
-          <option value="0.3">🔈 Low — 30%</option>
-          <option value="0.6">🔉 Medium — 60%</option>
-          <option value="0.9" selected>🔊 High — 90%</option>
-          <option value="1">🔊 Max — 100%</option>
+          <option value="0.3">🔈 Low - 30%</option>
+          <option value="0.6">🔉 Medium - 60%</option>
+          <option value="0.9" selected>🔊 High - 90%</option>
+          <option value="1">🔊 Max - 100%</option>
         </select>
         <small>Bell ke time jap auto-pause hoga</small>
       </div>
@@ -2180,7 +2210,7 @@
   <div class="bell-dots" id="bellDots"></div>
   <div class="bell-progress" id="bellProgress">0 / 1</div>
   <div class="bell-relax-txt" id="bellRelaxTxt">🧘 Relax… saans lo… Har Har Mahadev 🔱</div>
-  <div class="bell-paused-note">⏸ Jap paused — auto resume</div>
+  <div class="bell-paused-note">⏸ Jap paused - auto resume</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2938,9 +2968,9 @@ function saveTickSoundPref(){
   localStorage.setItem('tickSoundOn', tickSoundOn);
   if(tickSoundOn){
     ensureAudioCtx().then(()=> playTickSound());
-    showToast('🎧 Tick sound ON — vibration OFF', 'info');
+    showToast('🎧 Tick sound ON - vibration OFF', 'info');
   } else {
-    showToast('📳 Vibration ON — tick sound OFF', 'info');
+    showToast('📳 Vibration ON - tick sound OFF', 'info');
   }
 }
 function saveBellPref(){
@@ -3212,7 +3242,7 @@ function updateAlertTimePreview(){
   if(box) box.innerHTML = `⏰ ${base} × ${mult} = <b>${human}</b> → ${hms}`;
 }
 
-// v20.2: no markDirty() — alerts/presets are local-only, must not trigger GitHub sync
+// v20.2: no markDirty() - alerts/presets are local-only, must not trigger GitHub sync
 function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); }
 function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); }
 
@@ -3950,7 +3980,7 @@ async function doPushToGitHub(silent=false, forceOverwrite=false){
 
 function buildPayload(){
   // v20.2: Only LIFETIME data goes to GitHub.
-  // alerts + presets are session/UI state — kept local only.
+  // alerts + presets are session/UI state - kept local only.
   return {
     perm, trip,
     version: localVersion,
@@ -4042,7 +4072,7 @@ async function dangerResetLocal(){
   if(keepBellVol !== null) localStorage.setItem('bellVolume', keepBellVol);
   if(keepOmOn    !== null) localStorage.setItem('omBgOn', keepOmOn);
   if(keepOmVol   !== null) localStorage.setItem('omVolume', keepOmVol);
-  // Apply — v20.2: alerts/presets are local-only, reset to empty
+  // Apply - v20.2: alerts/presets are local-only, reset to empty
   perm = remote.perm || 0;
   trip = remote.trip || 0;
   milestoneDates = remote.milestoneDates || {};
@@ -4120,7 +4150,7 @@ function updateMansikAlertPreview(){
     box.style.background = 'rgba(120,120,120,0.15)';
     box.style.borderColor = '#777';
     box.style.color = '#999';
-    box.innerHTML = '🔇 No alert — jap chalta rahega';
+    box.innerHTML = '🔇 No alert - jap chalta rahega';
     return;
   }
   multSel.disabled = false;
@@ -4537,7 +4567,7 @@ function playTickSound(){
   synthTick();
 }
 
-/* Sirf tick/bell ke liye — Om NEVER decoded */
+/* Sirf tick/bell ke liye - Om NEVER decoded */
 async function decodeSound(kind){
   if(kind === 'om') return false;
   const def = SOUND_DEFS[kind];
@@ -4570,7 +4600,7 @@ async function handleSoundPick(kind, e){
   const def = SOUND_DEFS[kind];
   const szTxt = fmtSize(file.size);
 
-  // ═══ STEP 1: IndexedDB me SAVE — sabse pehle, har haal me ═══
+  // ═══ STEP 1: IndexedDB me SAVE - sabse pehle, har haal me ═══
   try{
     await idbSet(def.idbKey, { blob: file, name: file.name });
     await updateSoundInfo(kind);
@@ -4585,16 +4615,16 @@ async function handleSoundPick(kind, e){
   // ═══ STEP 2: Use karo ═══
   try{
     if(kind === 'om'){
-      attachOmBlob(file, file.name);           // stream — no decode
+      attachOmBlob(file, file.name);           // stream - no decode
       if(omBgOn && !running){
         stopOmLoop();
         setTimeout(()=> startOmLoop(), 400);
-        showToast('🕉 Om chalu — jap start karne pe band ho jayega', 'info', 3500);
+        showToast('🕉 Om chalu - jap start karne pe band ho jayega', 'info', 3500);
       } else {
-        showToast('🕉 Om saved — toggle ON karo idle/pause pe bajane ke liye', 'info', 4000);
+        showToast('🕉 Om saved - toggle ON karo idle/pause pe bajane ke liye', 'info', 4000);
       }
     } else if(file.size > DECODE_MAX_BYTES){
-      showToast(`⚠ ${def.label} ${szTxt} — bahut badi! 1-2 sec ki chhoti file use karo`, 'error', 5000);
+      showToast(`⚠ ${def.label} ${szTxt} - bahut badi! 1-2 sec ki chhoti file use karo`, 'error', 5000);
     } else {
       await ensureAudioCtx();
       const arr = await file.arrayBuffer();
@@ -4605,13 +4635,13 @@ async function handleSoundPick(kind, e){
     }
   }catch(err){
     console.error('play/decode failed', err);
-    showToast(`⚠ ${def.label} saved hai, par play nahi hua — format badlo (MP3/M4A)`, 'error', 5000);
+    showToast(`⚠ ${def.label} saved hai, par play nahi hua - format badlo (MP3/M4A)`, 'error', 5000);
   }
 
   // ═══ STEP 3: GitHub backup ═══
   if(ghConfigured() && localStorage.getItem('ghBackupAudio') !== 'false'){
     if(file.size > GH_SOUND_MAX){
-      showToast(`⚠ ${szTxt} — GitHub backup skip (45MB max). Local pe safe hai.`, 'error', 5000);
+      showToast(`⚠ ${szTxt} - GitHub backup skip (45MB max). Local pe safe hai.`, 'error', 5000);
     } else {
       showToast(`☁ ${def.label} upload ho raha hai (${szTxt})...`, 'info', 4000);
       ghUploadSound(kind, file);
@@ -4642,7 +4672,7 @@ async function ghUploadSound(kind, blob){
   }
 }
 
-/* ✅ v20.4 FIX: raw media type — 1MB+ files ke liye ye ZAROORI hai.
+/* ✅ v20.4 FIX: raw media type - 1MB+ files ke liye ye ZAROORI hai.
    Purana `application/vnd.github+json` 20MB pe fail hota tha. */
 async function ghFetchRawBlob(path){
   const {o,r} = ghRepo();
@@ -4705,7 +4735,7 @@ async function restoreOmFromGitHub(){
   if(ok){
     if(omBgOn && !running){ stopOmLoop(); setTimeout(()=> startOmLoop(), 400); }
   } else {
-    showToast('❌ GitHub pe Om file nahi mili — ek baar 📂 se upload karo', 'error', 5000);
+    showToast('❌ GitHub pe Om file nahi mili - ek baar 📂 se upload karo', 'error', 5000);
   }
 }
 
@@ -4718,10 +4748,10 @@ async function updateSoundInfo(kind){
     el.innerHTML = `✓ <b>${stored.name}</b> (${fmtSize(stored.blob.size)})`;
   } else if(kind === 'om'){
     el.innerHTML = ghConfigured()
-      ? '⚠ No Om file — 📂 upload ya ☁ restore karo'
-      : '⚠ No Om file — 📂 se upload karo';
+      ? '⚠ No Om file - 📂 upload ya ☁ restore karo'
+      : '⚠ No Om file - 📂 se upload karo';
   } else {
-    el.innerHTML = `⚠ No ${SOUND_DEFS[kind].label.toLowerCase()} — built-in use hoga`;
+    el.innerHTML = `⚠ No ${SOUND_DEFS[kind].label.toLowerCase()} - built-in use hoga`;
   }
 }
 
@@ -4750,7 +4780,7 @@ async function testSound(kind){
     }
     if(!omReady){ showToast('⚠ Pehle Om file 📂 se upload karo', 'error', 4000); return; }
     if(omLooping){ stopOmLoop(); showToast('🕉 Om stopped', 'info'); }
-    else { await startOmLoopForced(); showToast('🕉 Om playing — dobara ▶ dabao band karne ke liye', 'info', 3500); }
+    else { await startOmLoopForced(); showToast('🕉 Om playing - dobara ▶ dabao band karne ke liye', 'info', 3500); }
     return;
   }
 
@@ -4832,7 +4862,7 @@ function saveOmBgPref(){
   localStorage.setItem('omBgOn', omBgOn);
   if(omBgOn){
     if(!running) startOmLoop();
-    showToast('🕉 Om background ON — idle/pause pe bajega', 'info');
+    showToast('🕉 Om background ON - idle/pause pe bajega', 'info');
   } else {
     stopOmLoop();
     showToast('🕉 Om background OFF', 'info');
@@ -4853,7 +4883,7 @@ async function startOmLoop(){
   if(!omBgOn || running) return;
   if(!omReady){
     const ok = await loadOmFromIDB();
-    if(!ok) return;                 // koi file nahi — chup raho
+    if(!ok) return;                 // koi file nahi - chup raho
   }
   const el = getOmEl();
   if(!el) return;
@@ -4889,7 +4919,7 @@ async function startOmLoopForced(){
     omFadeTo(omVolume, 400);
   }catch(err){
     omLooping = false;
-    showToast('⚠ Om play block hua — screen pe ek baar tap karo', 'error', 4000);
+    showToast('⚠ Om play block hua - screen pe ek baar tap karo', 'error', 4000);
     console.warn('startOmLoopForced', err);
   }
 }
@@ -4947,7 +4977,7 @@ function checkMalaBell(){
 async function playMalaBell(rings, mala){
   bellPlaying = true;
 
-  // Pause counting (relax time) — elapsed timer untouched
+  // Pause counting (relax time) - elapsed timer untouched
   const wasAudio = (chantMode === 'audio' && running);
   if(japTimer){ clearInterval(japTimer); japTimer = null; }
   if(wasAudio) stopSeamlessAudio();
@@ -5003,6 +5033,26 @@ function setBellOverlayRelax(){
 function hideBellOverlay(){
   const ov = document.getElementById('bellOverlay');
   if(ov) ov.classList.remove('show');
+}
+
+/* ═══ Trishul tap → Mansik page (safe switch) ═══ */
+async function goMansik(){
+  if(conflictPending){
+    showToast('⚠ Pehle data conflict resolve karo', 'error');
+    openModal('conflict');
+    return;
+  }
+  if(running){
+    running = false;
+    applyRunningState();
+    if(blackModeActive) await exitBlackMode();
+  }
+  stopOmLoop();
+  if(ghConfigured() && localVersion > lastBackedUpVersion){
+    showStartup('☁ Saving before switch...', '🧘 Mansik page khul raha hai');
+    await safePushToGitHub(true);
+  }
+  window.location.href = 'mansik.html';
 }
 
 /* ============ STARTUP ============ */
