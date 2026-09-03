@@ -1,95 +1,14 @@
 {
-  "perm": 4692,
-  "trip": 1876,
-  "version": 6222,
+  "perm": 4717,
+  "trip": 1901,
+  "version": 6247,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z"
   },
-  "alerts": [
-    {
-      "id": 1788176117092,
-      "type": "time",
-      "delta": 2100000,
-      "target": 2114834,
-      "label": "After 00:35:00",
-      "triggered": true
-    },
-    {
-      "id": 1788282160956,
-      "type": "time",
-      "delta": 20000,
-      "target": 53785,
-      "label": "After 00:00:20",
-      "triggered": true
-    },
-    {
-      "id": 1788282343211,
-      "type": "time",
-      "delta": 20000,
-      "target": 168977,
-      "label": "After 00:00:20",
-      "triggered": true
-    },
-    {
-      "id": 1788310528201,
-      "type": "time",
-      "delta": 35000,
-      "target": 35000,
-      "label": "After 00:00:35",
-      "triggered": true
-    },
-    {
-      "id": 1788310765624,
-      "type": "time",
-      "delta": 2100000,
-      "target": 2100000,
-      "label": "After 00:35:00",
-      "triggered": true
-    },
-    {
-      "id": 1788313035894,
-      "type": "time",
-      "delta": 2100000,
-      "target": 4202498,
-      "label": "After 00:35:00",
-      "triggered": false
-    },
-    {
-      "id": 1788401415136,
-      "type": "time",
-      "delta": 2100000,
-      "target": 2100000,
-      "label": "After 00:35:00",
-      "triggered": true
-    },
-    {
-      "id": 1788401444942,
-      "type": "time",
-      "delta": 2100000,
-      "target": 2100000,
-      "label": "After 00:35:00",
-      "triggered": true
-    },
-    {
-      "id": 1788403750560,
-      "type": "time",
-      "delta": 2100000,
-      "target": 4200382,
-      "label": "After 00:35:00",
-      "triggered": false
-    }
-  ],
-  "presets": [
-    {
-      "type": "time",
-      "delta": 10000,
-      "label": "After 00:00:10"
-    }
-  ],
   "dailyStats": {
     "2026-09-01": 1810,
     "2026-09-02": 1618,
-    "2026-09-03": 1877
+    "2026-09-03": 1902
   },
   "settings": {
     "audioDuration": 5.4,
@@ -100,7 +19,7 @@
     "chantHours": 4,
     "vibrationMs": 30
   },
-  "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-03T03:01:33.762Z",
-  "appVersion": "v13"
+  "deviceId": "dev_38e7zgo0",
+  "updatedAt": "2026-09-03T07:08:42.463Z",
+  "appVersion": "v21"
 }
