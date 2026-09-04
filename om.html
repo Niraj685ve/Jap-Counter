@@ -6,7 +6,25 @@
 <title>🕉 ॐ — Mahadev</title>
 <style>
 /* ═══════════════════════════════════════════════════════════════
-   🕉 OM SCREENSAVER — v1.6  (laptop only)
+   🕉 OM SCREENSAVER — v1.7  (laptop only)
+
+   v1.7 — 🔱 TWIN TRISHUL (naya)
+   ① Big ring (ring1, r=190 → 380/400 = 95% of --m) ke LEFT aur RIGHT
+      ek-ek trishul. Trishul ki LAMBAI = ring ki height, exactly:
+      --tri-len: calc(var(--m) * 0.95)
+   ② Pura trishul apni jagah pe CLOCKWISE ghumta hai — vertical axis
+      (rotateY) pe, jaise ॐ ghumta hai. 'Y' dabao to in-plane wheel
+      spin (rotateZ) ho jata hai.
+   ③ Teen prong (3 part) baari-baari CHAMAKTE hain — shine overlay ki
+      sirf opacity animate hoti hai (GPU), filter static hai.
+   ④ Har NOK se LIGHTNING nikalti hai (3 top tips + neeche ka spike).
+      Bolts sirf opacity + scaleY animate karte hain — zero repaint.
+   ⑤ --m: 84vw → 60vw. Kyun: mandala + 2 trishul + lightning ki total
+      width 1.584 × --m hoti hai. 1080p pe 860px cap hi jeetta hai,
+      isliye center mandala ka size waisa hi dikhta hai.
+   ⑥ Corner mini mandalas me trishul NAHI (clone script use nikal deta
+      hai) — corners halke rakhne ka purana rule + duplicate gradient
+      IDs se bacha.
 
    v1.6 SMOOTHNESS FIX — rings ab butter-smooth ghumte hain:
    ① ring5Aura HATAYA — wo filter:drop-shadow ki VALUES animate
@@ -67,7 +85,10 @@ body.showcur{cursor:default}
 
 /* ═══ MANDALA (center) ═══ */
 .mandala{
-  --m:min(84vh,84vw,860px);          /* center size — sirf yahan badlo */
+  /* ⚠ v1.7: 84vw → 60vw. Total kabza = 1.584 × --m (mandala + 2 trishul
+     + lightning). 60vw × 1.584 = 95vw → har screen pe fit.
+     Center size sirf yahan badlo. */
+  --m:min(84vh,60vw,860px);
   position:relative;
   z-index:10;                        /* bg layers (0/1/2) ke upar */
   width:var(--m);
@@ -108,7 +129,8 @@ body.showcur{cursor:default}
 
 /* Corners halke rakhne ke liye — heavy layers off */
 .mandala.mini .shockwave,
-.mandala.mini .kaleido-core{display:none}
+.mandala.mini .kaleido-core,
+.mandala.mini .trishul-wrap{display:none}     /* v1.7: corners me trishul nahi */
 
 /* Corners ek doosre se desync — sab ek saath na ghumein */
 .mini-slot.tl .mandala.mini *{animation-delay:-3s}
@@ -147,6 +169,149 @@ body.nomini .mini-slot{display:none}
 .ring-text.r3{fill:#ffb347;font-size:13px;letter-spacing:2px}
 .ring-text.r4{fill:#ffcc00;font-size:12px;letter-spacing:2px}
 .ring-text.r5{fill:#ffd700;font-size:14px;letter-spacing:4px;font-weight:900}
+
+/* ═══════════════════════════════════════════════════════════════
+   🔱 v1.7 TWIN TRISHUL — big ring ke left & right
+   ─────────────────────────────────────────────────────────────
+   LAMBAI = big ring ki height:
+     ring1 ka path r=190 in viewBox 400 → diameter 380/400 = 95%
+     → --tri-len = calc(var(--m) * 0.95)   ← EXACT match
+   SVG viewBox "0 0 120 440": center prong ka nok y=0 pe, neeche ka
+   spike y=440 pe — yani dhaatu pura viewBox bharti hai, isliye
+   wrap ki height = trishul ki asli lambai (koi hidden padding nahi).
+   ═══════════════════════════════════════════════════════════════ */
+.tri-defs{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+
+.trishul-wrap{
+  --tri-len:calc(var(--m) * 0.95);   /* = big ring diameter — ISE MAT CHHEDO */
+  --tri-gap:0.6%;                    /* ring se doori — tune karne ki knob */
+  position:absolute;
+  top:50%;
+  height:var(--tri-len);
+  aspect-ratio:120/440;              /* svg viewBox ka same ratio */
+  transform:translateY(-50%);
+  z-index:2;
+  pointer-events:none;
+  perspective:1300px;                /* rotateY ko 3D depth deta hai */
+}
+/* mandala box (400) ring (380) se 2.5% bada hai → asli gap = 2.5% + --tri-gap */
+.trishul-wrap.left {right:100%;margin-right:var(--tri-gap)}
+.trishul-wrap.right{left:100%; margin-left: var(--tri-gap)}
+body.notri .trishul-wrap{display:none}
+
+/* Ghoomne wali layer — transform yahan, filter NAHI (warna 3D flatten) */
+.trishul-spin{
+  position:absolute;inset:0;
+  transform-style:preserve-3d;
+  will-change:transform;
+  backface-visibility:visible;
+  /* ⏱ CLOCKWISE • apni jagah pe • VERTICAL axis */
+  animation:trishulSpinY 8s linear infinite;
+}
+@keyframes trishulSpinY{
+  from{transform:rotate3d(0,1,0,0deg)}
+  to  {transform:rotate3d(0,1,0,-360deg)}   /* -360 = upar se dekho to clockwise */
+}
+/* 'Y' key → in-plane wheel spin (chakra ki tarah clockwise) */
+body.triz .trishul-spin{animation:trishulSpinZ 11s linear infinite}
+@keyframes trishulSpinZ{
+  from{transform:rotate3d(0,0,1,0deg)}
+  to  {transform:rotate3d(0,0,1,360deg)}    /* CSS me +Z = clockwise */
+}
+
+/* ⚠ .mandala svg wala rule backface-visibility:hidden karta hai —
+   rotateY pe aadha ghoomne ke baad trishul GAYAB ho jata. Override zaroori. */
+.mandala .trishul-wrap svg.trishul{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  backface-visibility:visible;
+  will-change:auto;
+  overflow:visible;                  /* lightning viewBox ke bahar bhi dikhe */
+  /* STATIC filter — ek baar bake, kabhi animate nahi */
+  filter:drop-shadow(0 0 5px #ff6600) drop-shadow(0 0 16px rgba(255,110,0,.45));
+}
+
+/* ── DHAATU (metal body) ── */
+.tri-metal path,
+.tri-metal rect{
+  stroke:#5a1a00;
+  stroke-width:1.6;
+  paint-order:stroke;
+}
+.tri-prong{fill:url(#triGold)}
+.tri-bar{fill:url(#triGold)}
+.tri-staff{fill:url(#triStaff)}
+
+/* ── 3 PART CHAMAKTE HAIN — sirf opacity animate (GPU), blur static ── */
+.tri-shine{
+  mix-blend-mode:screen;
+  filter:blur(2.4px);                /* STATIC */
+  will-change:opacity;
+}
+.tri-shine .sh{
+  fill:#fff6cf;
+  opacity:0;
+  animation:prongShine 2.4s ease-in-out infinite;
+  animation-delay:var(--bd,0s);
+  will-change:opacity;
+}
+.tri-shine .sh.p1{--bd:0s}           /* beech ka prong  */
+.tri-shine .sh.p2{--bd:.9s}          /* baayan prong    */
+.tri-shine .sh.p3{--bd:1.8s}         /* daayan prong    */
+@keyframes prongShine{
+  0%,100%{opacity:.06}
+  38%    {opacity:.92}
+  55%    {opacity:.30}
+  70%    {opacity:.75}
+}
+
+/* ── HAR NOK SE LIGHTNING ── */
+.bolt-set.t-a{--bd:0s}               /* upar ka beech wala nok */
+.bolt-set.t-b{--bd:.9s}              /* baaya nok              */
+.bolt-set.t-c{--bd:1.8s}             /* daaya nok              */
+.bolt-set.t-d{--bd:1.35s}            /* neeche ka spike        */
+
+.bolt{
+  transform-box:fill-box;
+  transform-origin:50% 100%;         /* bbox ka bottom = theek nok pe */
+  opacity:0;
+  animation:boltFlash var(--bdur,2.4s) linear infinite;
+  animation-delay:calc(var(--bd,0s) + var(--bo,0s));
+  will-change:transform,opacity;
+}
+.bolt.b1{--bo:0s;   --bdur:2.4s}
+.bolt.b2{--bo:.85s; --bdur:3.1s}     /* alag duration → drift → random feel */
+.bolt.b3{--bo:1.7s; --bdur:2.7s}
+@keyframes boltFlash{
+  0%     {opacity:0;   transform:scaleY(.30)}
+  3%     {opacity:1;   transform:scaleY(1)}
+  7%     {opacity:.12; transform:scaleY(1.04)}
+  11%    {opacity:.95; transform:scaleY(1.12)}
+  17%    {opacity:0;   transform:scaleY(1.22)}
+  100%   {opacity:0;   transform:scaleY(1.22)}
+}
+.bolt .glow{
+  fill:none;stroke:#ff9500;stroke-width:9;
+  stroke-linecap:round;stroke-linejoin:round;
+  opacity:.5;filter:blur(3px);       /* STATIC */
+}
+.bolt .core{
+  fill:none;stroke:#fffbe6;stroke-width:2.6;
+  stroke-linecap:round;stroke-linejoin:round;
+}
+/* Nok pe baithi chingari */
+.spark{
+  fill:url(#triSpark);
+  mix-blend-mode:screen;
+  animation:sparkPulse 2.4s ease-in-out infinite;
+  animation-delay:var(--bd,0s);
+  will-change:opacity,transform;
+  transform-box:fill-box;transform-origin:50% 50%;
+}
+@keyframes sparkPulse{
+  0%,100%{opacity:.25;transform:scale(.7)}
+  40%    {opacity:1;  transform:scale(1.35)}
+  60%    {opacity:.45;transform:scale(1)}
+}
 
 /* ═══ HYPNOTIC OVERLAYS ═══ */
 .hypnotic-rays{
@@ -373,6 +538,14 @@ body.lite .mandala.mini .aura-pulse{display:none}
 body.lite .ring1,body.lite .ring2,body.lite .ring3,
 body.lite .ring4,body.lite .ring5{filter:none}
 
+/* v1.7: TRISHUL lite — bhaari blur/blend off, ek bolt kam.
+   Rotation + chamak zinda rehti hai, sirf sasti ho jaati hai. */
+body.lite .mandala .trishul-wrap svg.trishul{filter:drop-shadow(0 0 4px #ff6600)}
+body.lite .tri-shine{mix-blend-mode:normal;filter:none;opacity:.6}
+body.lite .bolt .glow{filter:none;opacity:.32}
+body.lite .bolt.b3{display:none}
+body.lite .spark{mix-blend-mode:normal}
+
 /* ═══ GESTURE UNLOCK (autoplay policy) ═══ */
 .unlock{
   position:fixed;inset:0;z-index:50;
@@ -407,6 +580,39 @@ body.lite .ring4,body.lite .ring5{filter:none}
 <div class="embers" id="embers"></div>
 
 <audio id="omAudio" loop></audio>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     🔱 v1.7 TRISHUL GRADIENTS — ek hi baar, GLOBAL.
+     ⚠ Mandala ke BAHAR rakhe hain jaan-boojh ke: clone script
+     centerMandala ko copy karta hai, to yahan hone se duplicate
+     gradient IDs banti — aur duplicate ID pe fill pehli wali
+     definition pakad leta hai (wahi bug jo textPath me hua tha).
+     ═══════════════════════════════════════════════════════════════ -->
+<svg class="tri-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- dhaatu ki chamak: kinare gehre, beech me safed highlight -->
+    <linearGradient id="triGold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#7a3b00"/>
+      <stop offset="16%"  stop-color="#ffc233"/>
+      <stop offset="36%"  stop-color="#fff4ca"/>
+      <stop offset="56%"  stop-color="#ffb300"/>
+      <stop offset="80%"  stop-color="#c96a00"/>
+      <stop offset="100%" stop-color="#6b2f00"/>
+    </linearGradient>
+    <linearGradient id="triStaff" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#5e2600"/>
+      <stop offset="24%"  stop-color="#e0a13c"/>
+      <stop offset="46%"  stop-color="#fff0c0"/>
+      <stop offset="68%"  stop-color="#d98a1a"/>
+      <stop offset="100%" stop-color="#4d1f00"/>
+    </linearGradient>
+    <radialGradient id="triSpark">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="35%"  stop-color="#ffd27a" stop-opacity=".62"/>
+      <stop offset="100%" stop-color="#ff7a00" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+</svg>
 
 <!-- 4 corner slots — JS inme mini mandala clone karta hai -->
 <div class="mini-slot tl"></div>
@@ -456,6 +662,206 @@ body.lite .ring4,body.lite .ring5{filter:none}
     </textPath></text>
   </svg>
 
+  <!-- ═══════════════════════════════════════════════════════════
+       🔱 LEFT TRISHUL — big ring ke baayen
+       viewBox 0 0 120 440 : nok y=0 pe, neeche ka spike y=440 pe
+       → wrap ki height = trishul ki ASLI lambai = --tri-len
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="trishul-wrap left">
+    <div class="trishul-spin">
+      <svg class="trishul" viewBox="0 0 120 440" aria-hidden="true" focusable="false">
+
+        <!-- ── DHAATU ── -->
+        <g class="tri-metal">
+          <!-- baaya prong -->
+          <path class="tri-prong" d="M 18,22 C 16,74 22,114 36,154 L 50,150 C 36,112 28,72 22,26 C 21,24 19,21 18,22 Z"/>
+          <!-- daaya prong -->
+          <path class="tri-prong" d="M 102,22 C 104,74 98,114 84,154 L 70,150 C 84,112 92,72 98,26 C 99,24 101,21 102,22 Z"/>
+          <!-- beech ka prong -->
+          <path class="tri-prong" d="M 60,2 C 66,44 70,86 71,126 L 49,126 C 50,86 54,44 60,2 Z"/>
+          <!-- crossbar -->
+          <rect class="tri-bar" x="21" y="148" width="78" height="20" rx="9"/>
+          <!-- collar -->
+          <rect class="tri-bar" x="47" y="168" width="26" height="14" rx="5"/>
+          <!-- staff -->
+          <rect class="tri-staff" x="53" y="180" width="14" height="226" rx="6"/>
+          <!-- staff ke chhalle -->
+          <rect class="tri-bar" x="48" y="238" width="24" height="9" rx="4"/>
+          <rect class="tri-bar" x="48" y="330" width="24" height="9" rx="4"/>
+          <!-- neeche ka spike -->
+          <path class="tri-prong" d="M 60,440 L 52,404 L 68,404 Z"/>
+        </g>
+
+        <!-- ── 3 PART BAARI-BAARI CHAMAKTE HAIN (sirf opacity) ── -->
+        <g class="tri-shine">
+          <path class="sh p1" d="M 57,16 C 60,56 62,92 63,122 L 58,122 C 57,92 55,56 54,18 Z"/>
+          <path class="sh p2" d="M 21,32 C 21,78 26,114 37,148 L 33,151 C 21,114 16,76 18,32 Z"/>
+          <path class="sh p3" d="M 99,32 C 99,78 94,114 83,148 L 87,151 C 99,114 104,76 102,32 Z"/>
+        </g>
+
+        <!-- ── ⚡ HAR NOK SE LIGHTNING ── -->
+
+        <!-- NOK 1 : upar, beech wala -->
+        <g class="bolt-set t-a">
+          <g class="bolt b1">
+            <path class="glow" d="M 60,4 L 53,-24 L 64,-38 L 55,-68 L 69,-96"/>
+            <path class="core" d="M 60,4 L 53,-24 L 64,-38 L 55,-68 L 69,-96"/>
+          </g>
+          <g class="bolt b2">
+            <path class="glow" d="M 60,4 L 69,-20 L 60,-44 L 73,-64 L 65,-92"/>
+            <path class="core" d="M 60,4 L 69,-20 L 60,-44 L 73,-64 L 65,-92"/>
+          </g>
+          <g class="bolt b3">
+            <path class="glow" d="M 60,4 L 49,-18 L 58,-36 L 45,-58 L 51,-84"/>
+            <path class="core" d="M 60,4 L 49,-18 L 58,-36 L 45,-58 L 51,-84"/>
+          </g>
+          <circle class="spark" cx="60" cy="4" r="11"/>
+        </g>
+
+        <!-- NOK 2 : baaya -->
+        <g class="bolt-set t-b">
+          <g class="bolt b1">
+            <path class="glow" d="M 18,22 L 7,0 L 16,-14 L 2,-38"/>
+            <path class="core" d="M 18,22 L 7,0 L 16,-14 L 2,-38"/>
+          </g>
+          <g class="bolt b2">
+            <path class="glow" d="M 18,22 L 20,-2 L 8,-18 L 14,-44"/>
+            <path class="core" d="M 18,22 L 20,-2 L 8,-18 L 14,-44"/>
+          </g>
+          <g class="bolt b3">
+            <path class="glow" d="M 18,22 L 2,6 L 10,-10 L -6,-28"/>
+            <path class="core" d="M 18,22 L 2,6 L 10,-10 L -6,-28"/>
+          </g>
+          <circle class="spark" cx="19" cy="23" r="10"/>
+        </g>
+
+        <!-- NOK 3 : daaya -->
+        <g class="bolt-set t-c">
+          <g class="bolt b1">
+            <path class="glow" d="M 102,22 L 113,0 L 104,-14 L 118,-38"/>
+            <path class="core" d="M 102,22 L 113,0 L 104,-14 L 118,-38"/>
+          </g>
+          <g class="bolt b2">
+            <path class="glow" d="M 102,22 L 100,-2 L 112,-18 L 106,-44"/>
+            <path class="core" d="M 102,22 L 100,-2 L 112,-18 L 106,-44"/>
+          </g>
+          <g class="bolt b3">
+            <path class="glow" d="M 102,22 L 118,6 L 110,-10 L 126,-28"/>
+            <path class="core" d="M 102,22 L 118,6 L 110,-10 L 126,-28"/>
+          </g>
+          <circle class="spark" cx="101" cy="23" r="10"/>
+        </g>
+
+        <!-- NOK 4 : neeche ka spike.
+             ⚠ inline transform-origin ZAROORI — ye bolt NEECHE jaati hai,
+             to bbox ka TOP hi nok hai (CSS default 50% 100% ulta ugata). -->
+        <g class="bolt-set t-d">
+          <g class="bolt b1" style="transform-origin:50% 0%">
+            <path class="glow" d="M 60,438 L 52,462 L 62,478 L 54,502"/>
+            <path class="core" d="M 60,438 L 52,462 L 62,478 L 54,502"/>
+          </g>
+          <g class="bolt b2" style="transform-origin:50% 0%">
+            <path class="glow" d="M 60,438 L 69,460 L 60,476 L 70,498"/>
+            <path class="core" d="M 60,438 L 69,460 L 60,476 L 70,498"/>
+          </g>
+          <circle class="spark" cx="60" cy="437" r="10"/>
+        </g>
+
+      </svg>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       🔱 RIGHT TRISHUL — bilkul same, bas spin phase ulta
+       (animation-delay:-4s → 8s cycle ka aadha) taaki dono
+       robot ki tarah ek saath na ghumein.
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="trishul-wrap right">
+    <div class="trishul-spin" style="animation-delay:-4s">
+      <svg class="trishul" viewBox="0 0 120 440" aria-hidden="true" focusable="false">
+
+        <g class="tri-metal">
+          <path class="tri-prong" d="M 18,22 C 16,74 22,114 36,154 L 50,150 C 36,112 28,72 22,26 C 21,24 19,21 18,22 Z"/>
+          <path class="tri-prong" d="M 102,22 C 104,74 98,114 84,154 L 70,150 C 84,112 92,72 98,26 C 99,24 101,21 102,22 Z"/>
+          <path class="tri-prong" d="M 60,2 C 66,44 70,86 71,126 L 49,126 C 50,86 54,44 60,2 Z"/>
+          <rect class="tri-bar" x="21" y="148" width="78" height="20" rx="9"/>
+          <rect class="tri-bar" x="47" y="168" width="26" height="14" rx="5"/>
+          <rect class="tri-staff" x="53" y="180" width="14" height="226" rx="6"/>
+          <rect class="tri-bar" x="48" y="238" width="24" height="9" rx="4"/>
+          <rect class="tri-bar" x="48" y="330" width="24" height="9" rx="4"/>
+          <path class="tri-prong" d="M 60,440 L 52,404 L 68,404 Z"/>
+        </g>
+
+        <g class="tri-shine">
+          <path class="sh p1" d="M 57,16 C 60,56 62,92 63,122 L 58,122 C 57,92 55,56 54,18 Z"/>
+          <path class="sh p2" d="M 21,32 C 21,78 26,114 37,148 L 33,151 C 21,114 16,76 18,32 Z"/>
+          <path class="sh p3" d="M 99,32 C 99,78 94,114 83,148 L 87,151 C 99,114 104,76 102,32 Z"/>
+        </g>
+
+        <g class="bolt-set t-a">
+          <g class="bolt b1">
+            <path class="glow" d="M 60,4 L 53,-24 L 64,-38 L 55,-68 L 69,-96"/>
+            <path class="core" d="M 60,4 L 53,-24 L 64,-38 L 55,-68 L 69,-96"/>
+          </g>
+          <g class="bolt b2">
+            <path class="glow" d="M 60,4 L 69,-20 L 60,-44 L 73,-64 L 65,-92"/>
+            <path class="core" d="M 60,4 L 69,-20 L 60,-44 L 73,-64 L 65,-92"/>
+          </g>
+          <g class="bolt b3">
+            <path class="glow" d="M 60,4 L 49,-18 L 58,-36 L 45,-58 L 51,-84"/>
+            <path class="core" d="M 60,4 L 49,-18 L 58,-36 L 45,-58 L 51,-84"/>
+          </g>
+          <circle class="spark" cx="60" cy="4" r="11"/>
+        </g>
+
+        <g class="bolt-set t-b">
+          <g class="bolt b1">
+            <path class="glow" d="M 18,22 L 7,0 L 16,-14 L 2,-38"/>
+            <path class="core" d="M 18,22 L 7,0 L 16,-14 L 2,-38"/>
+          </g>
+          <g class="bolt b2">
+            <path class="glow" d="M 18,22 L 20,-2 L 8,-18 L 14,-44"/>
+            <path class="core" d="M 18,22 L 20,-2 L 8,-18 L 14,-44"/>
+          </g>
+          <g class="bolt b3">
+            <path class="glow" d="M 18,22 L 2,6 L 10,-10 L -6,-28"/>
+            <path class="core" d="M 18,22 L 2,6 L 10,-10 L -6,-28"/>
+          </g>
+          <circle class="spark" cx="19" cy="23" r="10"/>
+        </g>
+
+        <g class="bolt-set t-c">
+          <g class="bolt b1">
+            <path class="glow" d="M 102,22 L 113,0 L 104,-14 L 118,-38"/>
+            <path class="core" d="M 102,22 L 113,0 L 104,-14 L 118,-38"/>
+          </g>
+          <g class="bolt b2">
+            <path class="glow" d="M 102,22 L 100,-2 L 112,-18 L 106,-44"/>
+            <path class="core" d="M 102,22 L 100,-2 L 112,-18 L 106,-44"/>
+          </g>
+          <g class="bolt b3">
+            <path class="glow" d="M 102,22 L 118,6 L 110,-10 L 126,-28"/>
+            <path class="core" d="M 102,22 L 118,6 L 110,-10 L 126,-28"/>
+          </g>
+          <circle class="spark" cx="101" cy="23" r="10"/>
+        </g>
+
+        <g class="bolt-set t-d">
+          <g class="bolt b1" style="transform-origin:50% 0%">
+            <path class="glow" d="M 60,438 L 52,462 L 62,478 L 54,502"/>
+            <path class="core" d="M 60,438 L 52,462 L 62,478 L 54,502"/>
+          </g>
+          <g class="bolt b2" style="transform-origin:50% 0%">
+            <path class="glow" d="M 60,438 L 69,460 L 60,476 L 70,498"/>
+            <path class="core" d="M 60,438 L 69,460 L 60,476 L 70,498"/>
+          </g>
+          <circle class="spark" cx="60" cy="437" r="10"/>
+        </g>
+
+      </svg>
+    </div>
+  </div>
+
   <div class="hypnotic-rays"></div>
   <div class="kaleido-core"></div>
   <div class="aura-pulse"></div>
@@ -476,7 +882,7 @@ body.lite .ring4,body.lite .ring5{filter:none}
 
 </div>
 
-<div class="hintbar" id="hint">F fullscreen • Space mute • ↑↓ volume • L lite • M corners</div>
+<div class="hintbar" id="hint">F fullscreen • Space mute • ↑↓ volume • L lite • M corners • T trishul • Y spin axis</div>
 <div class="stat" id="stat">…</div>
 
 <div class="unlock" id="unlock">
@@ -487,7 +893,7 @@ body.lite .ring4,body.lite .ring5{filter:none}
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   🕉 OM SCREENSAVER — v1.6
+   🕉 OM SCREENSAVER — v1.7
    Om sound: pehle IndexedDB('japDB' → omSound), warna GitHub
    (data/om_sound.bin). Creds index.html ne localStorage me daale
    hote hain — yahan sirf PADHE jaate hain. Kuch likha nahi jaata,
@@ -502,7 +908,9 @@ let omReady = false, fadeT = null;
    Center mandala ko clone karke 4 corners me daalte hain.
    ⚠ SVG defs ke IDs unique karna ZAROORI hai — duplicate ID pe
    textPath pehle wale path ko pakad leta hai aur ring toot jaati hai.
-   textLength attribute clone me khud aa jaata hai (viewBox units). */
+   textLength attribute clone me khud aa jaata hai (viewBox units).
+   ⚠ v1.7: trishul clone se NIKAL dete hain — corners halke rehte
+   hain aur uske bolts/gradients ki nakal nahi banti. */
 (function(){
   const src = $('centerMandala');
   document.querySelectorAll('.mini-slot').forEach((slot, i)=>{
@@ -510,6 +918,7 @@ let omReady = false, fadeT = null;
     c.removeAttribute('id');
     c.classList.remove('center');
     c.classList.add('mini');
+    c.querySelectorAll('.trishul-wrap').forEach(n => n.remove());   // v1.7
     c.querySelectorAll('svg').forEach((svg, k)=>{
       const p  = svg.querySelector('defs path');
       const tp = svg.querySelector('textPath');
@@ -671,6 +1080,9 @@ $('unlock').addEventListener('click', async ()=>{
 let muted = false;
 if(localStorage.getItem('omLite')   === 'true') document.body.classList.add('lite');
 if(localStorage.getItem('omNoMini') === 'true') document.body.classList.add('nomini');
+/* v1.7 */
+if(localStorage.getItem('omNoTri')  === 'true') document.body.classList.add('notri');
+if(localStorage.getItem('omTriZ')   === 'true') document.body.classList.add('triz');
 
 document.addEventListener('keydown', e=>{
   const k = e.key.toLowerCase();
@@ -690,6 +1102,20 @@ document.addEventListener('keydown', e=>{
     const off = document.body.classList.toggle('nomini');
     localStorage.setItem('omNoMini', off);
     stat(off ? '⬛ Corner mandalas OFF' : '🕉 Corner mandalas ON');
+    return;
+  }
+  /* v1.7: T → trishul on/off */
+  if(k === 't'){
+    const off = document.body.classList.toggle('notri');
+    localStorage.setItem('omNoTri', off);
+    stat(off ? '⬛ Trishul OFF' : '🔱 Trishul ON — हर हर महादेव');
+    return;
+  }
+  /* v1.7: Y → ghoomne ka axis badlo (vertical ↔ in-plane wheel) */
+  if(k === 'y'){
+    const z = document.body.classList.toggle('triz');
+    localStorage.setItem('omTriZ', z);
+    stat(z ? '🔱 Spin: चक्र (in-plane clockwise)' : '🔱 Spin: vertical axis clockwise');
     return;
   }
   if(k === ' '){
@@ -737,7 +1163,7 @@ document.addEventListener('visibilitychange', ()=>{
   if(!ok){
     $('unlock').querySelector('.s').textContent = 'सिर्फ़ visual (Om file नहीं मिली)';
   }
-  console.log('[om.html v1.6] ready — smooth rotation');
+  console.log('[om.html v1.7] ready — twin trishul + lightning');
 })();
 </script>
 </body>
