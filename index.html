@@ -1064,11 +1064,6 @@
     .fire-layer { animation: none !important; opacity: 0.85; }
   }
   
-/* ═══════════════════════════════════════════════════════════════
-   🕉 v19.2: MANSIK BLACK MODE - Pure ॐ Meditation
-   Only Om • Horizontal rotation • Tap-anywhere pause
-   ═══════════════════════════════════════════════════════════════ */
-
 /* Mode picker modal */
 .mansik-picker .modal-box { max-width: 340px; border-color: #8b5cf6; }
 .mansik-picker .modal-header {
@@ -1099,12 +1094,35 @@
 .mansik-choice-card .mc-title { font-size: 14px; font-weight: bold; color: #fff; }
 .mansik-choice-card .mc-desc { font-size: 10px; color: #ffcc80; margin-top: 4px; line-height: 1.3; }
 
-/* Alert time input styling */
+/* ═══ v20.8: CENTRALISED ALERT HINT (purana .alert-time-input hata diya) ═══ */
+.mansik-alert-hint {
+  margin-top: 4px; padding: 10px 10px 12px;
+  background: rgba(16,185,129,0.10);
+  border: 1px dashed rgba(16,185,129,0.75);
+  border-radius: 10px; text-align: center;
+}
+.mansik-alert-hint .mah-title {
+  font-size: 12px; color: #a7f3d0; font-weight: 700; letter-spacing: .3px;
+}
+.mansik-alert-hint .mah-line {
+  font-size: 12.5px; color: #ffcc80; margin-top: 5px;
+  font-family: monospace; letter-spacing: .5px;
+}
+.mansik-alert-hint .mah-btn {
+  margin-top: 9px; padding: 7px 14px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  color: #d1fae5;
+  background: linear-gradient(135deg, rgba(16,185,129,0.35), rgba(6,95,70,0.35));
+  border: 1px solid rgba(110,231,183,0.65);
+  border-radius: 8px;
+  transition: transform .15s, box-shadow .25s;
+}
+.mansik-alert-hint .mah-btn:active { transform: scale(0.94); }
+.mansik-alert-hint .mah-btn:hover { box-shadow: 0 0 12px rgba(16,185,129,0.55); }
+
+/* Legacy safety: agar kahin purana class reh gaya ho to layout na bigde */
 .mansik-picker .alert-time-input {
-  font-family: monospace;
-  font-size: 18px;
-  letter-spacing: 2px;
-  text-align: center;
+  font-family: monospace; font-size: 18px; letter-spacing: 2px; text-align: center;
 }
 
 /* ═══ BLACK MODE FULLSCREEN OVERLAY ═══ */
@@ -1985,7 +2003,12 @@
   </div>
 </div>
 
-<!-- ═══════════ v19.2: MANSIK PICKER MODAL ═══════════ -->
+<!-- ═══════════ v20.8: MANSIK PICKER — MODE ONLY (alert timer hata diya) ═══════════
+     Pehle yahan alag "Alert Timer" dropdowns the (mansikAlertBase × mansikAlertMult)
+     jo apna src:'mansik' alert banate the aur purana wala delete kar dete the.
+     → Alerts panel wale alert ke saath duplicate/confusion.
+     AB: saare alert SIRF 🔔 Alerts panel se. Yahan sirf read-only status + shortcut.
+     ═══════════════════════════════════════════════════════════════════════════════ -->
 <div class="modal mansik-picker" id="mansikPickerModal" data-name="mansikPicker">
   <div class="modal-box">
     <div class="modal-header">
@@ -1994,56 +2017,15 @@
     </div>
     <div class="modal-body">
 
-      <div class="form-group">
-        <label>⏰ Alert Timer (optional)</label>
-        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
-          <select id="mansikAlertBase" onchange="updateMansikAlertPreview()" style="width:100%;padding:9px;font-size:14px;">
-            <option value="0">🔇 Off</option>
-            <option value="5">5 min</option>
-            <option value="10" selected>10 min</option>
-            <option value="15">15 min</option>
-            <option value="20">20 min</option>
-            <option value="25">25 min</option>
-            <option value="30">30 min</option>
-            <option value="35">35 min</option>
-            <option value="40">40 min</option>
-            <option value="45">45 min</option>
-            <option value="50">50 min</option>
-            <option value="55">55 min</option>
-            <option value="60">60 min (1 hr)</option>
-          </select>
-          <span style="color:#ffcc00;font-weight:bold;font-size:16px;">×</span>
-          <select id="mansikAlertMult" onchange="updateMansikAlertPreview()" style="width:100%;padding:9px;font-size:14px;">
-            <option value="1" selected>× 1</option>
-            <option value="2">× 2</option>
-            <option value="3">× 3</option>
-            <option value="4">× 4</option>
-            <option value="5">× 5</option>
-            <option value="6">× 6</option>
-            <option value="7">× 7</option>
-            <option value="8">× 8</option>
-            <option value="9">× 9</option>
-            <option value="10">× 10</option>
-            <option value="11">× 11</option>
-            <option value="12">× 12</option>
-          </select>
-        </div>
-        <div id="mansikAlertPreview" style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,0.15);border:1px dashed #10b981;border-radius:8px;font-size:13px;color:#6ee7b7;font-weight:bold;text-align:center;">
-          ⏰ 10 min → 00:10:00
-        </div>
-        <small>💡 35 min = <b>35 × 1</b> &nbsp;•&nbsp; 1 hr 10 min = <b>35 × 2</b> &nbsp;•&nbsp; 6 hr = <b>30 × 12</b> ya <b>60 × 6</b></small>
-      </div>
-
-      <div class="toggle-switch">
-        <label>💾 Save as preset</label>
-        <label class="switch">
-          <input type="checkbox" id="mansikSavePreset">
-          <span class="slider"></span>
-        </label>
+      <!-- ⏰ CENTRALISED ALERT STATUS (read-only) -->
+      <div class="mansik-alert-hint" id="mansikAlertHint">
+        <div class="mah-title">🔔 Alert Timer ab <b>Alerts panel</b> me hai</div>
+        <div class="mah-line" id="mansikAlertHintLine">Koi active alert nahi</div>
+        <button type="button" class="mah-btn" onclick="openAlertsFromMansik()">⏰ Alerts kholo / badlo</button>
       </div>
 
       <p style="font-size:11px;color:#ffcc80;text-align:center;margin:8px 0 4px;">
-        ⏱ Interval & vibration Advanced Settings me hain - Black Mode me ⚙ se live change kar sakte ho
+        ⏱ Interval &amp; vibration Advanced Settings me hain - Black Mode me ⚙ se live change kar sakte ho
       </p>
 
       <p style="font-size:12px;color:#c4b5fd;text-align:center;margin:12px 0 8px;font-weight:bold;letter-spacing:1.5px;">
@@ -2069,7 +2051,6 @@
     </div>
   </div>
 </div>
-
 <!-- ═══════════ v19.2: BLACK MODE FULLSCREEN OVERLAY ═══════════ -->
 <div class="black-mode-overlay" id="blackModeOverlay">
 
@@ -4806,25 +4787,51 @@ function setMansikSetup(choice){
 }
 function clearMansikSetup(){ localStorage.removeItem(MK_SETUP); }
 
-/* Chalu (untriggered) mansik time-alert */
-function activeMansikAlert(){
-  return alerts.find(a => a.src === 'mansik' && a.type === 'time' && !a.triggered) || null;
+/* ═══════════════════════════════════════════════════════════════
+   🔔 v20.8 CENTRALISED ALERT LOOKUP
+   Pehle sirf `src === 'mansik'` wale alert dekhte the → Alerts panel se
+   banaya alert Black Mode me dikhta hi nahi tha (do systems ka feel).
+   AB: source ignore — jo bhi untriggered alert sabse pehle fire hoga, wahi.
+   Purana naam activeMansikAlert() zinda rakha hai (backward compatible).
+   ═══════════════════════════════════════════════════════════════ */
+function activeTimeAlert(){
+  if(!Array.isArray(alerts)) return null;
+  const live = alerts.filter(a => a && a.type === 'time' && !a.triggered && isFinite(a.target));
+  if(!live.length) return null;
+  return live.reduce((best, a) => (a.target < best.target ? a : best), live[0]);
 }
+function activeCountAlert(){
+  if(!Array.isArray(alerts)) return null;
+  const live = alerts.filter(a => a && a.type === 'count' && !a.triggered && isFinite(a.target));
+  if(!live.length) return null;
+  return live.reduce((best, a) => (a.target < best.target ? a : best), live[0]);
+}
+/* legacy alias — purane call-sites safe */
+function activeMansikAlert(){ return activeTimeAlert(); }
 
-/* Black-mode overlay pe ABSOLUTE fire-time dikhao (relative nahi) */
+/* Black-mode overlay pe ABSOLUTE fire-time (relative nahi).
+   v20.8: time alert na ho to count alert dikhata hai. */
 function paintBmAlertInfo(){
   const ai = document.getElementById('bmAlertInfo');
   if(!ai) return;
-  const a = activeMansikAlert();
-  if(a){
-    ai.textContent = `🔔 Alert at ${fmtDur(a.target)}`;
+
+  const t = activeTimeAlert();
+  if(t){
+    const left = Math.max(0, t.target - getElapsedMs());
+    ai.textContent = `🔔 ${fmtDur(t.target)} pe • ${fmtDur(left)} left`;
     ai.style.display = 'block';
-  } else {
-    ai.style.display = 'none';
+    return;
   }
+  const c = activeCountAlert();
+  if(c){
+    ai.textContent = `📿 ${fmtNum(c.target)} japs pe`;
+    ai.style.display = 'block';
+    return;
+  }
+  ai.style.display = 'none';
 }
 
-/* ▶ RESUME — picker nahi, alert untouched */
+/* ▶ RESUME — picker nahi, alert untouched (v20.7 fix intact) */
 function mansikResume(){
   primeJapPending = false;                 // resume pe muft jap nahi
   running = true;
@@ -4834,7 +4841,7 @@ function mansikResume(){
   applyRunningState();
   paintBmAlertInfo();
 
-  const a = activeMansikAlert();
+  const a = activeTimeAlert();
   if(a){
     const left = Math.max(0, a.target - getElapsedMs());
     showToast(`▶ Resume • 🔔 ${fmtDur(left)} baad (${fmtDur(a.target)} pe)`, 'info', 3500);
@@ -4843,100 +4850,87 @@ function mansikResume(){
   }
 }
 
+/* v20.8: picker me ab koi dropdown nahi — sirf mode choose + alert status */
 function openMansikPicker(){
-  const savedBase = localStorage.getItem('mansikAlertBase') || '10';
-  const savedMult = localStorage.getItem('mansikAlertMult') || '1';
-  const baseSel = document.getElementById('mansikAlertBase');
-  const multSel = document.getElementById('mansikAlertMult');
-  const baseOpts = Array.from(baseSel.options).map(o => o.value);
-  const multOpts = Array.from(multSel.options).map(o => o.value);
-  baseSel.value = baseOpts.includes(savedBase) ? savedBase : '10';
-  multSel.value = multOpts.includes(savedMult) ? savedMult : '1';
-  document.getElementById('mansikSavePreset').checked = false;
-  updateMansikAlertPreview();
+  paintMansikAlertHint();
   openModal('mansikPicker');
 }
 
-function getMansikAlertMinutes(){
-  const base = parseInt(document.getElementById('mansikAlertBase').value) || 0;
-  const mult = parseInt(document.getElementById('mansikAlertMult').value) || 1;
-  return base * mult;
+function paintMansikAlertHint(){
+  const line = document.getElementById('mansikAlertHintLine');
+  if(!line) return;
+  const t = activeTimeAlert();
+  const c = activeCountAlert();
+  if(t){
+    const left = Math.max(0, t.target - getElapsedMs());
+    line.innerHTML = `⏰ Active: <b>${fmtDur(t.target)}</b> elapsed pe • ${fmtDur(left)} left`;
+    line.style.color = '#6ee7b7';
+  } else if(c){
+    line.innerHTML = `📿 Active: <b>${fmtNum(c.target)}</b> japs pe`;
+    line.style.color = '#6ee7b7';
+  } else {
+    line.textContent = 'Koi active alert nahi — jap non-stop chalega';
+    line.style.color = '#ffcc80';
+  }
 }
 
-function updateMansikAlertPreview(){
-  const base = parseInt(document.getElementById('mansikAlertBase').value) || 0;
-  const mult = parseInt(document.getElementById('mansikAlertMult').value) || 1;
-  const total = base * mult;
-  const box = document.getElementById('mansikAlertPreview');
-  const multSel = document.getElementById('mansikAlertMult');
-
-  if(base === 0){
-    multSel.disabled = true;
-    box.style.background = 'rgba(120,120,120,0.15)';
-    box.style.borderColor = '#777';
-    box.style.color = '#999';
-    box.innerHTML = '🔇 No alert - jap chalta rahega';
-    return;
-  }
-  multSel.disabled = false;
-  box.style.background = 'rgba(16,185,129,0.15)';
-  box.style.borderColor = '#10b981';
-  box.style.color = '#6ee7b7';
-
-  const h = Math.floor(total / 60), m = total % 60;
-  const hms = `${pad(h)}:${pad(m)}:00`;
-  const human = h > 0 ? (m > 0 ? `${h} hr ${m} min` : `${h} hr`) : `${m} min`;
-  box.innerHTML = `⏰ ${base} × ${mult} = <b>${human}</b> → ${hms}`;
+/* Picker se seedha central Alerts panel — modal ka naam DOM se khud dhoondta hai,
+   isliye kisi hardcoded name pe depend nahi (production safe). */
+function findAlertsModalName(){
+  const box = document.getElementById('alertsList');
+  const m = box && box.closest ? box.closest('.modal') : null;
+  if(m) return m.dataset.name || (m.id || '').replace(/Modal$/, '');
+  const byId = document.getElementById('alertsModal');
+  if(byId) return byId.dataset.name || 'alerts';
+  return null;
 }
-
-function startMansikChoice(choice){
-  const saveAsPreset = document.getElementById('mansikSavePreset').checked;
-  const totalMin = getMansikAlertMinutes();
-
-  /* Ye sirf FRESH setup / jaan-boojh ke timer badalne pe chalta hai.
-     Resume ab yahan aata hi nahi (mansikResume() handle karta hai). */
-  alerts = alerts.filter(a => a.src !== 'mansik');   // purana mansik alert hatao
-
-  if(totalMin > 0){
-    const ms = totalMin * 60000;
-    const h = Math.floor(totalMin / 60), m = totalMin % 60;
-    const str = `${pad(h)}:${pad(m)}:00`;
-    const target = getElapsedMs() + ms;               // ⏱ absolute elapsed target — FIX ho gaya
-    alerts.push({
-      id: Date.now(),
-      type: 'time',
-      delta: ms,
-      target,
-      label: `After ${str}`,
-      triggered: false,
-      src: 'mansik'
-    });
-    if(saveAsPreset && !presets.some(p => p.type === 'time' && p.delta === ms)){
-      presets.push({ type:'time', delta: ms, label: `After ${str}` });
-      if(typeof savePresets === 'function') savePresets();
-      if(typeof renderPresets === 'function') renderPresets();
-    }
-  }
-
-  saveAlertsLocal();
+function openAlertsFromMansik(){
+  const name = findAlertsModalName();
+  if(!name){ showToast('🔔 Alerts panel menu me hai', 'info', 3000); return; }
+  try{ closeModal('mansikPicker'); }catch(e){}
   if(typeof renderAlerts === 'function') renderAlerts();
-  localStorage.setItem('mansikAlertBase', document.getElementById('mansikAlertBase').value);
-  localStorage.setItem('mansikAlertMult', document.getElementById('mansikAlertMult').value);
+  if(typeof renderPresets === 'function') renderPresets();
+  openModal(name);
+}
 
+/* ═══ v20.8 LEGACY STUBS — mansik picker me timer dropdowns ab exist nahi karte.
+   Delete karne ke bajaye no-op rakhe hain taaki koi bacha hua reference crash na kare. ═══ */
+function getMansikAlertMinutes(){ return 0; }
+function updateMansikAlertPreview(){ /* removed in v20.8 — centralised alerts */ }
+
+/* ═══════════════════════════════════════════════════════════════
+   🧘 v20.8 startMansikChoice() — SIRF MODE, ALERT KO HAATH NAHI
+   HATAYA GAYA (purana buggy behaviour):
+     • alerts = alerts.filter(a => a.src !== 'mansik')   ← alert delete
+     • naya {type:'time', target: elapsed+ms, src:'mansik'} alert create
+     • saveAsPreset se preset banana
+     • localStorage me mansikAlertBase / mansikAlertMult
+   Kyun hataya: Alerts panel wale alert ke saath ye do parallel systems
+   ban jate the — override + duplicate + "kaunsa fire hoga" confusion.
+   AB alert ka SIRF ek malik hai: 🔔 Alerts panel (addAlert / presets).
+   ═══════════════════════════════════════════════════════════════ */
+function startMansikChoice(choice){
   closeModal('mansikPicker');
 
-  setMansikSetup(choice);                  // v20.7: session armed → resume pe picker nahi
+  setMansikSetup(choice);                  // session armed → resume pe picker nahi (v20.7)
 
   primeJapPending = !firstStartTs;         // instant jap sirf fresh session pe
   running = true;
   blackModeActive = (choice === 'black');
   if(blackModeActive) showBlackModeOverlay(null);
   applyRunningState();
-  paintBmAlertInfo();                      // absolute fire-time overlay pe
+  paintBmAlertInfo();                      // central alert overlay pe
 
-  const a = activeMansikAlert();
-  if(a) showToast(`🔔 Alert set: ${fmtDur(a.target)} elapsed pe`, 'success', 3500);
-  else  showToast('🧘 Mansik jap shuru — koi alert nahi', 'info', 2500);
+  const t = activeTimeAlert();
+  const c = activeCountAlert();
+  if(t){
+    const left = Math.max(0, t.target - getElapsedMs());
+    showToast(`🧘 Mansik shuru • 🔔 ${fmtDur(t.target)} pe (${fmtDur(left)} baad)`, 'success', 3500);
+  } else if(c){
+    showToast(`🧘 Mansik shuru • 📿 ${fmtNum(c.target)} japs pe alert`, 'success', 3500);
+  } else {
+    showToast('🧘 Mansik shuru — koi alert nahi (🔔 Alerts se laga sakte ho)', 'info', 3200);
+  }
 }
 
 function showBlackModeOverlay(alertTime){
@@ -5913,8 +5907,8 @@ async function initApp(){
   await initCustomSounds();
 }
 
-/* ═══ v20.7: PAUSED + mansik me START ko 700ms dabao → picker khulega
-   (mid-session timer badalne ka saaf raasta) ═══ */
+/* ═══ v20.8: PAUSED + mansik me START ko 700ms dabao → CENTRAL Alerts panel.
+   (v20.7 me ye mansik picker ka timer kholta tha — wo timer ab exist nahi karta) ═══ */
 (function(){
   const btn = document.getElementById('startBtn');
   if(!btn) return;
@@ -5926,8 +5920,9 @@ async function initApp(){
     lpTimer = setTimeout(()=>{
       lpTimer = null; lpFired = true;
       try{ if(navigator.vibrate) navigator.vibrate(40); }catch(e){}
-      showToast('🧘 Mansik timer badlo', 'info', 2000);
-      openMansikPicker();
+      showToast('🔔 Alerts panel — timer yahan set karo', 'info', 2200);
+      if(typeof openAlertsFromMansik === 'function') openAlertsFromMansik();
+      else openMansikPicker();
     }, 700);
   };
   const end = ()=>{ if(lpTimer){ clearTimeout(lpTimer); lpTimer = null; } };
@@ -5946,6 +5941,20 @@ async function initApp(){
     e.stopPropagation();
   }, true);
 })();
+
+/* ═══ v20.8: Black Mode me alert countdown live rahe (non-invasive —
+   renderAlerts()/updateUI() ko chhua nahi gaya) ═══ */
+(function(){
+  setInterval(()=>{ if(blackModeActive) paintBmAlertInfo(); }, 1000);
+})();
+
+/* ═══ v20.8 one-time cleanup: purane picker ke dropdown values.
+   NOTE: purane src:'mansik' ALERTS delete NAHI kiye ja rahe — wo normal
+   central time-alert ki tarah Alerts list me dikhenge aur fire honge. ═══ */
+try{
+  localStorage.removeItem('mansikAlertBase');
+  localStorage.removeItem('mansikAlertMult');
+}catch(e){}
 
 initApp();
 </script>
