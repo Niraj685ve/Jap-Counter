@@ -78,9 +78,74 @@
     border: 1px solid rgba(255,140,0,0.3);
     gap: 6px;
   }
-  .top-bar .om-corner { justify-self: start; }
+  /* v20.6: 🔱 + ↺RT dono ek wrapper me — grid columns intact rehte hain */
+  .top-bar .top-left-tools {
+    justify-self: start;
+    display: flex; align-items: center; gap: 5px;
+  }
   .top-bar h1 { justify-self: center; text-align: center; }
   .top-bar .top-right-tools { justify-self: end; }
+
+  /* ═══ ↺ RT — RESET SESSION TIMER BUTTON ═══ */
+  .rt-btn {
+    position: relative;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0; line-height: 1;
+    cursor: pointer;
+    background: radial-gradient(circle at 35% 30%, rgba(45,212,191,0.30), rgba(13,148,136,0.14));
+    border: 1px solid rgba(94,234,212,0.55);
+    color: #99f6e4;
+    box-shadow: 0 0 8px rgba(45,212,191,0.28), inset 0 0 6px rgba(45,212,191,0.14);
+    transition: transform .15s, box-shadow .25s, border-color .25s;
+    flex: 0 0 auto;
+  }
+  .rt-btn .rt-ico {
+    font-size: 15px; font-weight: bold;
+    margin-top: -1px;
+    text-shadow: 0 0 6px rgba(45,212,191,0.7);
+    display: block;
+  }
+  .rt-btn .rt-lbl {
+    font-size: 6.5px; font-weight: 900;
+    letter-spacing: 0.8px;
+    opacity: 0.85; margin-top: -2px;
+    display: block;
+  }
+  .rt-btn:active { transform: scale(0.86); }
+  .rt-btn:hover {
+    border-color: #5eead4;
+    box-shadow: 0 0 14px rgba(45,212,191,0.55), inset 0 0 8px rgba(45,212,191,0.22);
+  }
+
+  /* Timer chal raha ho → halka pulse (live indicator) */
+  .rt-btn.armed { animation: rtPulse 2.4s ease-in-out infinite; }
+  @keyframes rtPulse {
+    0%,100% { box-shadow: 0 0 8px rgba(45,212,191,0.28), inset 0 0 6px rgba(45,212,191,0.14); }
+    50%     { box-shadow: 0 0 16px rgba(45,212,191,0.60), inset 0 0 10px rgba(45,212,191,0.28); }
+  }
+  /* Live green dot jab session timer > 0 ho */
+  .rt-btn.armed::after {
+    content: ''; position: absolute;
+    top: -1px; right: -1px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #10b981;
+    border: 1.5px solid rgba(0,0,0,0.65);
+    box-shadow: 0 0 6px #10b981;
+  }
+  /* Reset hone pe 360° spin + flash */
+  .rt-btn.spinning .rt-ico { animation: rtSpin 0.65s cubic-bezier(.3,.8,.25,1); }
+  @keyframes rtSpin {
+    from { transform: rotate(0deg)   scale(1); }
+    50%  { transform: rotate(200deg) scale(1.35); }
+    to   { transform: rotate(360deg) scale(1); }
+  }
+  .rt-btn.spinning {
+    border-color: #fff;
+    box-shadow: 0 0 22px rgba(94,234,212,0.95), inset 0 0 12px rgba(94,234,212,0.5);
+  }
     .om-corner {
     font-size: 26px; color:#ff9933;
     animation: glow 1.5s infinite alternate;
@@ -1411,8 +1476,18 @@
 </div>
 
 <div class="top-bar">
-  <div class="om-corner" onclick="goMansik()" title="🧘 Mansik Jap Mode kholo">🔱</div>
+  <!-- v20.6: top-left → 🔱 Mansik Jap Mode + ↺RT Reset Session Timer -->
+  <div class="top-left-tools">
+    <div class="om-corner" onclick="goMansik()" title="🧘 Mansik Jap Mode kholo">🔱</div>
+    <button class="rt-btn" id="rtBtn" onclick="resetSessionTimer(event)"
+            title="⏱ Reset Session Timer (Elapsed 00:00:00)">
+      <span class="rt-ico">↺</span>
+      <span class="rt-lbl">RT</span>
+    </button>
+  </div>
+
   <h1>॥ 🔱 ॐ नमः शिवाय 🔱 ॥</h1>
+
   <div class="top-right-tools">
     <div class="sync-mini" onclick="manualSync()" title="Click to force sync">
       <span class="sync-dot" id="syncDot"></span>
@@ -2332,7 +2407,147 @@ let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') |
 let lastKnownRemote = JSON.parse(localStorage.getItem('lastKnownRemote') || 'null');
 
 let running = false, wakeLock = null;
+/* ═══════════════════════════════════════════════════════════════
+   ⏱ SHARED SESSION CLOCK (v20.6) — index.html ↔ mansik.html
+   ─────────────────────────────────────────────────────────────
+   ASLI BUG: elapsedMs/sessionStart/firstStartTs memory-only the.
+   Har page load pe 0 → alerts ka target (jo elapsed-based hai)
+   kabhi match hi nahi karta tha. Ab teeno localStorage me hain,
+   dono page EK HI stopwatch padhte/likhte hain.
+
+   CK_ACC   = accumulated running ms (pause pe jama hota hai)
+   CK_SINCE = current run ka start ts (0 = paused)
+   CK_BEAT  = heartbeat (500ms) — crash/kill pe recovery ke liye
+   CK_FIRST = session ka pehla start ts
+   ═══════════════════════════════════════════════════════════════ */
+const CK_ACC   = 'sessAccMs';
+const CK_SINCE = 'sessRunSince';
+const CK_BEAT  = 'sessBeatTs';
+const CK_FIRST = 'sessFirstStart';
+
 let elapsedMs = 0, sessionStart = null, firstStartTs = null;
+
+function clockLoad(){
+  elapsedMs = parseInt(localStorage.getItem(CK_ACC) || '0');
+  if(!isFinite(elapsedMs) || elapsedMs < 0) elapsedMs = 0;
+  firstStartTs = parseInt(localStorage.getItem(CK_FIRST) || '0') || null;
+
+  /* Page load pe hum kabhi 'running' nahi hote. Agar CK_SINCE bacha hai
+     matlab pichhla page running chhod ke band hua (navigate/crash).
+     Heartbeat tak ka time hi jodo — isse crash pe jhoota elapsed nahi badhta. */
+  const since = parseInt(localStorage.getItem(CK_SINCE) || '0');
+  if(since > 0){
+    const beat = parseInt(localStorage.getItem(CK_BEAT) || '0');
+    const upto = Math.max(since, beat);
+    const add  = upto - since;
+    if(add > 0 && add < 24*3600*1000) elapsedMs += add;
+    localStorage.setItem(CK_ACC, elapsedMs);
+  }
+  localStorage.setItem(CK_SINCE, '0');
+  sessionStart = null;
+}
+function clockResume(){
+  if(!firstStartTs){
+    firstStartTs = Date.now();
+    localStorage.setItem(CK_FIRST, firstStartTs);
+  }
+  sessionStart = Date.now();
+  localStorage.setItem(CK_SINCE, sessionStart);
+  localStorage.setItem(CK_BEAT,  sessionStart);
+  const st = document.getElementById('startTime');
+  if(st) st.textContent = fmtTime(new Date(firstStartTs));
+}
+function clockPause(){
+  if(sessionStart){
+    elapsedMs += Date.now() - sessionStart;
+    sessionStart = null;
+  }
+  localStorage.setItem(CK_ACC, elapsedMs);
+  localStorage.setItem(CK_SINCE, '0');
+}
+function clockBeat(){
+  if(sessionStart) localStorage.setItem(CK_BEAT, Date.now());
+}
+/* ═══════════════════════════════════════════════════════════════
+   ⏱ v20.6 RESET SESSION TIMER — top-left ↺RT button
+   Elapsed clock 00:00:00 → time-alerts naye sire se re-arm.
+   Jap counts (perm/trip) ko CHHUTA BHI NAHI.
+   ═══════════════════════════════════════════════════════════════ */
+function rtSpinFx(){
+  const b = document.getElementById('rtBtn');
+  if(!b) return;
+  b.classList.remove('spinning');
+  void b.offsetWidth;                       // reflow — animation restart
+  b.classList.add('spinning');
+  setTimeout(()=> b.classList.remove('spinning'), 700);
+}
+
+/* Button pe live indicator — session timer chalu/non-zero hone pe glow */
+function updateRtBtn(){
+  const b = document.getElementById('rtBtn');
+  if(!b) return;
+  const ms = getElapsedMs();
+  const live = !!firstStartTs && ms > 0;
+  b.classList.toggle('armed', live);
+  b.title = live
+    ? `⏱ Reset Session Timer\nAbhi: ${fmtDur(ms)}${running ? ' (running)' : ' (paused)'}`
+    : '⏱ Reset Session Timer (Elapsed 00:00:00)';
+}
+
+function resetSessionTimer(e){
+  if(e){ e.stopPropagation(); }
+
+  const cur = getElapsedMs();
+  const timeAlerts = alerts.filter(a => a.type === 'time').length;
+
+  if(!firstStartTs && cur === 0){
+    rtSpinFx();
+    showToast('⏱ Timer pehle se 00:00:00 hai', 'info');
+    return;
+  }
+
+  const msg = `⏱ Session timer reset karein?\n\n`
+            + `Abhi: ${fmtDur(cur)}  →  00:00:00\n`
+            + (timeAlerts ? `${timeAlerts} time-alert naye sire se ginenge.\n` : '')
+            + `\n📿 Jap count (Permanent/Trip) par KOI asar nahi.`;
+  if(!confirm(msg)) return;
+
+  const wasRunning = running;
+  if(wasRunning) forcePause();               // clock + timer + anchor safe band
+
+  // Clock zero — memory + localStorage dono
+  elapsedMs = 0; sessionStart = null; firstStartTs = null;
+  localStorage.setItem(CK_ACC, '0');
+  localStorage.setItem(CK_SINCE, '0');
+  localStorage.setItem(CK_BEAT, '0');
+  localStorage.removeItem(CK_FIRST);
+
+  // Time-alerts ko delta se re-arm (count-alerts untouched)
+  alerts.forEach(a => {
+    if(a.type === 'time'){ a.target = a.delta; a.triggered = false; }
+  });
+  saveAlertsLocal();
+  renderAlerts();
+
+  // UI refresh
+  const el = document.getElementById('elapsed');
+  if(el) el.textContent = '00:00:00';
+  const st = document.getElementById('startTime');
+  if(st) st.textContent = '--:--';
+  const pt = document.getElementById('pauseTag');
+  if(pt) pt.style.display = running ? 'none' : 'inline-block';
+
+  rtSpinFx();
+  updateRtBtn();
+
+  showToast(
+    timeAlerts
+      ? `⏱ Timer reset • ${timeAlerts} alert re-armed`
+      : '⏱ Session timer reset — 00:00:00',
+    'success', 3000
+  );
+  if(wasRunning) showToast('⏸ Jap paused — START dabao', 'info', 3500);
+}
 let currentAlert = null;
 let pendingStart = false;
 let editingAlertId = null;
@@ -3033,6 +3248,7 @@ function saveAdvancedSettings(){
 
   updateBmInfoDisplay();
   loadAdvancedIntoForm();              // sanitised values wapas form me
+  stopTickScheduler(); if(running && tickSoundOn) startTickScheduler();
   showToast('✓ Advanced settings saved');
   closeModal('advanced');
 }
@@ -3046,6 +3262,7 @@ function resetAdvancedSettings(){
     setJapTimer(runToken);
   }
   updateBmInfoDisplay();
+  stopTickScheduler(); if(running && tickSoundOn) startTickScheduler();
   showToast('↺ Reset to defaults');
 }
 
@@ -3068,9 +3285,87 @@ function saveBgAudioPref(){
   bgAudioOn = document.getElementById('bgAudioToggle').checked;
   localStorage.setItem('bgAudioOn', bgAudioOn);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   🎧 v20.6 SCHEDULED TICK ENGINE — throttle-proof rhythm
+   ─────────────────────────────────────────────────────────────
+   setInterval throttle hota hai, par AudioContext ka clock audio
+   thread pe chalta hai — screen off pe bhi exact. To ticks ko 3
+   second aage tak pre-schedule kar dete hain. Counting wall-clock
+   se, ticks audio-clock se → dono screen off pe perfect.
+   ═══════════════════════════════════════════════════════════════ */
+let tickSchedNext = 0, tickSchedTimer = null, tickSchedActive = false;
+
+function startTickScheduler(){
+  stopTickScheduler();
+  if(!tickSoundOn) return;
+  if(chantMode === 'manual') return;
+  if(!running) return;
+  if(!audioCtx){ ensureAudioCtx().then(()=>{ if(running && tickSoundOn) startTickScheduler(); }).catch(()=>{}); return; }
+
+  tickSchedActive = true;
+  tickSchedNext = audioCtx.currentTime + 0.1;
+  tickScheduleAhead();
+  tickSchedTimer = setInterval(()=>{
+    if(!running || !tickSoundOn || isBellBusy()) return;
+    tickScheduleAhead();
+  }, 1000);
+}
+function tickScheduleAhead(){
+  if(!audioCtx || !tickSchedActive) return;
+  const step = getJapInterval() / 1000;
+  if(!isFinite(step) || step <= 0) return;
+  let guard = 0;
+  while(tickSchedNext < audioCtx.currentTime + 3 && guard++ < 60){
+    if(tickSchedNext > audioCtx.currentTime) scheduleOneTick(tickSchedNext);
+    tickSchedNext += step;
+  }
+}
+function scheduleOneTick(at){
+  try{
+    if(tickBuffer){
+      const src = audioCtx.createBufferSource(), g = audioCtx.createGain();
+      g.gain.value = Math.max(0, Math.min(1, tickVolume));
+      src.buffer = tickBuffer;
+      src.connect(g); g.connect(audioCtx.destination);
+      src.start(at);
+      src.onended = ()=>{ try{ src.disconnect(); g.disconnect(); }catch(e){} };
+    } else {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine'; o.frequency.value = 1400;
+      g.gain.setValueAtTime(tickVolume * 0.25, at);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(at);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.06);
+      o.stop(at + 0.08);
+      o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
+    }
+  }catch(e){}
+}
+function stopTickScheduler(){
+  tickSchedActive = false;
+  if(tickSchedTimer) clearInterval(tickSchedTimer);
+  tickSchedTimer = null;
+  tickSchedNext = 0;
+}
+
+/* Keep-alive watchdog — screen off pe silent audio ruk jaye to firse chalao */
+setInterval(()=>{
+  if(!running) return;
+  clockBeat();
+  const el = document.getElementById('silentAudio');
+  if(bgAudioOn && el && el.src && el.paused){ el.play().catch(()=>{}); }
+  const v = document.getElementById('wakeVideo');
+  if(v && v.src && v.paused){ v.play().catch(()=>{}); }
+}, 5000);
+
 function doVibrate(){
-  // v20: Headphone tick mode replaces vibration entirely
-  if(tickSoundOn){ playTickSound(); return; }
+  /* v20.6: agar scheduled tick engine chal rahi hai to yahan tick
+     mat bajao — warna double tick sunai dega. */
+  if(tickSoundOn){
+    if(!tickSchedActive) playTickSound();
+    return;
+  }
   if(!navigator.vibrate) return;
   const shouldVibrate = blackModeActive || vibrationOn;
   if(!shouldVibrate) return;
@@ -3082,9 +3377,13 @@ function saveTickSoundPref(){
   tickSoundOn = document.getElementById('tickSoundToggle').checked;
   localStorage.setItem('tickSoundOn', tickSoundOn);
   if(tickSoundOn){
-    ensureAudioCtx().then(()=> playTickSound()).catch(()=>{});
+    ensureAudioCtx().then(()=>{
+      playTickSound();
+      if(running) startTickScheduler();
+    }).catch(()=>{});
     showToast('🎧 Tick sound ON - vibration OFF', 'info');
   } else {
+    stopTickScheduler();
     showToast('📳 Vibration ON - tick sound OFF', 'info');
   }
 }
@@ -3099,8 +3398,13 @@ function getElapsedMs(){ return elapsedMs + (sessionStart ? Date.now() - session
 setInterval(()=>{
   document.getElementById('nowTime').textContent = fmtTime(new Date());
   if(firstStartTs) document.getElementById('elapsed').textContent = fmtDur(getElapsedMs());
-  if(running) checkTimeAlerts();
+  if(running){
+    clockBeat();          // v20.6: crash-safe heartbeat
+    japCatchUp();         // v20.6: 2nd safety net — throttled timer ka backup
+    checkTimeAlerts();
+  }
   updateSyncBar();
+  updateRtBtn();          // v20.6: ↺RT live indicator
 },500);
 function updateSyncBar(){
   if(backupInProgress) return;
@@ -3143,17 +3447,91 @@ function tokenValid(t){ return t === runToken && running; }
 function clearJapTimer(){
   if(japTimer) clearInterval(japTimer);
   japTimer = null;
+  japAnchorTs = 0;              // v20.6.1: stale anchor kabhi na bache
+  japsSinceAnchor = 0;
 }
 
-function setJapTimer(token){
-  clearJapTimer();                                  // L3: orphan kabhi na bane
+/* ═══════════════════════════════════════════════════════════════
+   🕐 v20.6 WALL-CLOCK JAP ENGINE — screen-off counting fix
+   ─────────────────────────────────────────────────────────────
+   ASLI BUG: 1 setInterval tick = 1 jap. Screen off pe browser
+   timer ko throttle karta hai (1s+ ya freeze) → jitne tick miss,
+   utne jap gayab. Aur recovery sirf visibilitychange pe thi, jo
+   Android screen-lock pe fire hi nahi hoti.
+
+   AB: japs "kitna time beeta" se nikalte hain, "kitne tick aaye"
+   se nahi. Timer 5x slow bhi ho jaye — count bilkul sahi rahega.
+   ═══════════════════════════════════════════════════════════════ */
+let japAnchorTs = 0;          // wall-clock anchor
+let japsSinceAnchor = 0;      // anchor ke baad gine gaye japs
+const JAP_MAX_BURST = 20000;  // clock-jump safety
+
+function japAnchorReset(){
+  japAnchorTs = Date.now();
+  japsSinceAnchor = 0;
+}
+function japDue(){
+  if(!japAnchorTs) return 0;
+  const iv = getJapInterval();
+  if(!isFinite(iv) || iv < 250) return 0;
+  return Math.max(0, Math.floor((Date.now() - japAnchorTs) / iv) - japsSinceAnchor);
+}
+/* Har beat pe: jitne jap "due" hain utne ek saath jod do */
+function japCatchUp(){
+  /* 🔒 v20.6.1 FIX: japTimer armed hona ZAROORI hai.
+     Warna audio mode ke async gap me (ya pause ke baad) purana
+     anchor le kar 400+ phantom japs jud jaate the. japTimer sirf
+     setJapTimer() banata hai — aur wahi anchor bhi reset karta hai. */
+  if(!japTimer) return 0;
+  if(!running || isBellBusy() || !japAnchorTs) return 0;
+  if(chantMode === 'manual') return 0;
+  let n = japDue();
+  if(n <= 0) return 0;
+  if(n > JAP_MAX_BURST){
+    console.warn('[japCatchUp] absurd burst', n, '→ re-anchor');
+    japAnchorReset();
+    return 0;
+  }
+  japsSinceAnchor += n;
+  applyJaps(n);
+  if(n > 1) console.log('[japCatchUp] recovered', n, 'japs');
+  return n;
+}
+/* n japs ek saath — burst pe bhi ek hi feedback (tick/vibrate spam nahi) */
+function applyJaps(n){
+  if(n <= 0) return;
+  perm += n; trip += n; japsSinceBackup += n;
+  recordJapForToday(n);
+  doVibrate();
+  updateUI();
+  checkCountAlerts();
+  if(japsSinceBackup >= SETTINGS.backupEvery){
+    japsSinceBackup = 0;
+    scheduleAutoBackup();
+  }
+  bmOnJapFired();
+  checkMalaBell();
+}
+
+/* keepAnchor=true → chalu timeline continue (visibility restart ke liye)
+   keepAnchor=false → naya anchor (start / interval change / bell ke baad) */
+function setJapTimer(token, keepAnchor=false){
+  clearJapTimer();
   if(!tokenValid(token)){ console.warn('[timer] stale token — refused'); return false; }
   if(isBellBusy()){ console.warn('[timer] bell busy — refused'); return false; }
+
+  if(!keepAnchor || !japAnchorTs) japAnchorReset();
+
+  /* Beat jap-interval se tez — throttle hone par bhi japCatchUp()
+     wall-clock se sahi ginti kar lega. */
+  const beat = Math.max(200, Math.min(getJapInterval(), 1000));
   japTimer = setInterval(()=>{
-    if(!running){ clearJapTimer(); return; }         // L1
+    if(!running){ clearJapTimer(); return; }
     if(isBellBusy()) return;
-    tickJap();
-  }, getJapInterval());
+    japCatchUp();
+  }, beat);
+
+  startTickScheduler();          // 🎧 exact-rhythm ticks (throttle-proof)
   return true;
 }
 
@@ -3170,23 +3548,14 @@ setInterval(()=>{
 }, 1000);
 
 /* ============ JAP CORE ============ */
-/* v20.5 FIX #10: force=true sirf legitimate manual/prime call ke liye */
+/* v20.6: auto-counting ab japCatchUp() karta hai.
+   tickJap() sirf manual tap / prime jap ke liye bacha hai. */
 function tickJap(force=false){
   if(!force){
     if(!running){ console.warn('[tickJap] blocked — not running'); return; }
     if(isBellBusy()) return;
   }
-  perm++; trip++; japsSinceBackup++;
-  recordJapForToday(1);
-  doVibrate();
-  updateUI();
-  checkCountAlerts();
-  if(japsSinceBackup >= SETTINGS.backupEvery){
-    japsSinceBackup = 0;
-    scheduleAutoBackup();
-  }
-  bmOnJapFired();
-  checkMalaBell();
+  applyJaps(1);
 }
 
 async function onStartClick(){
@@ -3244,10 +3613,9 @@ function applyRunningState(){
   const elBlock = document.getElementById('elapsedBlock');
   const pauseTag = document.getElementById('pauseTag');
 
-  // ⚠ v20.5: token SABSE PEHLE badhao — purane async callbacks turant invalid
   const myToken = newRunToken();
   const doPrime = primeJapPending;
-  primeJapPending = false;                 // consume — resume pe muft jap NAHI
+  primeJapPending = false;
 
   clearJapTimer();
   stopSeamlessAudio();
@@ -3255,7 +3623,7 @@ function applyRunningState(){
   btn.classList.remove('running','manual','mansik');
 
   if(running){
-    stopOmLoop();                          // v20.3: jap start → Om band
+    stopOmLoop();
     const info = MODE_LABELS[chantMode];
     btn.textContent = `⏸ PAUSE (${info.icon} ${info.name.split(' ')[0]})`;
     btn.classList.add('running');
@@ -3266,22 +3634,14 @@ function applyRunningState(){
     document.body.classList.remove('paused');
     pauseTag.style.display = 'none';
 
-    if(!firstStartTs){
-      firstStartTs = Date.now();
-      document.getElementById('startTime').textContent = fmtTime(new Date());
-    }
-    sessionStart = Date.now();
+    clockResume();                        // v20.6: shared persisted clock
     requestWakeLock(); startWakeVideo();
 
     if(chantMode === 'audio'){
       ensureAudioCtx().then(()=>{
-        /* 🔒 v20.5 FIX #1 — YE GUARD HI ASLI ILAAJ HAI.
-           Agar is async gap me PAUSE ho gaya (ya naya session shuru
-           hua), to token match nahi karega → koi timer nahi banega. */
         if(!tokenValid(myToken)){
           console.warn('[guard] stale audio start ignored');
-          stopSeamlessAudio();
-          clearJapTimer();
+          stopSeamlessAudio(); clearJapTimer();
           return;
         }
         startSeamlessAudio();
@@ -3291,8 +3651,7 @@ function applyRunningState(){
         console.error('audio ctx failed', err);
         showToast('❌ Audio start fail — mode badal ke try karo', 'error', 4000);
         running = false;
-        clearJapTimer();
-        stopSeamlessAudio();
+        clearJapTimer(); stopSeamlessAudio();
         applyRunningState();
       });
     } else if(chantMode === 'manual'){
@@ -3310,9 +3669,10 @@ function applyRunningState(){
     elBlock.classList.add('paused');
     document.body.classList.add('paused');
     pauseTag.style.display = 'inline-block';
-    if(sessionStart){ elapsedMs += Date.now() - sessionStart; sessionStart = null; }
+    clockPause();                         // v20.6: shared persisted clock
+    stopTickScheduler();
     releaseWakeLock(); stopWakeVideo();
-    startOmLoop();                         // v20.3: pause/idle → Om chalu
+    startOmLoop();
   }
 }
 
@@ -3372,11 +3732,11 @@ function releaseWakeLock(){
 }
 
 /* ============ VISIBILITY: BACKGROUND CONTINUE ============ */
+/* ============ VISIBILITY: BACKGROUND CONTINUE ============ */
 document.addEventListener('visibilitychange', async ()=>{
   if(document.visibilityState === 'hidden'){
     if(running){
-      backgroundStartTs = Date.now();
-      backgroundStartCount = perm;
+      clockBeat();
       startSilentKeepAlive();
       if(chantMode === 'manual'){ screenWasOff = true; screenOffJapCount = 0; }
     }
@@ -3385,43 +3745,30 @@ document.addEventListener('visibilitychange', async ()=>{
     if(running){
       requestWakeLock();
       startWakeVideo();
-      if((chantMode === 'audio' || chantMode === 'mansik') && backgroundStartTs){
-        const gap = Date.now() - backgroundStartTs;
-        const expected = Math.floor(gap / getJapInterval());
-        const actualIncrement = perm - backgroundStartCount;
-        const missed = Math.max(0, expected - actualIncrement);
-        if(missed > 0 && !isBellBusy()){
-          perm += missed;
-          trip += missed;
-          recordJapForToday(missed);
-          localStorage.setItem('permCount', perm);
-          localStorage.setItem('tripCount', trip);
-          markDirty();
-          updateUI(false);
-          showToast(`⚡ Caught up ${missed} japs from background`, 'info', 3000);
-          scheduleAutoBackup(true);
-        }
 
-        /* v20.5 FIX #4: pehle yahan bina kisi guard ke
-           `japTimer = setInterval(tickJap, ...)` tha —
-           bell ke dauraan ya pause hote hi zombie ban jata tha.
-           Ab guarded + audio scheduler bhi properly restart hota hai. */
-        clearJapTimer();
-        if(running && !isBellBusy()){
-          const vToken = runToken;
+      /* v20.6: purana `expected - actual` missed-jap math HATA diya —
+         wo double-count karta tha aur screen-lock pe chalta hi nahi tha.
+         Ab wall-clock engine khud sab recover karti hai. */
+      if(chantMode === 'audio' || chantMode === 'mansik'){
+        const got = japCatchUp();
+        if(got > 1) showToast(`⚡ Caught up ${got} japs from background`, 'info', 3000);
+
+        const vToken = runToken;
+        if(!isBellBusy()){
           if(chantMode === 'audio'){
             ensureAudioCtx().then(()=>{
               if(!tokenValid(vToken) || isBellBusy()) return;
               stopSeamlessAudio();
               startSeamlessAudio();
-              setJapTimer(vToken);
+              setJapTimer(vToken, true);      // ⚠ keepAnchor — timeline continue
             }).catch(()=>{});
           } else {
-            setJapTimer(vToken);
+            setJapTimer(vToken, true);        // ⚠ keepAnchor
           }
         }
-        backgroundStartTs = null;
+        if(got > 0) scheduleAutoBackup(true);
       }
+      backgroundStartTs = null;
     }
     if(screenWasOff && chantMode === 'manual' && screenOffJapCount > 0){ showScreenoffPrompt(); }
     screenWasOff = false;
@@ -3436,10 +3783,12 @@ document.addEventListener('visibilitychange', async ()=>{
   }
 });
 window.addEventListener('beforeunload', ()=>{
+  clockBeat();                            // v20.6: aakhri checkpoint
   if(localVersion > lastBackedUpVersion && ghConfigured() && !conflictPending){
     try{ safePushToGitHub(true); }catch(e){}
   }
 });
+window.addEventListener('pagehide', ()=>{ clockBeat(); });
 
 function showScreenoffPrompt(){
   document.getElementById('screenoffCount').textContent = fmtNum(screenOffJapCount);
@@ -4812,6 +5161,7 @@ function applyBmSettings(){
     ? `🎧 tick @${Math.round(tickVolume*100)}%`
     : (Array.isArray(vibPattern) ? `📳 ${vibPattern.length} pulses`
        : (vibPattern === 0 ? '🔇 silent' : `📳 ${vibPattern}ms`));
+  stopTickScheduler(); if(running && tickSoundOn) startTickScheduler();
   showToast(`⚙ ${iv}s • ${fb} • 🔔 ${bellOn ? 'on' : 'off'}`, 'success', 3000);
 
   closeBmSettings();     // v20.5: yahi resume bhi kar dega (single path)
@@ -5344,6 +5694,7 @@ async function playMalaBell(rings, mala){
   // Pause counting (relax time) - elapsed timer untouched
   const wasAudio = (chantMode === 'audio' && running);
   clearJapTimer();
+  stopTickScheduler();
   if(wasAudio) stopSeamlessAudio();
 
   showBellOverlay(rings, mala);
@@ -5364,7 +5715,6 @@ async function playMalaBell(rings, mala){
   hideBellOverlay();
   bellPlaying = false;
 
-  // Auto-resume — SIRF agar wahi session abhi bhi chal raha ho
   if(!tokenValid(bellToken)){
     console.warn('[bell] session changed during bell — no resume');
     clearJapTimer();
@@ -5377,7 +5727,7 @@ async function playMalaBell(rings, mala){
     startSeamlessAudio();
   }
   if(chantMode === 'audio' || chantMode === 'mansik'){
-    setJapTimer(bellToken);
+    setJapTimer(bellToken);        // keepAnchor=false → relax time japs me nahi ginega
   }
 }
 
@@ -5441,6 +5791,15 @@ async function initApp(){
   if(lastBellMala > Math.floor(trip/108)){ lastBellMala = Math.floor(trip/108); saveBellState(); }
   console.log('[v20.5] jap interval =', getJapInterval(), 'ms');
 
+  clockLoad();                            // v20.6: shared clock restore
+  if(firstStartTs){
+    document.getElementById('startTime').textContent = fmtTime(new Date(firstStartTs));
+    document.getElementById('elapsed').textContent = fmtDur(getElapsedMs());
+  } else {
+    document.getElementById('startTime').textContent = '--:--';
+  }
+  console.log('[v20.6] elapsed restored =', fmtDur(getElapsedMs()));
+  updateRtBtn();                          // v20.6: ↺RT indicator boot pe
   updateUI(false);
   updateModeBadge();
   renderPresets();
@@ -5456,9 +5815,6 @@ async function initApp(){
   const blt = document.getElementById('bellToggle');
   if(blt) blt.checked = bellEnabled;
 
-  if(!firstStartTs){
-    document.getElementById('startTime').textContent = '--:--';
-  }
 
   if(ghConfigured()){
     showStartup('☁ Syncing with GitHub...', 'Checking for updates');

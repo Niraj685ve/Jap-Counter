@@ -1,1015 +1,354 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#000000">
-<title>🕉 Mansik Jap - Om Meditation</title>
+<title>🧘 Mansik Jap</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; overflow-x: hidden; }
-  body {
-    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-    color: #ffd97a; min-height: 100vh; padding: 8px 8px 30px;
-    text-align: center; user-select: none; background: #000;
-  }
+/* ═══════════════════════════════════════════════════════════════
+   🧘 MANSIK JAP — v2.0 MINIMAL
+   Sirf ek kaam: 🔱 dabao → picker → jap chalu. Aur kuch nahi.
+   ═══════════════════════════════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:radial-gradient(circle at 50% 35%,#2a0a00 0%,#120300 45%,#000 100%);
+  font-family:'Segoe UI',system-ui,sans-serif;color:#ffcc80;
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px;user-select:none;
+}
 
-  html { scrollbar-width: thin; scrollbar-color: #ff6600 rgba(0,0,0,0.4); }
-  ::-webkit-scrollbar { width: 10px; }
-  ::-webkit-scrollbar-track { background: rgba(20,0,0,0.6); border-radius: 10px; }
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg,#ffcc00,#ff6600,#ff3300);
-    border-radius: 10px; border: 1px solid rgba(255,204,0,0.5);
-  }
+/* ===== EMBERS ===== */
+#embers{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.ember{position:absolute;bottom:-10px;border-radius:50%;background:#ff7a18;
+  box-shadow:0 0 8px #ff5500;opacity:0;animation:rise linear infinite}
+@keyframes rise{
+  0%{opacity:0;transform:translateY(0) translateX(0)}
+  15%{opacity:.85}
+  100%{opacity:0;transform:translateY(-100vh) translateX(var(--drift))}
+}
 
-  /* ═══ BACKGROUND ═══ */
-  .bg-layer {
-    position: fixed; inset: 0; z-index: -3;
-    background: radial-gradient(ellipse at center, rgba(60,15,0,0.55), rgba(0,0,0,0.98));
-  }
-  .fire-layer {
-    position: fixed; inset: 0; z-index: -2; pointer-events: none;
-    background:
-      radial-gradient(circle at 20% 92%, rgba(255,80,0,0.42), transparent 42%),
-      radial-gradient(circle at 80% 96%, rgba(255,140,0,0.42), transparent 46%),
-      radial-gradient(circle at 50% 100%, rgba(255,50,0,0.5), transparent 52%);
-    animation: fireFlicker 3s ease-in-out infinite alternate;
-  }
-  @keyframes fireFlicker { 0%{opacity:.7} 50%{opacity:1} 100%{opacity:.8} }
-  .embers { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-  .ember {
-    position: absolute; bottom: -10px; width: 4px; height: 4px;
-    background: radial-gradient(circle, #ffcc00, #ff3300);
-    border-radius: 50%; box-shadow: 0 0 8px #ff6600;
-    animation: rise linear infinite;
-  }
-  @keyframes rise { to { transform: translateY(-110vh) translateX(var(--drift)); opacity: 0; } }
+/* ===== TOP BAR ===== */
+.bar{position:relative;z-index:5;width:100%;max-width:460px;display:flex;
+  align-items:center;gap:6px;background:rgba(0,0,0,.45);
+  border:1px solid rgba(255,140,0,.3);border-radius:12px;padding:6px 8px}
+.bar .back{font-size:18px;background:rgba(139,92,246,.18);
+  border:1px solid rgba(167,139,250,.45);color:#c4b5fd;
+  width:34px;height:34px;border-radius:50%;cursor:pointer;flex:0 0 auto}
+.bar .back:active{transform:scale(.88)}
+.bar h1{flex:1;text-align:center;font-size:13px;font-weight:900;
+  background:linear-gradient(90deg,#ffcc00,#ff6600,#ffcc00);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap}
+.bar .sdot{width:9px;height:9px;border-radius:50%;background:#666;flex:0 0 auto}
+.bar .sdot.ok{background:#10b981;box-shadow:0 0 6px #10b981}
+.bar .sdot.busy{background:#f59e0b;animation:bl 1s infinite}
+.bar .sdot.err{background:#ef4444}
+@keyframes bl{50%{opacity:.3}}
 
-  /* ═══ TOP BAR ═══ */
-  .top-bar {
-    display: grid; grid-template-columns: 1fr auto 1fr;
-    align-items: center; padding: 6px 10px;
-    background: rgba(0,0,0,0.45); border-radius: 12px;
-    border: 1px solid rgba(167,139,250,0.35); gap: 6px;
-    max-width: 560px; margin: 0 auto;
-  }
-  .top-bar .om-corner { justify-self: start; font-size: 24px; color: #c4b5fd; animation: glow 1.5s infinite alternate; }
-  @keyframes glow { from{text-shadow:0 0 8px #8b5cf6} to{text-shadow:0 0 22px #c4b5fd,0 0 34px #8b5cf6} }
-  .top-bar h1 { justify-self: center; font-size: 13px; font-weight: 900; letter-spacing: 1px; white-space: nowrap;
-    background: linear-gradient(90deg,#c4b5fd,#8b5cf6,#c4b5fd);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .top-bar .top-right-tools { justify-self: end; display: flex; align-items: center; gap: 6px; }
-  .sync-mini {
-    display: flex; align-items: center; gap: 4px;
-    background: rgba(0,0,0,0.5); border: 1px solid rgba(167,139,250,0.35);
-    padding: 4px 8px; border-radius: 14px; cursor: pointer; font-size: 10px; color: #ddd6fe;
-  }
-  .sync-dot { width: 9px; height: 9px; border-radius: 50%; background: #666; transition: all .3s; }
-  .sync-dot.synced { background: #10b981; box-shadow: 0 0 6px #10b981; }
-  .sync-dot.syncing { background: #f59e0b; animation: pulseSync 1s infinite; }
-  .sync-dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
-  .sync-dot.conflict { background: #ef4444; animation: conflictPulse .6s infinite; }
-  .sync-dot.offline { background: #666; }
-  @keyframes pulseSync { 0%,100%{opacity:1} 50%{opacity:.3} }
-  @keyframes conflictPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
-  .sync-txt { max-width: 78px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .icon-btn {
-    background: rgba(139,92,246,0.22); border: 1px solid #a78bfa;
-    color: #ddd6fe; width: 32px; height: 32px; border-radius: 50%;
-    font-size: 14px; cursor: pointer;
-  }
-  .icon-btn:active { transform: scale(.9); }
+/* ===== MAIN CARD ===== */
+.wrap{position:relative;z-index:5;width:100%;max-width:460px;
+  flex:1;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.card{background:rgba(20,0,0,.6);border:1px solid rgba(255,140,0,.35);
+  border-radius:14px;padding:12px;backdrop-filter:blur(4px)}
+.rowc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cell{text-align:center}
+.cell .lb{font-size:10px;letter-spacing:1.5px;color:#ff9933;opacity:.8;text-transform:uppercase}
+.cell .vl{font-size:26px;font-weight:900;color:#ffcc00;text-shadow:0 0 14px rgba(255,120,0,.6)}
+.cell .vl.sm{font-size:19px;color:#ffd9a0}
+.cell.dim{opacity:.45}
+.ptag{font-size:8px;background:#ef4444;color:#fff;padding:1px 5px;
+  border-radius:6px;vertical-align:middle;margin-left:3px}
 
-  /* ═══ PANELS ═══ */
-  .panel {
-    margin: 8px auto; max-width: 460px;
-    background: rgba(18,4,26,0.7);
-    border: 1px solid rgba(167,139,250,0.4);
-    border-radius: 12px; padding: 10px;
-    box-shadow: 0 0 20px rgba(139,92,246,0.22);
-  }
-  .timer-panel { display: flex; justify-content: space-around; }
-  .timer-block { flex: 1; }
-  .timer-block .lbl { font-size: 10px; color: #c4b5fd; letter-spacing: 1px; text-transform: uppercase; }
-  .timer-block .val { font-size: 14px; color: #fff; font-weight: bold; text-shadow: 0 0 5px #8b5cf6; }
-  .timer-block.paused .val { animation: flashPause .8s ease-in-out infinite; color: #ff6666; }
-  @keyframes flashPause { 0%,100%{opacity:1;text-shadow:0 0 8px #f00} 50%{opacity:.3} }
-  .paused-tag {
-    display: inline-block; font-size: 8px; color: #2a0a00; background: #ffcc00;
-    padding: 1px 4px; border-radius: 3px; margin-left: 3px; vertical-align: middle;
-  }
+.omstage{display:flex;align-items:center;justify-content:center;padding:6px 0}
+.omstage .om{font-size:74px;color:#ffcc00;text-shadow:0 0 26px #ff6600;
+  animation:omspin 9s linear infinite}
+.omstage.paused .om{animation-play-state:paused;opacity:.35}
+@keyframes omspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
-  /* ═══ IDLE OM STAGE ═══ */
-  .om-stage {
-    position: relative; margin: 14px auto 8px;
-    width: min(88vw, 380px); aspect-ratio: 1/1;
-    display: flex; align-items: center; justify-content: center;
-    perspective: 1000px;
-  }
-  .om-stage::before {
-    content: ''; position: absolute; inset: 6%;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, rgba(60,20,90,0.12) 40%, transparent 70%);
-    animation: stageBreath 5s ease-in-out infinite;
-  }
-  @keyframes stageBreath { 0%,100%{opacity:.55;transform:scale(.96)} 50%{opacity:1;transform:scale(1.04)} }
-  .om-ring {
-    position: absolute; inset: 4%;
-    border-radius: 50%;
-    border: 2px dashed rgba(167,139,250,0.35);
-    animation: ringSpin 26s linear infinite;
-  }
-  .om-ring.r2 { inset: 15%; border-style: dotted; border-color: rgba(255,180,80,0.3); animation-duration: 18s; animation-direction: reverse; }
-  @keyframes ringSpin { to { transform: rotate(360deg); } }
-  .om-main {
-    position: relative; z-index: 3;
-    font-size: 34vmin; max-font-size: 200px; line-height: 1; font-weight: bold;
-    font-family: "Noto Sans Devanagari","Sanskrit Text","Mangal",serif;
-    color: #ffd700;
-    text-shadow: 0 0 30px rgba(255,180,50,.6), 0 0 60px rgba(255,120,0,.4), 0 0 110px rgba(255,80,0,.25);
-    animation: omSpinIdle 7s ease-in-out infinite, omGlowIdle 4s ease-in-out infinite;
-    transform-origin: center center; will-change: transform;
-  }
-  @keyframes omSpinIdle { 0%{transform:rotateY(0)} 100%{transform:rotateY(360deg)} }
-  @keyframes omGlowIdle {
-    0%,100% { color:#ffcc00; text-shadow: 0 0 25px rgba(255,150,30,.5), 0 0 50px rgba(255,100,0,.35); }
-    50%     { color:#ffe680; text-shadow: 0 0 42px rgba(255,200,80,.8), 0 0 80px rgba(255,140,0,.55); }
-  }
-  .om-stage.paused .om-main { animation: omSpinIdleSlow 24s linear infinite, omPausedDim 1.5s ease-in-out infinite; }
-  @keyframes omSpinIdleSlow { 0%{transform:rotateY(0)} 100%{transform:rotateY(360deg)} }
-  @keyframes omPausedDim { 0%,100%{opacity:.4;color:#ff9966} 50%{opacity:.75;color:#ffbb88} }
+.mainbtn{width:100%;padding:15px;border:none;border-radius:12px;
+  font-size:16px;font-weight:900;cursor:pointer;color:#fff;
+  background:linear-gradient(135deg,#8b5cf6,#5b21b6);
+  border:1px solid #a78bfa;box-shadow:0 0 18px rgba(139,92,246,.5)}
+.mainbtn.run{background:linear-gradient(135deg,#dc2626,#7f1d1d);border-color:#fca5a5}
+.mainbtn:active{transform:scale(.97)}
+.mini{width:100%;margin-top:7px;padding:9px;border-radius:9px;font-size:12px;
+  font-weight:bold;cursor:pointer;color:#fecaca;
+  background:rgba(220,38,38,.16);border:1px solid rgba(248,113,113,.4)}
+.hint{text-align:center;font-size:10px;color:#a78bfa;letter-spacing:1px;margin-top:6px}
 
-  .counts-wrap { position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); z-index: 4; text-align: center; }
-  .cnt-perm { font-size: 12px; color: #c4b5fd; letter-spacing: 2px; text-transform: uppercase; }
-  .cnt-perm b { display: block; font-size: 30px; color: #ffcc00; font-weight: 900; text-shadow: 0 0 16px #ff6600; }
-  .cnt-trip { margin-top: 4px; font-size: 11px; color: #ffcc80; }
-  .cnt-trip b { color: #6ee7b7; font-size: 17px; }
-  .reset-btn {
-    background: rgba(220,38,38,.28); border: 1px solid #ef4444; color: #fca5a5;
-    width: 24px; height: 24px; border-radius: 50%; font-size: 12px; cursor: pointer; margin-left: 6px;
-    vertical-align: middle;
-  }
+/* ═══════════ PICKER (auto-opens) ═══════════ */
+.picker{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.93);
+  backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:14px}
+.picker.show{display:flex}
+.picker .box{width:100%;max-width:390px;background:linear-gradient(160deg,#1a0a2e,#0b0113);
+  border:1px solid #a78bfa;border-radius:16px;padding:16px;
+  box-shadow:0 0 40px rgba(139,92,246,.45);max-height:94vh;overflow-y:auto}
+.picker .om{text-align:center;font-size:40px;color:#ffcc00;text-shadow:0 0 20px #ff6600}
+.picker h2{text-align:center;font-size:16px;color:#c4b5fd;margin:4px 0 12px}
+.fg{margin-bottom:11px}
+.fg>label{display:block;font-size:11px;color:#ffcc80;margin-bottom:5px;font-weight:bold}
+.fg select{width:100%;padding:10px;font-size:14px;background:rgba(0,0,0,.6);
+  color:#fff;border:1px solid #ffcc00;border-radius:8px}
+.pair{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center}
+.pair .x{color:#ffcc00;font-weight:900}
+.pv{margin-top:6px;padding:7px;border-radius:7px;font-size:11px;font-weight:bold;
+  text-align:center;background:rgba(16,185,129,.15);border:1px solid #10b981;color:#6ee7b7}
+.tip{font-size:9.5px;color:#888;margin-top:4px;text-align:center;line-height:1.5}
+.pbtns{display:grid;gap:8px;margin-top:14px}
+.pbtns button{padding:13px;border:none;border-radius:10px;font-size:14px;
+  font-weight:900;cursor:pointer;color:#fff}
+.pbtns .blk{background:linear-gradient(135deg,#111,#000);border:1px solid #a78bfa;color:#ddd6fe}
+.pbtns .nrm{background:linear-gradient(135deg,#8b5cf6,#5b21b6);border:1px solid #c4b5fd}
+.pbtns .cnl{background:rgba(90,90,90,.35);border:1px solid #777;color:#ccc;font-size:12.5px;padding:10px}
+.pbtns button:active{transform:scale(.97)}
 
-  /* ═══ BUTTONS ═══ */
-  .button-area { max-width: 460px; margin: 0 auto; }
-  .row { display: flex; gap: 6px; margin: 6px 0; }
-  .main {
-    flex: 1; padding: 11px 8px; font-size: 13px; font-weight: bold;
-    border: none; border-radius: 10px; cursor: pointer; color: #fff;
-    background: linear-gradient(135deg,#8b5cf6,#6d28d9); border: 1px solid #c4b5fd;
-  }
-  .main:active { transform: scale(.97); }
-  .main.secondary { background: linear-gradient(135deg,#555,#222); border-color: #777; }
-  .main.gh { background: linear-gradient(135deg,#0ea5e9,#0369a1); border-color: #7dd3fc; }
-  .main.alert-btn { background: linear-gradient(135deg,#f59e0b,#b45309); border-color: #fcd34d; }
-  .main.danger { background: linear-gradient(135deg,#dc2626,#991b1b); border-color: #fca5a5; }
-  .big-start {
-    width: 100%; padding: 17px; font-size: 18px; font-weight: 900;
-    border: 2px solid #c4b5fd; border-radius: 14px; cursor: pointer; color: #fff;
-    background: linear-gradient(135deg,#8b5cf6,#6d28d9,#4c1d95);
-    box-shadow: 0 0 26px rgba(139,92,246,.55); letter-spacing: 1px;
-  }
-  .big-start.running {
-    background: linear-gradient(135deg,#dc2626,#7f1d1d);
-    border-color: #fca5a5; box-shadow: 0 0 26px rgba(220,38,38,.55);
-  }
-  .big-start:active { transform: scale(.98); }
-  .status { flex: 1; font-size: 11px; color: #c4b5fd; padding: 6px; }
+/* ═══════════ BLACK MODE ═══════════ */
+.bm{position:fixed;inset:0;z-index:500;background:#000;display:none;
+  align-items:center;justify-content:center;overflow:hidden}
+.bm.show{display:flex}
+.bm .bmom{font-size:120px;color:rgba(255,204,0,.30);
+  text-shadow:0 0 45px rgba(255,102,0,.5);animation:omspin 14s linear infinite}
+.bm.paused .bmom{animation-play-state:paused;color:rgba(255,204,0,.10)}
+.bm .bminfo{position:absolute;top:4%;left:50%;transform:translateX(-50%);
+  text-align:center;font-size:10px;letter-spacing:2px;
+  color:rgba(255,180,80,.4);text-transform:uppercase;pointer-events:none}
+.bm .bminfo .al{display:block;font-size:9px;color:rgba(150,220,150,.5);margin-top:3px}
+.bm .bmel{display:block;font-size:11px;color:rgba(255,220,150,.5);margin-top:3px;letter-spacing:1px}
+.bm .bmexit{position:absolute;top:3%;right:4%;z-index:20;
+  width:42px;height:42px;border-radius:50%;font-size:16px;font-weight:bold;cursor:pointer;
+  background:rgba(255,80,20,.12);color:rgba(255,180,100,.75);border:1px solid rgba(255,120,40,.35)}
+.bm .bmexit:active{transform:scale(.88)}
+.bm .bmpz{position:absolute;bottom:22%;left:50%;transform:translateX(-50%);
+  font-size:12px;color:rgba(255,204,0,.55);letter-spacing:2px;display:none;
+  animation:pz 1.6s ease-in-out infinite}
+.bm.paused .bmpz{display:block}
+@keyframes pz{50%{opacity:.35}}
+.bm .bmcnt{position:absolute;bottom:6%;left:50%;transform:translateX(-50%);text-align:center}
+.bm .bmcnt .l{display:block;font-size:9px;letter-spacing:2px;color:rgba(255,180,80,.35);text-transform:uppercase}
+.bm .bmcnt .n{font-size:34px;font-weight:900;color:rgba(255,204,0,.65);text-shadow:0 0 18px rgba(255,120,0,.5)}
+.bmfx{position:absolute;inset:0;pointer-events:none}
+.rip{position:absolute;width:100px;height:100px;border-radius:50%;
+  border:2px solid rgba(255,204,0,.5);transform:translate(-50%,-50%) scale(.2);
+  animation:rp .5s ease-out forwards}
+@keyframes rp{to{transform:translate(-50%,-50%) scale(2.4);opacity:0}}
 
-  /* ═══ FORM ═══ */
-  .form-group { margin-bottom: 10px; text-align: left; }
-  .form-group label { display: block; font-size: 12px; color: #c4b5fd; margin-bottom: 4px; font-weight: bold; }
-  .form-group input, .form-group select {
-    width: 100%; background: rgba(0,0,0,.6); color: #fff;
-    border: 1px solid #a78bfa; border-radius: 6px; padding: 9px 10px; font-size: 16px;
-  }
-  .form-group small { display: block; font-size: 10px; color: #aaa; margin-top: 3px; }
-  .help-text { font-size: 11px; color: #aaa; margin-top: 4px; }
-  .toggle-switch {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 10px; background: rgba(0,0,0,.4); border-radius: 8px;
-    margin: 4px 0; border: 1px solid rgba(167,139,250,.25);
-  }
-  .toggle-switch label { color: #fff; font-size: 12px; font-weight: bold; }
-  .switch { position: relative; width: 44px; height: 22px; flex-shrink: 0; }
-  .switch input { display: none; }
-  .slider { position: absolute; cursor: pointer; inset: 0; background: #444; border-radius: 22px; transition: .3s; }
-  .slider::before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .3s; }
-  .switch input:checked + .slider { background: #10b981; }
-  .switch input:checked + .slider::before { transform: translateX(22px); }
+/* ═══════════ ALERT POPUP ═══════════ */
+.ap{position:fixed;inset:0;z-index:800;background:rgba(0,0,0,.94);
+  display:none;align-items:center;justify-content:center;padding:14px}
+.ap.show{display:flex}
+.ap .b{width:100%;max-width:340px;background:linear-gradient(160deg,#2a1000,#120300);
+  border:2px solid #ffcc00;border-radius:16px;padding:18px;text-align:center;
+  box-shadow:0 0 50px rgba(255,120,0,.6)}
+.ap .o{font-size:42px;color:#ffcc00;text-shadow:0 0 22px #ff6600}
+.ap h3{font-size:17px;color:#ffcc00;margin:6px 0}
+.ap p{font-size:12.5px;color:#ffd9a0;margin-bottom:12px}
+.ap .pi{font-size:10px;color:#fca5a5;background:rgba(220,38,38,.18);
+  border:1px dashed #ef4444;border-radius:6px;padding:5px;margin-bottom:10px}
+.ap button{width:100%;padding:12px;margin-top:7px;border:none;border-radius:9px;
+  font-size:13.5px;font-weight:900;cursor:pointer;color:#fff;
+  background:linear-gradient(135deg,#10b981,#047857);border:1px solid #6ee7b7}
+.ap button.g{background:linear-gradient(135deg,#8b5cf6,#5b21b6);border-color:#c4b5fd}
+.ap button.d{background:rgba(90,90,90,.4);border-color:#777;color:#ccc}
+.ap .r2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 
-  /* ═══ MODALS ═══ */
-  .modal {
-    position: fixed; inset: 0; z-index: 900; background: rgba(0,0,0,.9);
-    display: none; align-items: center; justify-content: center; padding: 12px;
-  }
-  .modal.open { display: flex; }
-  .modal-box {
-    background: linear-gradient(135deg, rgba(28,8,40,.98), rgba(10,0,16,.98));
-    border: 2px solid #a78bfa; border-radius: 16px;
-    width: 100%; max-width: 420px; max-height: 90vh; display: flex; flex-direction: column;
-    box-shadow: 0 10px 50px rgba(139,92,246,.5); animation: popIn .25s ease;
-  }
-  @keyframes popIn { from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
-  .modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 15px; border-bottom: 1px solid rgba(167,139,250,.4);
-    background: linear-gradient(90deg, rgba(139,92,246,.3), rgba(139,92,246,.1));
-    border-radius: 14px 14px 0 0;
-  }
-  .modal-header h2 {
-    font-size: 15px; background: linear-gradient(90deg,#c4b5fd,#8b5cf6,#c4b5fd);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  }
-  .close-btn { background: rgba(220,38,38,.3); border: 1px solid #ef4444; color: #fca5a5;
-    width: 28px; height: 28px; border-radius: 50%; font-size: 13px; cursor: pointer; }
-  .modal-body { padding: 14px; overflow-y: auto; }
+/* ═══════════ BELL OVERLAY ═══════════ */
+.bo{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.96);
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:9px}
+.bo.show{display:flex}
+.bo .bl{font-size:66px;animation:bsh .5s ease-in-out infinite}
+@keyframes bsh{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+.bo .m{font-size:14px;color:#ffcc00;font-weight:bold}
+.bo .rt{font-size:12px;color:#6ee7b7}
+.bo .dots{display:flex;gap:7px}
+.bo .dot{font-size:19px;opacity:.25}
+.bo .dot.on{opacity:1;text-shadow:0 0 12px #ffcc00}
+.bo .pg{font-size:11px;color:#888}
+.bo .rx{font-size:12px;color:#6ee7b7;display:none}
 
-  /* ═══ SOUND PANEL ═══ */
-  .sound-panel-row {
-    display: grid; grid-template-columns: 1fr auto auto auto auto;
-    gap: 5px; align-items: center; padding: 8px; margin: 5px 0;
-    background: rgba(0,0,0,.45); border: 1px solid rgba(167,139,250,.3); border-radius: 8px;
-  }
-  .sound-panel-row .sp-label { font-size: 11px; color: #c4b5fd; font-weight: bold; text-align: left; }
-  .sound-panel-row .sp-label small { display: block; font-size: 9px; color: #aaa; font-weight: normal; margin-top: 2px; word-break: break-all; }
-  .sound-panel-row button {
-    padding: 6px 8px; font-size: 11px; border: none; border-radius: 6px;
-    cursor: pointer; color: #fff; font-weight: bold; min-width: 32px;
-  }
-  .sound-panel-row .sp-load { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
-  .sound-panel-row .sp-test { background: linear-gradient(135deg,#10b981,#059669); }
-  .sound-panel-row .sp-gh   { background: linear-gradient(135deg,#0ea5e9,#0369a1); }
-  .sound-panel-row .sp-del  { background: linear-gradient(135deg,#dc2626,#991b1b); }
-  .sound-panel-row button:active { transform: scale(.9); }
-  .bell-rule-box {
-    background: rgba(255,140,0,.1); border: 1px dashed #ffb347; border-radius: 8px;
-    padding: 8px 10px; font-size: 10px; color: #ffcc80; line-height: 1.6; margin-top: 6px; text-align: left;
-  }
-
-  /* ═══ MANSIK PICKER ═══ */
-  .mansik-picker .modal-box { max-width: 340px; border-color: #8b5cf6; }
-  .mansik-choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-  .mansik-choice-card {
-    background: rgba(0,0,0,.6); border: 2px solid rgba(167,139,250,.4);
-    border-radius: 12px; padding: 16px 10px; text-align: center; cursor: pointer; transition: all .2s;
-  }
-  .mansik-choice-card:active { transform: scale(.96); }
-  .mansik-choice-card.black { background: linear-gradient(135deg,#1a0a00,#3d1a00); border-color: #ff9933; }
-  .mc-icon { font-size: 30px; }
-  .mc-title { font-size: 13px; font-weight: bold; color: #ffcc00; margin-top: 4px; }
-  .mc-desc { font-size: 9px; color: #aaa; margin-top: 3px; line-height: 1.4; }
-
-  /* ═══ BLACK MODE OVERLAY ═══ */
-  .black-mode-overlay {
-    position: fixed; inset: 0; z-index: 2000;
-    background: radial-gradient(ellipse at center,#0a0400 0%,#050200 55%,#000 100%);
-    display: none; align-items: center; justify-content: center;
-    overflow: hidden; cursor: pointer; touch-action: manipulation; perspective: 1000px;
-  }
-  .black-mode-overlay.show { display: flex; }
-  .black-mode-overlay::before {
-    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-    background: radial-gradient(circle at 50% 50%, rgba(80,25,0,.35) 0%, rgba(40,10,0,.2) 30%, transparent 60%);
-    animation: bmAmbient 8s ease-in-out infinite;
-  }
-  @keyframes bmAmbient { 0%,100%{opacity:.5} 50%{opacity:.85} }
-  .bm-om-wrap { position: relative; z-index: 10; pointer-events: none; transform-style: preserve-3d; }
-  .bm-om {
-    display: inline-block; font-size: 28vmin; font-weight: bold; color: #ffd700; line-height: 1;
-    font-family: "Noto Sans Devanagari","Sanskrit Text","Mangal",serif; user-select: none;
-    text-shadow: 0 0 30px rgba(255,180,50,.65), 0 0 60px rgba(255,120,0,.45), 0 0 100px rgba(255,80,0,.28);
-    filter: drop-shadow(0 0 20px rgba(255,150,0,.5));
-    animation: bmOmHorizontalSpin 6s ease-in-out infinite, bmOmGlow 4s ease-in-out infinite;
-    transform-origin: center center; will-change: transform;
-  }
-  @keyframes bmOmHorizontalSpin { 0%{transform:rotateY(0)} 100%{transform:rotateY(360deg)} }
-  @keyframes bmOmGlow {
-    0%,100% { color:#ffcc00; text-shadow: 0 0 25px rgba(255,150,30,.5), 0 0 50px rgba(255,100,0,.35), 0 0 80px rgba(255,60,0,.22); filter: drop-shadow(0 0 15px rgba(255,120,0,.4)); }
-    50%     { color:#ffe680; text-shadow: 0 0 40px rgba(255,200,80,.8), 0 0 75px rgba(255,140,0,.6), 0 0 120px rgba(255,80,0,.4); filter: drop-shadow(0 0 25px rgba(255,180,30,.6)); }
-  }
-  .bm-counter { position: absolute; bottom: 8%; left: 50%; transform: translateX(-50%); z-index: 10; text-align: center; pointer-events: none; }
-  .bm-count-lbl { font-size: 9px; letter-spacing: 3px; color: rgba(255,180,80,.4); text-transform: uppercase; }
-  .bm-count-num { font-size: 26px; font-weight: 900; color: rgba(255,215,0,.75); display: block; text-shadow: 0 0 14px rgba(255,150,0,.5); margin-top: 3px; }
-  .bm-info { position: absolute; top: 4%; left: 50%; transform: translateX(-50%); font-size: 10px; letter-spacing: 2px; color: rgba(255,180,80,.4); z-index: 10; pointer-events: none; text-transform: uppercase; text-align: center; }
-  .bm-alert-info { display: block; font-size: 9px; color: rgba(150,220,150,.5); margin-top: 3px; letter-spacing: 1px; }
-  .bm-topright { position: absolute; top: 3%; right: 4%; display: flex; gap: 8px; z-index: 25; }
-  .bm-icon-btn {
-    background: rgba(255,80,20,.12); color: rgba(255,180,100,.75);
-    border: 1px solid rgba(255,120,40,.35); width: 42px; height: 42px; border-radius: 50%;
-    font-size: 16px; cursor: pointer; font-weight: bold; transition: all .2s;
-  }
-  .bm-icon-btn.settings { background: rgba(139,92,246,.15); color: rgba(200,180,255,.8); border-color: rgba(167,139,250,.4); }
-  .bm-icon-btn:active { transform: scale(.88); }
-  .bm-tap-ripple {
-    position: absolute; top: 50%; left: 50%; width: 100px; height: 100px; border-radius: 50%;
-    border: 2px solid rgba(255,204,0,.7); transform: translate(-50%,-50%) scale(.2);
-    pointer-events: none; z-index: 15; animation: bmTapRipple .5s ease-out forwards;
-  }
-  @keyframes bmTapRipple { to { transform: translate(-50%,-50%) scale(3); opacity: 0; border-width: .5px; } }
-  .black-mode-overlay.paused .bm-om { animation: bmOmHorizontalSpinSlow 20s linear infinite, bmPausedBlink 1.4s ease-in-out infinite; }
-  @keyframes bmOmHorizontalSpinSlow { 0%{transform:rotateY(0)} 100%{transform:rotateY(360deg)} }
-  @keyframes bmPausedBlink { 0%,100%{opacity:.3;color:#ff8844} 50%{opacity:.65;color:#ffaa66} }
-  .bm-paused-indicator {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, calc(-50% + 20vmin));
-    font-size: 14px; color: rgba(255,150,100,.7); letter-spacing: 4px; text-transform: uppercase;
-    z-index: 11; display: none; pointer-events: none; animation: bmPausedBlink 1.4s ease-in-out infinite;
-  }
-  .black-mode-overlay.paused .bm-paused-indicator { display: block; }
-
-  /* ═══ BM SESSION SETTINGS ═══ */
-  .bm-settings-modal {
-    position: fixed; inset: 0; z-index: 2100; background: rgba(0,0,0,.88);
-    display: none; align-items: center; justify-content: center; padding: 15px;
-  }
-  .bm-settings-modal.show { display: flex; }
-  .bm-settings-box {
-    background: linear-gradient(135deg, rgba(45,10,5,.98), rgba(20,0,0,.98));
-    border: 2px solid #ffcc00; border-radius: 16px; width: 100%; max-width: 340px;
-    max-height: 92vh; display: flex; flex-direction: column;
-    box-shadow: 0 10px 50px rgba(255,80,0,.5); animation: popIn .25s ease;
-  }
-  .bm-settings-header {
-    display: flex; justify-content: space-between; align-items: center; padding: 12px 15px;
-    background: linear-gradient(90deg, rgba(139,92,246,.35), rgba(255,140,0,.15));
-    border-bottom: 1px solid rgba(255,140,0,.4); border-radius: 14px 14px 0 0;
-  }
-  .bm-settings-header h2 { font-size: 15px; background: linear-gradient(90deg,#ffcc00,#ff9933);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-  .bm-settings-body { padding: 15px; overflow-y: auto; }
-  .bm-override-notice {
-    background: rgba(139,92,246,.15); border: 1px dashed #a78bfa; padding: 8px 10px;
-    border-radius: 6px; font-size: 11px; color: #c4b5fd; text-align: center; margin-bottom: 10px; line-height: 1.4;
-  }
-  .bm-check-row {
-    display: flex; justify-content: space-between; align-items: center; padding: 8px 10px;
-    background: rgba(0,0,0,.4); border-radius: 8px; margin: 8px 0; border: 1px solid rgba(255,140,0,.25);
-  }
-  .bm-check-row .txt { color: #fff; font-size: 12px; font-weight: bold; text-align: left; }
-  .bm-check-row .txt small { display: block; font-size: 9px; color: #aaa; font-weight: normal; margin-top: 2px; }
-  .bm-disabled { opacity: .38; pointer-events: none; }
-  .bm-settings-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .bm-settings-btns button { padding: 11px; border: none; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; color: #fff; }
-  .bm-settings-btns .apply { background: linear-gradient(135deg,#10b981,#059669); border: 1px solid #6ee7b7; }
-  .bm-settings-btns .cancel { background: linear-gradient(135deg,#666,#333); }
-
-  /* ═══ BELL OVERLAY ═══ */
-  .bell-overlay {
-    position: fixed; inset: 0; z-index: 2300; background: rgba(0,0,0,.93);
-    display: none; align-items: center; justify-content: center; flex-direction: column; text-align: center;
-  }
-  .bell-overlay.show { display: flex; }
-  .bell-big { font-size: 74px; animation: bellSwing 1s ease-in-out infinite; }
-  @keyframes bellSwing { 0%,100%{transform:rotate(-14deg)} 50%{transform:rotate(14deg)} }
-  .bell-mala-txt { font-size: 15px; color: #ffcc00; font-weight: bold; margin-top: 10px; }
-  .bell-ring-txt { font-size: 12px; color: #ffcc80; margin-top: 4px; letter-spacing: 2px; }
-  .bell-dots { margin-top: 12px; display: flex; gap: 8px; justify-content: center; }
-  .bell-dot { font-size: 22px; opacity: .22; transition: all .3s; }
-  .bell-dot.active { opacity: 1; transform: scale(1.28); filter: drop-shadow(0 0 10px #ffcc00); }
-  .bell-progress { margin-top: 8px; font-size: 12px; color: #6ee7b7; font-weight: bold; }
-  .bell-relax { margin-top: 14px; font-size: 12px; color: #a78bfa; letter-spacing: 2px; display: none; animation: pulseSync 1.4s infinite; }
-
-  /* ═══ ALERT POPUP ═══ */
-  .alert-popup {
-    position: fixed; inset: 0; z-index: 2500; background: rgba(0,0,0,.93);
-    display: none; align-items: center; justify-content: center; padding: 14px;
-  }
-  .alert-popup.show { display: flex; }
-  .alert-content {
-    background: linear-gradient(135deg, rgba(45,10,5,.99), rgba(20,0,0,.99));
-    border: 2px solid #ffcc00; border-radius: 16px; padding: 20px; max-width: 340px; width: 100%;
-    box-shadow: 0 0 46px rgba(255,120,0,.6);
-  }
-  .alert-content .om { font-size: 44px; color: #ffcc00; animation: glow 1s infinite alternate; }
-  .alert-content h3 { font-size: 17px; color: #ffcc00; margin: 8px 0; }
-  .alert-content p { font-size: 13px; color: #fff; margin-bottom: 12px; }
-  .paused-info { background: rgba(220,38,38,.22); border: 1px dashed #ef4444; color: #fca5a5;
-    padding: 7px; border-radius: 6px; font-size: 11px; margin-bottom: 10px; }
-  .btn-row { display: flex; gap: 6px; margin-top: 6px; }
-  .new-input-box { margin: 10px 0; }
-  .new-input-box input { width: 100%; background: rgba(0,0,0,.6); color: #fff;
-    border: 1px solid #ffb347; border-radius: 6px; padding: 9px; font-size: 16px; }
-
-  /* ═══ ALERT ROWS ═══ */
-  .alert-row {
-    background: rgba(0,0,0,.5); border: 1px solid rgba(167,139,250,.3); border-radius: 8px;
-    padding: 8px; margin: 5px 0; display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center;
-  }
-  .alert-row.triggered { border-color: #10b981; background: rgba(16,185,129,.12); }
-  .alert-row .info { text-align: left; }
-  .alert-row .info b { font-size: 12px; color: #ffcc00; }
-  .alert-row .info small { display: block; font-size: 9px; color: #aaa; margin-top: 2px; }
-  .alert-row .btns { display: flex; gap: 4px; }
-  .alert-row .btns button { padding: 5px 7px; font-size: 10px; border: none; border-radius: 5px; cursor: pointer; color: #fff; font-weight: bold; }
-  .b-react { background: #059669; } .b-edit { background: #b45309; } .b-del { background: #991b1b; }
-  .alert-edit-inline { grid-column: 1/-1; margin-top: 6px; }
-  .alert-edit-inline input { width: 100%; background: rgba(0,0,0,.6); color: #fff; border: 1px solid #ffb347; border-radius: 5px; padding: 7px; font-size: 15px; }
-  .alert-edit-inline .btns { margin-top: 5px; }
-  .alert-edit-inline .save { background: #059669; } .alert-edit-inline .cancel { background: #444; }
-  .preset-chip {
-    display: inline-block; background: rgba(139,92,246,.25); border: 1px solid #a78bfa;
-    color: #ddd6fe; padding: 5px 9px; border-radius: 14px; font-size: 11px; margin: 3px; cursor: pointer;
-  }
-  .preset-chip .x { color: #fca5a5; margin-left: 5px; font-weight: bold; }
-
-  /* ═══ CONFLICT ═══ */
-  .conflict-modal .modal-box { border-color: #ef4444; box-shadow: 0 10px 50px rgba(239,68,68,.6); }
-  .conflict-hint { background: rgba(220,38,38,.2); border: 1px dashed #ef4444; color: #fca5a5;
-    padding: 9px; border-radius: 7px; font-size: 11px; line-height: 1.5; }
-  .conflict-cards { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; margin: 12px 0; }
-  .conflict-card { background: rgba(0,0,0,.55); border: 2px solid #555; border-radius: 10px; padding: 10px 6px; }
-  .conflict-card.recommended { border-color: #10b981; box-shadow: 0 0 16px rgba(16,185,129,.5); }
-  .cc-label { font-size: 10px; color: #c4b5fd; letter-spacing: 1px; }
-  .cc-perm { font-size: 22px; color: #ffcc00; font-weight: 900; }
-  .cc-trip { font-size: 15px; color: #6ee7b7; font-weight: bold; margin-top: 4px; }
-  .cc-sub { font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-  .cc-badge { display: inline-block; font-size: 8px; background: #10b981; color: #fff; padding: 2px 5px; border-radius: 4px; margin-top: 5px; font-weight: bold; }
-  .cc-badge.warn { background: #f59e0b; }
-  .conflict-vs { font-size: 12px; color: #ef4444; font-weight: 900; }
-  .conflict-meta { font-size: 9px; color: #888; margin-bottom: 10px; }
-  .conflict-actions button { width: 100%; padding: 11px; margin-top: 6px; border: none; border-radius: 8px;
-    font-size: 12px; font-weight: bold; cursor: pointer; color: #fff; }
-  .btn-pull { background: linear-gradient(135deg,#10b981,#047857); }
-  .btn-push { background: linear-gradient(135deg,#f59e0b,#b45309); }
-  .btn-cancel { background: linear-gradient(135deg,#666,#333); }
-
-  /* ═══ TOAST + STARTUP ═══ */
-  .toast {
-    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(120px);
-    background: linear-gradient(135deg,#10b981,#047857); color: #fff; padding: 11px 18px;
-    border-radius: 24px; font-size: 12px; font-weight: bold; z-index: 3000;
-    box-shadow: 0 4px 22px rgba(0,0,0,.6); transition: transform .3s; max-width: 90vw;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
-  .toast.error { background: linear-gradient(135deg,#dc2626,#7f1d1d); }
-  .toast.info { background: linear-gradient(135deg,#0ea5e9,#0369a1); }
-  .startup-overlay {
-    position: fixed; inset: 0; z-index: 1500; background: rgba(0,0,0,.94);
-    display: none; align-items: center; justify-content: center; flex-direction: column;
-  }
-  .startup-overlay.show { display: flex; }
-  .startup-overlay .om-big { font-size: 74px; color: #ffcc00; text-shadow: 0 0 30px #ff6600; animation: glow 1s infinite alternate; }
-  .startup-overlay .msg { color: #ffcc00; font-size: 15px; font-weight: bold; margin: 10px; }
-  .startup-overlay .sub-msg { color: #c4b5fd; font-size: 12px; }
-  .spinner { border: 3px solid rgba(255,204,0,.2); border-top: 3px solid #ffcc00; border-radius: 50%;
-    width: 38px; height: 38px; animation: spin 1s linear infinite; margin: 14px auto; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  #wakeVideo, #silentAudio, #omAudio, input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-
-  @media (hover: none) and (pointer: coarse) {
-    .om-stage::before { animation-duration: 7s; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .fire-layer, .om-ring { animation: none !important; }
-  }
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:rgba(16,185,129,.95);color:#fff;padding:9px 16px;border-radius:20px;
+  font-size:12px;font-weight:bold;z-index:900;opacity:0;transition:.3s;max-width:88%;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.err{background:rgba(220,38,38,.95)}
+.toast.inf{background:rgba(139,92,246,.95)}
 </style>
 </head>
 <body>
 
-<div class="bg-layer"></div>
-<div class="fire-layer"></div>
-<div class="embers" id="embers"></div>
+<div id="embers"></div>
+<audio id="silentAudio" loop playsinline></audio>
+<video id="wakeVideo" muted loop playsinline
+       style="position:fixed;width:1px;height:1px;opacity:.01;pointer-events:none"></video>
 
-<video id="wakeVideo" loop muted playsinline></video>
-<audio id="silentAudio" loop></audio>
-<audio id="omAudio" loop preload="auto"></audio>
-
-<input type="file" id="omFile"   accept="audio/*" onchange="handleSoundPick('om', event)">
-<input type="file" id="tickFile" accept="audio/*" onchange="handleSoundPick('tick', event)">
-<input type="file" id="bellFile" accept="audio/*" onchange="handleSoundPick('bell', event)">
-
-<!-- ═══════════ TOP BAR ═══════════ -->
-<div class="top-bar">
-  <div class="om-corner">🕉</div>
-  <h1>MANSIK JAP - ॐ MEDITATION</h1>
-  <div class="top-right-tools">
-    <div class="sync-mini" onclick="manualSync()" title="Tap to sync">
-      <span class="sync-dot offline" id="syncDot"></span>
-      <span class="sync-txt" id="syncStatus">offline</span>
-    </div>
-    <button class="icon-btn" onclick="openModal('settings')" title="Settings">⚙</button>
-  </div>
+<div class="bar">
+  <button class="back" onclick="goHome()" title="Main page">🔱</button>
+  <h1>🧘 मानसिक जप</h1>
+  <span class="sdot" id="sdot"></span>
 </div>
 
-<div class="panel">
-  <div class="timer-panel">
-    <div class="timer-block"><div class="lbl">Now</div><div class="val" id="nowTime">--:--:--</div></div>
-    <div class="timer-block"><div class="lbl">Started</div><div class="val" id="startTime">--:--</div></div>
-    <div class="timer-block" id="elapsedBlock">
-      <div class="lbl">Elapsed</div>
-      <div class="val"><span id="elapsed">00:00:00</span><span class="paused-tag" id="pauseTag" style="display:none;">PAUSED</span></div>
+<div class="wrap">
+  <div class="card">
+    <div class="rowc">
+      <div class="cell"><div class="lb">Permanent</div><div class="vl" id="permV">0</div></div>
+      <div class="cell"><div class="lb">Trip</div><div class="vl" id="tripV">0</div></div>
     </div>
   </div>
-</div>
 
-<!-- ═══════════ IDLE OM STAGE ═══════════ -->
-<div class="om-stage" id="omStage">
-  <div class="om-ring"></div>
-  <div class="om-ring r2"></div>
-  <div class="om-main">ॐ</div>
-  <div class="counts-wrap">
-    <div class="cnt-perm">Permanent<b id="permCount">0</b></div>
-    <div class="cnt-trip">
-      Trip: <b id="tripCount">0</b>
-      <button class="reset-btn" onclick="resetTrip()" title="Reset trip">↻</button>
-    </div>
-  </div>
-</div>
+  <div class="omstage paused" id="omStage"><div class="om">ॐ</div></div>
 
-<!-- ═══════════ BUTTONS ═══════════ -->
-<div class="button-area">
-  <div class="row">
-    <button class="big-start" id="startBtn" onclick="onStartClick()">▶ START MANSIK JAP</button>
-  </div>
-  <div class="row">
-    <button class="main alert-btn" onclick="openModal('alerts')">🔔 Timer Alerts</button>
-    <button class="main" onclick="openModal('settings')">⚙ Settings & Om</button>
-  </div>
-  <div class="row">
-    <button class="main gh" onclick="manualBackup()">💾 GitHub Backup</button>
-    <button class="main gh" onclick="manualRestore()">⬇ GitHub Restore</button>
-  </div>
-  <div class="row">
-    <a href="index.html" class="main secondary" style="text-decoration:none;text-align:center;line-height:1.5;">
-      ← Full App (Stats • Milestones • Calculator)
-    </a>
-  </div>
-  <div class="row"><div class="status" id="status">🙏 Har Har Mahadev - Mansik Jap Mode</div></div>
-</div>
-
-<!-- ═══════════ MANSIK PICKER ═══════════ -->
-<div class="modal mansik-picker" id="mansikPickerModal" data-name="mansikPicker">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>🧘 Mansik Jap Setup</h2>
-      <button class="close-btn" onclick="closeModal('mansikPicker')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>⏰ Alert Timer (optional)</label>
-        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
-          <select id="mansikAlertBase" onchange="updateMansikAlertPreview()">
-            <option value="0">🔇 Off</option>
-            <option value="5">5 min</option>
-            <option value="10" selected>10 min</option>
-            <option value="15">15 min</option>
-            <option value="20">20 min</option>
-            <option value="25">25 min</option>
-            <option value="30">30 min</option>
-            <option value="35">35 min</option>
-            <option value="40">40 min</option>
-            <option value="45">45 min</option>
-            <option value="50">50 min</option>
-            <option value="55">55 min</option>
-            <option value="60">60 min (1 hr)</option>
-          </select>
-          <span style="color:#ffcc00;font-weight:bold;font-size:16px;">×</span>
-          <select id="mansikAlertMult" onchange="updateMansikAlertPreview()">
-            <option value="1" selected>× 1</option><option value="2">× 2</option>
-            <option value="3">× 3</option><option value="4">× 4</option>
-            <option value="5">× 5</option><option value="6">× 6</option>
-            <option value="7">× 7</option><option value="8">× 8</option>
-            <option value="9">× 9</option><option value="10">× 10</option>
-            <option value="11">× 11</option><option value="12">× 12</option>
-          </select>
-        </div>
-        <div id="mansikAlertPreview" style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,.15);border:1px dashed #10b981;border-radius:8px;font-size:13px;color:#6ee7b7;font-weight:bold;text-align:center;">
-          ⏰ 10 × 1 = <b>10 min</b> → 00:10:00
-        </div>
-        <small>💡 35 min = <b>35 × 1</b> • 1 hr 10 min = <b>35 × 2</b> • 6 hr = <b>30 × 12</b></small>
+  <div class="card">
+    <div class="rowc">
+      <div class="cell dim" id="elCell">
+        <div class="lb">Elapsed <span class="ptag" id="pTag">PAUSED</span></div>
+        <div class="vl sm" id="elV">00:00:00</div>
       </div>
-
-      <div class="toggle-switch">
-        <label>💾 Save as preset</label>
-        <label class="switch"><input type="checkbox" id="mansikSavePreset"><span class="slider"></span></label>
-      </div>
-
-      <p style="font-size:11px;color:#ffcc80;text-align:center;margin:8px 0 4px;">
-        ⏱ Interval & vibration Black Mode me ⚙ se live change kar sakte ho
-      </p>
-      <p style="font-size:12px;color:#c4b5fd;text-align:center;margin:12px 0 8px;font-weight:bold;letter-spacing:1.5px;">
-        CHOOSE YOUR EXPERIENCE
-      </p>
-
-      <div class="mansik-choice-grid">
-        <div class="mansik-choice-card asis" onclick="startMansikChoice('asis')">
-          <div class="mc-icon">🌀</div>
-          <div class="mc-title">As-is</div>
-          <div class="mc-desc">Normal screen - ॐ visible with counters</div>
-        </div>
-        <div class="mansik-choice-card black" onclick="startMansikChoice('black')">
-          <div class="mc-icon">🕉</div>
-          <div class="mc-title">Black Mode</div>
-          <div class="mc-desc">Only ॐ rotating. Aankh band karke devotion.</div>
-        </div>
-      </div>
-      <p class="help-text" style="text-align:center;margin-top:10px;">
-        🔒 Screen wake-lock auto ON • Kahin bhi tap = pause/resume
-      </p>
+      <div class="cell"><div class="lb">Interval</div><div class="vl sm" id="ivV">2.5s</div></div>
     </div>
+  </div>
+
+  <div>
+    <button class="mainbtn" id="mainBtn" onclick="onMainBtn()">🧘 MANSIK JAP START</button>
+    <button class="mini" onclick="resetTrip()">↺ Reset Trip</button>
+    <div class="hint">🔱 dabao → main page pe wapas</div>
   </div>
 </div>
 
-<!-- ═══════════ BLACK MODE OVERLAY ═══════════ -->
-<div class="black-mode-overlay" id="blackModeOverlay">
-  <div class="bm-topright">
-    <button class="bm-icon-btn settings" onclick="openBmSettings(event)" title="Session Settings">⚙</button>
-    <button class="bm-icon-btn exit" onclick="exitBlackMode(event)" title="Exit">✕</button>
-  </div>
-  <div class="bm-info" id="bmInfo">
-    <span id="bmIntervalTxt">Every 2.0s</span>
-    <span class="bm-alert-info" id="bmAlertInfo" style="display:none;"></span>
-  </div>
-  <div class="bm-om-wrap"><span class="bm-om">ॐ</span></div>
-  <div class="bm-paused-indicator">⏸ Paused</div>
-  <div class="bm-counter">
-    <span class="bm-count-lbl">Trip</span>
-    <span class="bm-count-num" id="bmCountNum">0</span>
-  </div>
-  <div id="bmEffects" style="position:absolute;inset:0;pointer-events:none;z-index:14;"></div>
-</div>
+<!-- ═══════════ PICKER ═══════════ -->
+<div class="picker" id="picker">
+  <div class="box">
+    <div class="om">🕉</div>
+    <h2>मानसिक जप</h2>
 
-<!-- ═══════════ BM SESSION SETTINGS ═══════════ -->
-<div class="bm-settings-modal" id="bmSettingsModal">
-  <div class="bm-settings-box">
-    <div class="bm-settings-header">
-      <h2>⚙ Session Settings</h2>
-      <button class="close-btn" onclick="closeBmSettings()">✕</button>
+    <div class="fg">
+      <label>⏱ Jap Interval (per jap)</label>
+      <select id="pkIv" onchange="pkPreview()">
+        <option value="1.5">⚡ 1.5s — Fast</option>
+        <option value="2.0">🔥 2.0s — Quick</option>
+        <option value="2.5" selected>⭐ 2.5s — Default</option>
+        <option value="3.0">3.0s</option>
+        <option value="3.5">3.5s</option>
+        <option value="4.0">🧘 4.0s — Slow</option>
+        <option value="5.0">5.0s</option>
+        <option value="6.0">🌙 6.0s — Deep</option>
+      </select>
     </div>
-    <div class="bm-settings-body">
-      <div class="bm-override-notice">
-        ℹ Ye sirf <b>current session</b> ke liye override karega.
-      </div>
 
-      <div class="form-group">
-        <label>⏱ Jap Interval (seconds)</label>
-        <select id="bmSessionInterval">
-          <option value="1.0">⚡ 1.0s - Ultra Fast</option>
-          <option value="1.2">⚡ 1.2s</option>
-          <option value="1.4">⚡ 1.4s - Very Fast</option>
-          <option value="1.5">⚡ 1.5s - Fast</option>
-          <option value="1.6">1.6s</option>
-          <option value="1.8">1.8s</option>
-          <option value="2.0" selected>2.0s - Normal</option>
-          <option value="2.2">2.2s</option>
-          <option value="2.5">2.5s</option>
-          <option value="2.8">2.8s</option>
-          <option value="3.0">3.0s - Slow</option>
-          <option value="3.5">🕉 3.5s - Deep Meditation</option>
-          <option value="4.0">🕉 4.0s</option>
-          <option value="5.0">🕉 5.0s - Very Deep</option>
+    <div class="fg">
+      <label>🔔 Alert Timer (0 = koi alert nahi)</label>
+      <div class="pair">
+        <select id="pkBase" onchange="pkPreview()">
+          <option value="0">🔇 No alert</option>
+          <option value="5">5 min</option><option value="10" selected>10 min</option>
+          <option value="15">15 min</option><option value="20">20 min</option>
+          <option value="25">25 min</option><option value="30">30 min</option>
+          <option value="35">35 min</option><option value="40">40 min</option>
+          <option value="45">45 min</option><option value="50">50 min</option>
+          <option value="55">55 min</option><option value="60">60 min</option>
         </select>
-        <small>Har jap ke beech ka gap</small>
-      </div>
-
-      <div class="bm-check-row">
-        <label class="txt">🎧 Headphone Tick Sound
-          <small>ON = vibration OFF, tick awaaz chalegi</small>
-        </label>
-        <label class="switch"><input type="checkbox" id="bmTickEnabled" onchange="toggleTickSoundMode()"><span class="slider"></span></label>
-      </div>
-
-      <div class="form-group" id="bmVibWrap">
-        <label>📳 Vibration Strength (per jap)</label>
-        <select id="bmSessionVibration">
-          <option value="0">🔇 Off - no vibration</option>
-          <option value="30" selected>📳 Feather - 30ms</option>
-          <option value="80">📳 Light - 80ms</option>
-          <option value="200">📳📳 Medium - 200ms</option>
-          <option value="400">📳📳📳 Strong - 400ms</option>
-          <option value="100,50,100">📳 Double tap</option>
+        <span class="x">×</span>
+        <select id="pkMult" onchange="pkPreview()">
+          <option value="1" selected>× 1</option><option value="2">× 2</option>
+          <option value="3">× 3</option><option value="4">× 4</option>
+          <option value="5">× 5</option><option value="6">× 6</option>
+          <option value="7">× 7</option><option value="8">× 8</option>
+          <option value="9">× 9</option><option value="10">× 10</option>
+          <option value="11">× 11</option><option value="12">× 12</option>
         </select>
       </div>
+      <div class="pv" id="pkPv">⏰ 10 × 1 = <b>10 min</b></div>
+      <div class="tip">35 min = <b>35×1</b> • 1hr 10min = <b>35×2</b> • 6hr = <b>30×12</b></div>
+    </div>
 
-      <div class="form-group" id="bmTickVolWrap">
-        <label>🔊 Tick Volume</label>
-        <select id="bmTickVolume">
-          <option value="0.2">🔈 20%</option><option value="0.4">🔈 40%</option>
-          <option value="0.7" selected>🔉 70%</option><option value="1">🔊 100%</option>
-        </select>
-      </div>
-
-      <div class="bm-check-row">
-        <label class="txt">🔔 Mala Bell (every 108)
-          <small>Odd malas pe ghanti + relax break</small>
-        </label>
-        <label class="switch"><input type="checkbox" id="bmBellEnabled"><span class="slider"></span></label>
-      </div>
-
-      <div class="form-group">
-        <label>🔊 Bell Volume</label>
-        <select id="bmBellVolume">
-          <option value="0.3">🔈 30%</option><option value="0.6">🔉 60%</option>
-          <option value="0.9" selected>🔊 90%</option><option value="1">🔊 100%</option>
-        </select>
-      </div>
-
-      <div class="bm-settings-btns">
-        <button class="apply" onclick="applyBmSettings()">✓ Apply</button>
-        <button class="cancel" onclick="closeBmSettings()">✕ Cancel</button>
-      </div>
+    <div class="pbtns">
+      <button class="blk" onclick="startMansik('black')">🖤 BLACK SCREEN START</button>
+      <button class="nrm" onclick="startMansik('normal')">🧘 NORMAL START</button>
+      <button class="cnl" onclick="closePicker()">✕ Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════ ALERTS MODAL ═══════════ -->
-<div class="modal" id="alertsModal" data-name="alerts">
-  <div class="modal-box">
-    <div class="modal-header"><h2>🔔 Timer Alerts</h2><button class="close-btn" onclick="closeModal('alerts')">✕</button></div>
-    <div class="modal-body">
-      <div class="panel" style="margin-top:0;">
-        <p style="font-size:12px;color:#c4b5fd;margin-bottom:8px;">⭐ Quick Presets</p>
-        <div id="presetChips"></div>
-      </div>
-      <div class="panel">
-        <div class="form-group">
-          <label>⏰ Alert Timer</label>
-          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;">
-            <select id="alertTimeBase" onchange="updateAlertTimePreview()">
-              <option value="5">5 min</option><option value="10" selected>10 min</option>
-              <option value="15">15 min</option><option value="20">20 min</option>
-              <option value="25">25 min</option><option value="30">30 min</option>
-              <option value="35">35 min</option><option value="40">40 min</option>
-              <option value="45">45 min</option><option value="50">50 min</option>
-              <option value="55">55 min</option><option value="60">60 min (1 hr)</option>
-            </select>
-            <span style="color:#ffcc00;font-weight:bold;font-size:16px;">×</span>
-            <select id="alertTimeMult" onchange="updateAlertTimePreview()">
-              <option value="1" selected>× 1</option><option value="2">× 2</option>
-              <option value="3">× 3</option><option value="4">× 4</option>
-              <option value="5">× 5</option><option value="6">× 6</option>
-              <option value="7">× 7</option><option value="8">× 8</option>
-              <option value="9">× 9</option><option value="10">× 10</option>
-              <option value="11">× 11</option><option value="12">× 12</option>
-            </select>
-          </div>
-          <div id="alertTimePreview" style="margin-top:8px;padding:8px 10px;background:rgba(16,185,129,.15);border:1px dashed #10b981;border-radius:8px;font-size:13px;color:#6ee7b7;font-weight:bold;text-align:center;">
-            ⏰ 10 × 1 = <b>10 min</b> → 00:10:00
-          </div>
-        </div>
-        <div class="toggle-switch">
-          <label>💾 Save as preset</label>
-          <label class="switch"><input type="checkbox" id="saveAsPreset"><span class="slider"></span></label>
-        </div>
-        <button class="main alert-btn" onclick="addAlert()" style="width:100%;margin-top:8px;">➕ Add Alert</button>
-      </div>
-      <div class="panel">
-        <p style="font-size:12px;color:#c4b5fd;margin-bottom:8px;">🔔 Active Alerts</p>
-        <div id="alertsList"></div>
-      </div>
-    </div>
+<!-- ═══════════ BLACK MODE ═══════════ -->
+<div class="bm" id="bm">
+  <button class="bmexit" onclick="exitBlack(event)">✕</button>
+  <div class="bminfo">
+    <span id="bmIv">Every 2.5s</span>
+    <span class="al" id="bmAl" style="display:none"></span>
+    <span class="bmel" id="bmEl">00:00:00</span>
   </div>
-</div>
-
-<!-- ═══════════ SETTINGS MODAL ═══════════ -->
-<div class="modal" id="settingsModal" data-name="settings">
-  <div class="modal-box">
-    <div class="modal-header"><h2>⚙ Settings</h2><button class="close-btn" onclick="closeModal('settings')">✕</button></div>
-    <div class="modal-body">
-
-      <div class="panel" style="margin-top:0;">
-        <p style="font-size:12px;color:#c4b5fd;margin-bottom:8px;">🔔 Meditation Sounds</p>
-
-        <div class="sound-panel-row" style="border-color:rgba(167,139,250,.55);background:rgba(30,10,45,.5);">
-          <div class="sp-label">🕉 Om Background (idle/pause)<small id="omInfo">Loading...</small></div>
-          <button class="sp-load" onclick="pickSound('om')" title="Upload">📂</button>
-          <button class="sp-test" onclick="testSound('om')" title="Play / Stop">▶</button>
-          <button class="sp-gh"   onclick="restoreOmFromGitHub()" title="GitHub restore">☁</button>
-          <button class="sp-del"  onclick="clearSound('om')" title="Delete">🗑</button>
-        </div>
-
-        <div class="toggle-switch" style="background:rgba(139,92,246,.14);border:1px solid rgba(167,139,250,.45);">
-          <label>🕉 Play Om when idle / paused
-            <small style="display:block;font-size:9px;color:#aaa;font-weight:normal;margin-top:2px;">Jap band ho to Om loop chalega, START pe auto-stop</small>
-          </label>
-          <label class="switch"><input type="checkbox" id="omBgToggle" onchange="saveOmBgPref()"><span class="slider"></span></label>
-        </div>
-
-        <div class="form-group">
-          <label>🔊 Om Volume</label>
-          <select id="omVolumeSel" onchange="saveOmVolumePref()">
-            <option value="0.15">🔈 Very Low - 15%</option>
-            <option value="0.3">🔈 Low - 30%</option>
-            <option value="0.5" selected>🔉 Medium - 50%</option>
-            <option value="0.7">🔊 High - 70%</option>
-            <option value="1">🔊 Max - 100%</option>
-          </select>
-          <small>Live change hota hai</small>
-        </div>
-
-        <div class="sound-panel-row">
-          <div class="sp-label">🎧 Tick Sound<small id="tickInfo">Loading...</small></div>
-          <button class="sp-load" onclick="pickSound('tick')" title="Upload">📂</button>
-          <button class="sp-test" onclick="testSound('tick')" title="Test">▶</button>
-          <button class="sp-gh"   onclick="ghDownloadSound('tick')" title="GitHub restore">☁</button>
-          <button class="sp-del"  onclick="clearSound('tick')" title="Delete">🗑</button>
-        </div>
-
-        <div class="sound-panel-row">
-          <div class="sp-label">🔔 Mandir Ghanti (Bell)<small id="bellInfo">Loading...</small></div>
-          <button class="sp-load" onclick="pickSound('bell')" title="Upload">📂</button>
-          <button class="sp-test" onclick="testSound('bell')" title="Test">▶</button>
-          <button class="sp-gh"   onclick="ghDownloadSound('bell')" title="GitHub restore">☁</button>
-          <button class="sp-del"  onclick="clearSound('bell')" title="Delete">🗑</button>
-        </div>
-
-        <div class="bell-rule-box">
-          <b>🔔 Ghanti Rule (per 108 mala):</b><br>
-          108×1 → <b>1 ring</b> • 108×3 → <b>2 rings</b> • 108×5 → <b>3 rings</b><br>
-          108×7 → <b>4 rings</b> • 108×9 → <b>5 rings</b> • 108×11 → <b>1 ring</b> (repeat)<br>
-          ⏸ Bell ke time jap <b>auto-pause</b> → relax → auto-resume.
-        </div>
-        <p class="help-text">☁ Upload karte hi GitHub pe auto-backup. Om file index.html se bhi shared hai.</p>
-      </div>
-
-      <div class="panel">
-        <p style="font-size:12px;color:#c4b5fd;margin-bottom:8px;">📳 Preferences</p>
-        <div class="toggle-switch">
-          <label>Vibration on each jap</label>
-          <label class="switch"><input type="checkbox" id="vibrationToggle" onchange="saveVibrationPref()"><span class="slider"></span></label>
-        </div>
-        <div class="toggle-switch">
-          <label>Background audio keep-alive</label>
-          <label class="switch"><input type="checkbox" id="bgAudioToggle" onchange="saveBgAudioPref()"><span class="slider"></span></label>
-        </div>
-        <div class="toggle-switch">
-          <label>🎧 Headphone tick (instead of vibration)</label>
-          <label class="switch"><input type="checkbox" id="tickSoundToggle" onchange="saveTickSoundPref()"><span class="slider"></span></label>
-        </div>
-        <div class="toggle-switch">
-          <label>🔔 Mala bell every 108</label>
-          <label class="switch"><input type="checkbox" id="bellToggle" onchange="saveBellPref()"><span class="slider"></span></label>
-        </div>
-        <div class="form-group" style="margin-top:8px;">
-          <label>⏱ Jap Interval (sec) - permanent</label>
-          <input type="number" id="prefInterval" step="0.1" min="0.3" max="60">
-          <small>Ye <code>advSettings</code> me save hoga - index.html pe bhi apply hoga</small>
-        </div>
-        <button class="main" onclick="savePrefInterval()" style="width:100%;">💾 Save Interval</button>
-      </div>
-
-      <div class="panel">
-        <p style="font-size:12px;color:#c4b5fd;margin-bottom:8px;">☁ GitHub Sync</p>
-        <div class="form-group"><label>Owner (username)</label><input type="text" id="ghOwner" placeholder="your-github-username"></div>
-        <div class="form-group"><label>Repository</label><input type="text" id="ghRepo" placeholder="jap-data"></div>
-        <div class="form-group"><label>Personal Access Token</label><input type="password" id="ghToken" placeholder="ghp_..."><small>Needs <b>Contents: read/write</b></small></div>
-        <div class="toggle-switch"><label>☁ Backup sounds to GitHub too</label><label class="switch"><input type="checkbox" id="ghBackupAudio"><span class="slider"></span></label></div>
-        <button class="main gh" onclick="saveGhSettings()" style="width:100%;margin-top:8px;">💾 Save Settings</button>
-        <p class="help-text">Same settings index.html ke saath shared hain.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════ CONFLICT MODAL ═══════════ -->
-<div class="modal conflict-modal" id="conflictModal" data-name="conflict">
-  <div class="modal-box">
-    <div class="modal-header"><h2>⚠ Data Conflict Detected!</h2></div>
-    <div class="modal-body">
-      <div class="conflict-hint" id="conflictHint">Conflict details...</div>
-      <div class="conflict-cards">
-        <div class="conflict-card local" id="conflictCardLocal">
-          <div class="cc-label">📱 This Device</div>
-          <div class="cc-perm" id="conflictLocalPerm">0</div><div class="cc-sub">Permanent</div>
-          <div class="cc-trip" id="conflictLocalTrip">0</div><div class="cc-sub">Trip</div>
-          <span class="cc-badge" id="conflictLocalBadge" style="display:none;"></span>
-        </div>
-        <div class="conflict-vs">VS</div>
-        <div class="conflict-card remote" id="conflictCardRemote">
-          <div class="cc-label">☁ GitHub</div>
-          <div class="cc-perm" id="conflictRemotePerm">0</div><div class="cc-sub">Permanent</div>
-          <div class="cc-trip" id="conflictRemoteTrip">0</div><div class="cc-sub">Trip</div>
-          <span class="cc-badge" id="conflictRemoteBadge" style="display:none;">RECOMMENDED</span>
-        </div>
-      </div>
-      <div class="conflict-meta" id="conflictMeta"></div>
-      <div class="conflict-actions">
-        <button class="btn-pull" onclick="resolveConflict('pull')">⬇ Use GitHub Version (Safe)</button>
-        <button class="btn-push" onclick="resolveConflict('push')">⬆ Overwrite GitHub with Local</button>
-        <button class="btn-cancel" onclick="resolveConflict('cancel')">✕ Cancel (Block Sync)</button>
-      </div>
-    </div>
-  </div>
+  <div class="bmom">ॐ</div>
+  <div class="bmpz">⏸ Paused • Tap to resume</div>
+  <div class="bmfx" id="bmFx"></div>
+  <div class="bmcnt"><span class="l">Trip</span><span class="n" id="bmN">0</span></div>
 </div>
 
 <!-- ═══════════ ALERT POPUP ═══════════ -->
-<div class="alert-popup" id="alertPopup">
-  <div class="alert-content">
-    <div class="om">🕉</div>
-    <h3 id="alertTitle">⏰ Time Alert!</h3>
-    <p id="alertMsg">Har Har Mahadev!</p>
-    <div class="paused-info" id="alertPausedInfo" style="display:none;">⏸ Chanting paused - pick an action</div>
-    <div id="alertMainBtns">
-      <button class="main" onclick="alertContinue()" style="width:100%;">▶ Continue Same</button>
-      <div class="btn-row">
-        <button class="main alert-btn" onclick="alertShowNewInput()">🆕 New Timer</button>
-        <button class="main secondary" onclick="alertDismissOnly()">✕ Dismiss</button>
-      </div>
-    </div>
-    <div id="alertNewBtns" style="display:none;">
-      <div class="new-input-box" id="newInputBox">
-        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:5px;align-items:center;">
-          <select id="newAlertBase" onchange="updateNewAlertPreview()" style="width:100%;padding:8px;font-size:14px;background:rgba(0,0,0,.6);color:#fff;border:1px solid #ffcc00;border-radius:6px;">
-            <option value="5">5 min</option><option value="10" selected>10 min</option>
-            <option value="15">15 min</option><option value="20">20 min</option>
-            <option value="25">25 min</option><option value="30">30 min</option>
-            <option value="35">35 min</option><option value="40">40 min</option>
-            <option value="45">45 min</option><option value="50">50 min</option>
-            <option value="55">55 min</option><option value="60">60 min</option>
-          </select>
-          <span style="color:#ffcc00;font-weight:bold;">×</span>
-          <select id="newAlertMult" onchange="updateNewAlertPreview()" style="width:100%;padding:8px;font-size:14px;background:rgba(0,0,0,.6);color:#fff;border:1px solid #ffcc00;border-radius:6px;">
-            <option value="1" selected>× 1</option><option value="2">× 2</option>
-            <option value="3">× 3</option><option value="4">× 4</option>
-            <option value="5">× 5</option><option value="6">× 6</option>
-            <option value="7">× 7</option><option value="8">× 8</option>
-            <option value="9">× 9</option><option value="10">× 10</option>
-            <option value="11">× 11</option><option value="12">× 12</option>
-          </select>
-        </div>
-        <div id="newAlertPreview" style="margin-top:6px;font-size:11px;color:#6ee7b7;font-weight:bold;">⏰ 10 × 1 = <b>10 min</b> → 00:10:00</div>
-      </div>
-      <div class="btn-row">
-        <button class="main" onclick="alertApplyNew()">✓ Apply</button>
-        <button class="main secondary" onclick="alertCancelNew()">← Back</button>
-      </div>
+<div class="ap" id="ap">
+  <div class="b">
+    <div class="o">🕉</div>
+    <h3 id="apT">⏰ Time Alert!</h3>
+    <p id="apM">Har Har Mahadev!</p>
+    <div class="pi" id="apP" style="display:none">⏸ Jap paused — koi option chuno</div>
+    <button onclick="apContinue()">▶ Continue Same</button>
+    <div class="r2">
+      <button class="g" onclick="apAdd10()">🆕 +10 min</button>
+      <button class="d" onclick="apDismiss()">✕ Dismiss</button>
     </div>
   </div>
 </div>
 
 <!-- ═══════════ BELL OVERLAY ═══════════ -->
-<div class="bell-overlay" id="bellOverlay">
-  <div class="bell-big">🔔</div>
-  <div class="bell-mala-txt" id="bellMalaTxt"></div>
-  <div class="bell-ring-txt" id="bellRingTxt"></div>
-  <div class="bell-dots" id="bellDots"></div>
-  <div class="bell-progress" id="bellProgress"></div>
-  <div class="bell-relax" id="bellRelaxTxt">🧘 Relax… auto-resume ho raha hai</div>
+<div class="bo" id="bo">
+  <div class="bl">🔔</div>
+  <div class="m" id="boM"></div>
+  <div class="rt" id="boR"></div>
+  <div class="dots" id="boD"></div>
+  <div class="pg" id="boP"></div>
+  <div class="rx" id="boX">🧘 Relax… auto-resume ho raha hai</div>
 </div>
 
-<!-- ═══════════ STARTUP + TOAST ═══════════ -->
-<div class="startup-overlay" id="startupOverlay">
-  <div class="om-big">🕉</div>
-  <div class="msg" id="startupMsg">Loading...</div>
-  <div class="sub-msg" id="startupSubMsg"></div>
-  <div class="spinner"></div>
-</div>
 <div class="toast" id="toast"></div>
-
 
 <script>
 /* ═══════════════════════════════════════════════════════════════
-   🕉 MANSIK JAP - v1.5 HARDENED (mansik.html)
-   Shares localStorage + IndexedDB('japDB') + GitHub jap_data.json
-   with index.html. SAME ORIGIN = SAME DATA.
+   🧘 MANSIK JAP — v2.0 MINIMAL  (mansik.html)
    ─────────────────────────────────────────────────────────────
-   v1.5 FIXES:
-   #2  har resume pe muft tickJap() → free japs
-   #3  playMalaBell() resume → orphan timer
-   #4  visibilitychange unguarded timer
-   #5  getJapInterval()=0 → runaway counting (250 japs/sec)
-   #6  savePrefInterval() galat guard
-   #7  applyBmSettings() bell guard
-   #8  black mode tap-spam → free japs
-   #9  beep 30s safety kill + single-fire alert
-   #10 tickJap() running guard
-   #14 bm settings Cancel → stuck paused
-   #16 audio node leak
-   + alertContinue/alertApplyNew free jap
-   + storage event settings sanitise
-   ─────────────────────────────────────────────────────────────
-   4-LAYER TIMER DEFENCE:
-   L1 tickJap guard → L2 runToken → L3 setJapTimer() → L4 watchdog
+   FALSAFA: ye page SIRF mansik jap karta hai. Bas.
+     ❌ Om background engine        ❌ Sound upload UI
+     ❌ GitHub settings modal       ❌ Conflict modal
+     ❌ Preset manager              ❌ Startup sync overlay
+     ❌ Session-settings modal      ❌ Stats / milestones UI
+   Ye sab index.html ka kaam hai. Yahan sirf: picker → jap.
+
+   DATA: localStorage + IndexedDB('japDB') index.html ke saath SHARED
+   hai (same origin). GitHub creds index.html me set hote hain — yahan
+   sirf chupchap padhe jaate hain aur silent backup hota hai.
+
+   ENGINE (index.html v20.6.1 ke barabar):
+     • Shared persisted clock (CK_*) → alerts cross-page sahi
+     • Wall-clock jap counting → screen-off pe bhi exact
+     • Audio-clock tick scheduler → throttle-proof rhythm
+     • runToken + watchdog + armed-guard → zero zombie/phantom japs
    ═══════════════════════════════════════════════════════════════ */
 
-const $ = (id) => document.getElementById(id);
-const isOpen = (name) => { const m = $(name + 'Modal'); return !!(m && m.classList.contains('open')); };
+const $ = id => document.getElementById(id);
 
-/* ============ SETTINGS (shared key: advSettings) ============ */
+/* ============ SETTINGS (shared key: advSettings, read-only) ============ */
 const DEFAULT_SETTINGS = {
-  audioDuration: 5.4, japsPerAudio: 4, tapCooldown: 150,
-  backupEvery: 20, backupDebounce: 3000, chantHours: 4, vibrationMs: 30
+  audioDuration:5.4, japsPerAudio:4, tapCooldown:150,
+  backupEvery:20, backupDebounce:3000, chantHours:4, vibrationMs:30
 };
-
-/* ═══ v1.5 FIX #5: SETTINGS SANITISER — runaway counting bomb defused ═══
-   Bug tha: audioDuration=0 ya japsPerAudio=0 → getJapInterval()=0
-   → setInterval(fn,0) ≈ 250 japs/sec → count explode.
-   Teeno raste sanitise: boot, GitHub pull, cross-page storage event. */
 function sanitizeSettings(raw){
-  const s = { ...DEFAULT_SETTINGS, ...(raw || {}) };
-  let d = parseFloat(s.audioDuration);
-  let j = parseInt(s.japsPerAudio);
+  const s = { ...DEFAULT_SETTINGS, ...(raw||{}) };
+  let d = parseFloat(s.audioDuration), j = parseInt(s.japsPerAudio);
   if(!isFinite(d) || d <= 0) d = DEFAULT_SETTINGS.audioDuration;
   if(!isFinite(j) || j < 1)  j = DEFAULT_SETTINGS.japsPerAudio;
-  const ms = (d / j) * 1000;
-  if(!isFinite(ms) || ms < 250 || ms > 600000){        // 0.25s – 10min
-    console.warn('[sanitize] bad interval reset →', ms);
-    d = DEFAULT_SETTINGS.audioDuration;
-    j = DEFAULT_SETTINGS.japsPerAudio;
+  const ms = (d/j)*1000;
+  if(!isFinite(ms) || ms < 250 || ms > 600000){
+    d = DEFAULT_SETTINGS.audioDuration; j = DEFAULT_SETTINGS.japsPerAudio;
   }
-  s.audioDuration  = d;
-  s.japsPerAudio   = j;
+  s.audioDuration = d; s.japsPerAudio = j;
   s.tapCooldown    = Math.max(50,  parseInt(s.tapCooldown)    || DEFAULT_SETTINGS.tapCooldown);
   s.backupEvery    = Math.max(1,   parseInt(s.backupEvery)    || DEFAULT_SETTINGS.backupEvery);
   s.backupDebounce = Math.max(500, parseInt(s.backupDebounce) || DEFAULT_SETTINGS.backupDebounce);
@@ -1017,109 +356,155 @@ function sanitizeSettings(raw){
   if(s.vibrationMs === undefined || s.vibrationMs === null) s.vibrationMs = DEFAULT_SETTINGS.vibrationMs;
   return s;
 }
-let SETTINGS = sanitizeSettings(JSON.parse(localStorage.getItem('advSettings') || '{}'));
-
+let SETTINGS = sanitizeSettings(JSON.parse(localStorage.getItem('advSettings')||'{}'));
 function getJapInterval(){
   const ms = (SETTINGS.audioDuration / SETTINGS.japsPerAudio) * 1000;
-  if(!isFinite(ms) || ms < 250){
-    console.error('[getJapInterval] unsafe value → hard reset');
-    SETTINGS.audioDuration = DEFAULT_SETTINGS.audioDuration;
-    SETTINGS.japsPerAudio  = DEFAULT_SETTINGS.japsPerAudio;
-    return (DEFAULT_SETTINGS.audioDuration / DEFAULT_SETTINGS.japsPerAudio) * 1000;
-  }
+  if(!isFinite(ms) || ms < 250) return (DEFAULT_SETTINGS.audioDuration/DEFAULT_SETTINGS.japsPerAudio)*1000;
   return ms;
 }
+/* Interval yahan SESSION-ONLY override hota hai — exit pe restore.
+   advSettings ko chheda nahi jaata, isliye index.html ka audio mode safe. */
+let ivOrigDur = null, ivOrigJPA = null;
+function applySessionInterval(sec){
+  if(ivOrigDur === null){ ivOrigDur = SETTINGS.audioDuration; ivOrigJPA = SETTINGS.japsPerAudio; }
+  SETTINGS.audioDuration = sec; SETTINGS.japsPerAudio = 1;
+  SETTINGS = sanitizeSettings(SETTINGS);
+}
+function restoreSessionInterval(){
+  if(ivOrigDur !== null){ SETTINGS.audioDuration = ivOrigDur; SETTINGS.japsPerAudio = ivOrigJPA; }
+  ivOrigDur = ivOrigJPA = null;
+  SETTINGS = sanitizeSettings(SETTINGS);
+}
 
-const chantMode = 'mansik';   // this page is mansik-only
 const DEVICE_ID = (function(){
   let id = localStorage.getItem('deviceId');
-  if(!id){ id = 'dev_' + Math.random().toString(36).slice(2,10); localStorage.setItem('deviceId', id); }
+  if(!id){ id = 'dev_'+Math.random().toString(36).slice(2,10); localStorage.setItem('deviceId',id); }
   return id;
 })();
 
 /* ============ EMBERS ============ */
 (function(){
   const box = $('embers');
-  for(let i=0;i<20;i++){
-    const e = document.createElement('div'); e.className = 'ember';
+  for(let i=0;i<18;i++){
+    const e = document.createElement('div'); e.className='ember';
     e.style.left = Math.random()*100+'%';
     e.style.animationDuration = (5+Math.random()*8)+'s';
     e.style.animationDelay = (Math.random()*8)+'s';
-    e.style.setProperty('--drift', (Math.random()*80-40)+'px');
+    e.style.setProperty('--drift',(Math.random()*80-40)+'px');
     e.style.width = e.style.height = (2+Math.random()*4)+'px';
     box.appendChild(e);
   }
 })();
 
-/* ============ STATE (all shared keys) ============ */
-let perm = parseInt(localStorage.getItem('permCount') || '0');
-let trip = parseInt(localStorage.getItem('tripCount') || '0');
-let milestoneDates = JSON.parse(localStorage.getItem('milestoneDates') || '{}');
-let alerts  = JSON.parse(localStorage.getItem('alerts')  || '[]');
-let presets = JSON.parse(localStorage.getItem('presets') || '[]');
-let dailyStats = JSON.parse(localStorage.getItem('dailyStats') || '{}');
-let lastSyncTs = parseInt(localStorage.getItem('lastSyncTs') || '0');
-let localVersion = parseInt(localStorage.getItem('localVersion') || '0');
-let lastBackedUpVersion = parseInt(localStorage.getItem('lastBackedUpVersion') || '-1');
-let lastKnownRemote = JSON.parse(localStorage.getItem('lastKnownRemote') || 'null');
+/* ═══════════════════════════════════════════════════════════════
+   ⏱ SHARED SESSION CLOCK — index.html ke saath EK HI stopwatch
+   Isi ke bina alert ka target (elapsed-based) page switch pe toot
+   jaata tha. Teeno value localStorage me — dono page padhte/likhte.
+   ═══════════════════════════════════════════════════════════════ */
+const CK_ACC='sessAccMs', CK_SINCE='sessRunSince', CK_BEAT='sessBeatTs', CK_FIRST='sessFirstStart';
+let elapsedMs = 0, sessionStart = null, firstStartTs = null;
+
+function clockLoad(){
+  elapsedMs = parseInt(localStorage.getItem(CK_ACC)||'0');
+  if(!isFinite(elapsedMs) || elapsedMs < 0) elapsedMs = 0;
+  firstStartTs = parseInt(localStorage.getItem(CK_FIRST)||'0') || null;
+  const since = parseInt(localStorage.getItem(CK_SINCE)||'0');
+  if(since > 0){                                  // pichhla page running chhod ke band hua
+    const beat = parseInt(localStorage.getItem(CK_BEAT)||'0');
+    const add = Math.max(since,beat) - since;
+    if(add > 0 && add < 24*3600*1000) elapsedMs += add;
+    localStorage.setItem(CK_ACC, elapsedMs);
+  }
+  localStorage.setItem(CK_SINCE,'0');
+  sessionStart = null;
+}
+function clockResume(){
+  if(!firstStartTs){ firstStartTs = Date.now(); localStorage.setItem(CK_FIRST, firstStartTs); }
+  sessionStart = Date.now();
+  localStorage.setItem(CK_SINCE, sessionStart);
+  localStorage.setItem(CK_BEAT,  sessionStart);
+}
+function clockPause(){
+  if(sessionStart){ elapsedMs += Date.now()-sessionStart; sessionStart = null; }
+  localStorage.setItem(CK_ACC, elapsedMs);
+  localStorage.setItem(CK_SINCE,'0');
+}
+function clockBeat(){ if(sessionStart) localStorage.setItem(CK_BEAT, Date.now()); }
+function getElapsedMs(){ return elapsedMs + (sessionStart ? Date.now()-sessionStart : 0); }
+
+/* ============ STATE (shared keys) ============ */
+let perm = parseInt(localStorage.getItem('permCount')||'0');
+let trip = parseInt(localStorage.getItem('tripCount')||'0');
+let milestoneDates = JSON.parse(localStorage.getItem('milestoneDates')||'{}');
+let dailyStats     = JSON.parse(localStorage.getItem('dailyStats')||'{}');
+let alerts         = JSON.parse(localStorage.getItem('alerts')||'[]');
+let lastSyncTs           = parseInt(localStorage.getItem('lastSyncTs')||'0');
+let localVersion         = parseInt(localStorage.getItem('localVersion')||'0');
+let lastBackedUpVersion  = parseInt(localStorage.getItem('lastBackedUpVersion')||'-1');
+let lastKnownRemote      = JSON.parse(localStorage.getItem('lastKnownRemote')||'null');
 
 let running = false, wakeLock = null;
-let elapsedMs = 0, sessionStart = null, firstStartTs = null;
-let currentAlert = null, editingAlertId = null;
-let backupInProgress = false, backupDebounceTimer = null, japsSinceBackup = 0;
-let japTimer = null;
-let conflictPending = null, syncLocked = false, sessionReconciled = false;
-let lastVisibilityCheckTs = 0;
-let backgroundStartTs = null, backgroundStartCount = 0;
-
-/* ═══ v1.5: TIMER OWNERSHIP STATE ═══ */
-let runToken = 0;              // har start/pause pe badhta hai
-let startBusy = false;         // double-tap protection
-let primeJapPending = false;   // instant jap sirf FRESH start pe
-let bmTapBusy = false;         // black mode tap debounce
+let japTimer = null, runToken = 0, startBusy = false, primeJapPending = false;
+let japAnchorTs = 0, japsSinceAnchor = 0;
+const JAP_MAX_BURST = 20000;
+let japsSinceBackup = 0, backupInProgress = false, backupDebounceTimer = null;
+let currentAlert = null;
+let blackOn = false, blackPaused = false, bmWakeLock = null, bmTapBusy = false;
 
 let vibrationOn = localStorage.getItem('vibrationOn') === 'true';
 let bgAudioOn   = localStorage.getItem('bgAudioOn') !== 'false';
+let tickSoundOn = localStorage.getItem('tickSoundOn') === 'true';
+let tickVolume  = parseFloat(localStorage.getItem('tickVolume'))||0.7;
+let bellEnabled = localStorage.getItem('bellEnabled') !== 'false';
+let bellVolume  = parseFloat(localStorage.getItem('bellVolume'))||0.9;
+let lastBellMala = parseInt(localStorage.getItem('lastBellMala'))||0;
+let bellPlaying = false;
 
-/* ============ TOAST / SYNC / STARTUP ============ */
-function showToast(msg, type='success', ms=2500){
+/* ============ HELPERS ============ */
+function pad(n){ return n.toString().padStart(2,'0'); }
+function fmtNum(n){
+  n = Math.round(n); const a = Math.abs(n);
+  if(a<1000) return ''+n;
+  if(a<100000) return (n/1000).toFixed(a<10000?2:1)+'K';
+  if(a<10000000) return (n/100000).toFixed(a<1000000?2:1)+'L';
+  if(a<1000000000) return (n/10000000).toFixed(2)+'Cr';
+  return (n/1000000000).toFixed(2)+'B';
+}
+function fmtDur(ms){ const s=Math.floor(ms/1000);
+  return pad(Math.floor(s/3600))+':'+pad(Math.floor((s%3600)/60))+':'+pad(s%60); }
+function todayKey(){ const d=new Date();
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function showToast(msg,type='ok',ms=2400){
   const t = $('toast');
   t.textContent = msg;
-  t.className = 'toast ' + (type==='error'?'error':type==='info'?'info':'') + ' show';
-  clearTimeout(t._to);
-  t._to = setTimeout(()=> t.classList.remove('show'), ms);
+  t.className = 'toast '+(type==='err'?'err':type==='inf'?'inf':'')+' show';
+  clearTimeout(t._to); t._to = setTimeout(()=>t.classList.remove('show'), ms);
 }
-function setSyncStatus(state, text){
-  $('syncDot').className = 'sync-dot ' + state;
-  $('syncStatus').textContent = text;
-}
-function showStartup(msg, sub){
-  $('startupMsg').textContent = msg;
-  if(sub) $('startupSubMsg').textContent = sub;
-  $('startupOverlay').classList.add('show');
-}
-function hideStartup(){ $('startupOverlay').classList.remove('show'); }
+function setDot(s){ $('sdot').className = 'sdot '+(s||''); }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
 
-/* ============ INDEXEDDB (shared: japDB) ============ */
+/* ============ IDB (read-only: tick/bell buffers) ============ */
 function idbOpen(){
   return new Promise((res,rej)=>{
-    const r = indexedDB.open('japDB', 1);
-    r.onupgradeneeded = e => { const db = e.target.result; if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
-    r.onsuccess = e => res(e.target.result);
-    r.onerror = e => rej(e);
+    const r = indexedDB.open('japDB',1);
+    r.onupgradeneeded = e=>{ const db=e.target.result;
+      if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv'); };
+    r.onsuccess = e=>res(e.target.result); r.onerror = rej;
   });
 }
-async function idbSet(k,v){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').put(v,k); tx.oncomplete=res; tx.onerror=rej; }); }
-async function idbGet(k){ const db = await idbOpen(); return new Promise((res,rej)=>{ const tx=db.transaction('kv','readonly'); const r=tx.objectStore('kv').get(k); r.onsuccess=()=>res(r.result); r.onerror=rej; }); }
-async function idbDel(k){ const db = await idbOpen(); return new Promise((res)=>{ const tx=db.transaction('kv','readwrite'); tx.objectStore('kv').delete(k); tx.oncomplete=res; }); }
+async function idbGet(k){
+  const db = await idbOpen();
+  return new Promise((res,rej)=>{ const tx=db.transaction('kv','readonly');
+    const r=tx.objectStore('kv').get(k); r.onsuccess=()=>res(r.result); r.onerror=rej; });
+}
 
-/* ============ AUDIO CTX + KEEP-ALIVE ============ */
-let audioCtx = null, silentAudioEl = null;
+/* ============ AUDIO ============ */
+let audioCtx = null;
 async function ensureAudioCtx(){
   if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
   if(audioCtx.state === 'suspended') await audioCtx.resume();
 }
-function startSilentKeepAlive(){
+function startKeepAlive(){
   if(!bgAudioOn) return;
   const el = $('silentAudio');
   if(!el.src){
@@ -1127,1765 +512,699 @@ function startSilentKeepAlive(){
     el.loop = true; el.volume = 0.001;
   }
   el.play().catch(()=>{});
-  silentAudioEl = el;
 }
-function stopSilentKeepAlive(){ if(silentAudioEl) silentAudioEl.pause(); }
-function setupMediaSession(){
-  if(!('mediaSession' in navigator)) return;
-  try{
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: '🕉 Mansik Jap', artist: 'Om Namah Shivay', album: 'Mahadev'
-    });
-    navigator.mediaSession.setActionHandler('play',  ()=>{ if(!running) onStartClick(); });
-    navigator.mediaSession.setActionHandler('pause', ()=>{ if(running) onStartClick(); });
-  }catch(e){}
-}
-
-/* ============ FORMATTERS ============ */
-function fmtNum(n){
-  n = Math.round(n); const abs = Math.abs(n);
-  if(abs<1000) return n.toString();
-  if(abs<100000) return (n/1000).toFixed(abs<10000?2:1)+'K';
-  if(abs<10000000) return (n/100000).toFixed(abs<1000000?2:1)+'L';
-  if(abs<1000000000) return (n/10000000).toFixed(2)+'Cr';
-  return (n/1000000000).toFixed(2)+'B';
-}
-function pad(n){ return n.toString().padStart(2,'0'); }
-function fmtTime(d){ return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); }
-function fmtDur(ms){ const s=Math.floor(ms/1000); return pad(Math.floor(s/3600))+':'+pad(Math.floor((s%3600)/60))+':'+pad(s%60); }
-function fmtRelative(ts){
-  if(!ts) return 'never';
-  const s = Math.floor((Date.now()-ts)/1000);
-  if(s<10) return 'now'; if(s<60) return s+'s';
-  if(s<3600) return Math.floor(s/60)+'m';
-  if(s<86400) return Math.floor(s/3600)+'h';
-  return Math.floor(s/86400)+'d';
-}
-function todayKey(d){ d = d || new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
-function fmtSize(b){ return b > 1048576 ? (b/1048576).toFixed(2)+' MB' : Math.round(b/1024)+' KB'; }
-function parseHMS(str){
-  const m = String(str).trim().match(/^(\d{1,3}):(\d{2}):(\d{2})$/);
-  if(!m) return null;
-  return (parseInt(m[1])*3600 + parseInt(m[2])*60 + parseInt(m[3])) * 1000;
-}
-
-/* ============ MILESTONES (payload parity - no UI) ============ */
-function buildMilestones(){
-  const groups = [];
-  const g1 = { targets: [1000] };
-  for(let v=5000; v<=100000; v+=5000) g1.targets.push(v);
-  groups.push(g1);
-  for(let base=100000; base<1000000; base+=100000){
-    const g = { targets: [] };
-    for(let v=base+10000; v<=base+100000; v+=10000) g.targets.push(v);
-    groups.push(g);
-  }
-  for(let base=1000000; base<5000000; base+=1000000){
-    const g = { targets: [] };
-    for(let v=base+100000; v<=base+1000000; v+=100000) g.targets.push(v);
-    groups.push(g);
-  }
-  const gBig = { targets: [] };
-  for(let v=5500000; v<=10000000; v+=500000) gBig.targets.push(v);
-  groups.push(gBig);
-  groups.push({ targets: [20000000,30000000,50000000,70000000,100000000] });
-  return groups;
-}
-const MILESTONES = buildMilestones();
-function checkMilestones(){
-  MILESTONES.forEach(g => g.targets.forEach(t => {
-    if(perm >= t && !milestoneDates[t]) milestoneDates[t] = new Date().toISOString();
-  }));
-  localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-}
-
-/* ============ DAILY STATS ============ */
-function recordJapForToday(count=1){
-  const k = todayKey();
-  dailyStats[k] = (dailyStats[k] || 0) + count;
-  localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
-}
-
-/* ============ UI ============ */
-function markDirty(){ localVersion++; localStorage.setItem('localVersion', localVersion); }
-function updateUI(saveDirty=true){
-  $('permCount').textContent = fmtNum(perm);
-  $('tripCount').textContent = fmtNum(trip);
-  localStorage.setItem('permCount', perm);
-  localStorage.setItem('tripCount', trip);
-  checkMilestones();
-  if(saveDirty) markDirty();
-  if(isOpen('alerts')) renderAlerts();
-}
-function resetTrip(){
-  if(confirm('Reset Trip to 0?')){
-    trip = 0; lastBellMala = 0; saveBellState();
-    updateUI(); scheduleAutoBackup();
-  }
-}
-
-/* ============ CLOCK ============ */
-function getElapsedMs(){ return elapsedMs + (sessionStart ? Date.now() - sessionStart : 0); }
-setInterval(()=>{
-  $('nowTime').textContent = fmtTime(new Date());
-  if(firstStartTs) $('elapsed').textContent = fmtDur(getElapsedMs());
-  if(running) checkTimeAlerts();
-  updateSyncBar();
-}, 500);
-function updateSyncBar(){
-  if(backupInProgress) return;
-  if(conflictPending){ setSyncStatus('conflict','CONFLICT!'); return; }
-  const rel = fmtRelative(lastSyncTs);
-  if(!ghConfigured()) setSyncStatus('offline','offline');
-  else if(localVersion > lastBackedUpVersion) setSyncStatus('syncing', 'pending '+rel);
-  else if(lastSyncTs) setSyncStatus('synced', rel);
-}
-
-/* ============ VIBRATION / PREFS ============ */
-function saveVibrationPref(){ vibrationOn = $('vibrationToggle').checked; localStorage.setItem('vibrationOn', vibrationOn); }
-function saveBgAudioPref(){ bgAudioOn = $('bgAudioToggle').checked; localStorage.setItem('bgAudioOn', bgAudioOn); }
-function saveTickSoundPref(){
-  tickSoundOn = $('tickSoundToggle').checked;
-  localStorage.setItem('tickSoundOn', tickSoundOn);
-  if(tickSoundOn){ ensureAudioCtx().then(()=> playTickSound()).catch(()=>{}); showToast('🎧 Tick ON - vibration OFF','info'); }
-  else showToast('📳 Vibration ON - tick OFF','info');
-}
-function saveBellPref(){
-  bellEnabled = $('bellToggle').checked;
-  localStorage.setItem('bellEnabled', bellEnabled);
-  showToast(bellEnabled ? '🔔 Mala bell ON' : '🔔 Mala bell OFF','info');
-}
-function savePrefInterval(){
-  const v = parseFloat($('prefInterval').value);
-  if(!v || !isFinite(v) || v < 0.3 || v > 60){ showToast('⚠ 0.3 – 60 sec','error'); return; }
-  SETTINGS.audioDuration = v;
-  SETTINGS.japsPerAudio = 1;
-  SETTINGS = sanitizeSettings(SETTINGS);                 // v1.5 FIX #5
-  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-
-  /* v1.5 FIX #6: pehle `if(running && japTimer)` tha — agar japTimer
-     null hota (bell ke dauraan) to naya interval apply hi nahi hota.
-     Aur bell ke waqt do timer chal sakte the. Ab guarded. */
-  clearJapTimer();
-  if(running && !isBellBusy()) setJapTimer(runToken);
-
-  updateBmInfoDisplay();
-  showToast(`✓ Interval ${v}s saved`);
-}
-function doVibrate(){
-  if(tickSoundOn){ playTickSound(); return; }
-  if(!navigator.vibrate) return;
-  if(!(blackModeActive || vibrationOn)) return;
-  const v = SETTINGS.vibrationMs;
-  if(v === 0 || (Array.isArray(v) && !v.length)) return;
-  try{ navigator.vibrate(v); }catch(e){}
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   ⏱ v1.5 SINGLE-OWNER TIMER GUARD  ← ASLI FIX
-   ─────────────────────────────────────────────────────────────
-   mansik.html me applyRunningState() SYNCHRONOUS hai, isliye
-   index.html wala audio async race (#1) yahan nahi tha.
-   LEKIN ye teen zombie-raste yahan bhi the:
-     • visibilitychange → raw setInterval (bell/pause check nahi)
-     • playMalaBell() ka aakhri `if(running) japTimer = setInterval(...)`
-       — bell ke 5-15s dauraan pause→resume hua to handle overwrite → ORPHAN
-     • applyBmSettings / savePrefInterval → bell guard nahi
-   Plus har resume pe `tickJap()` chalta tha → muft japs.
-
-   4-LAYER DEFENCE:
-     L1 tickJap() khud running/bell check
-     L2 runToken — purane callbacks invalid
-     L3 setJapTimer() — set se pehle hamesha clear
-     L4 watchdog — !running pe bacha timer 1s me maut
-   ═══════════════════════════════════════════════════════════════ */
-
-/* bellPlaying PART 2 me declare hota hai — try/catch se TDZ-safe */
-function isBellBusy(){ try{ return !!bellPlaying; }catch(e){ return false; } }
-
-function newRunToken(){ return ++runToken; }
-function tokenValid(t){ return t === runToken && running; }
-
-function clearJapTimer(){
-  if(japTimer) clearInterval(japTimer);
-  japTimer = null;
-}
-function setJapTimer(token){
-  clearJapTimer();                                  // L3
-  if(!tokenValid(token)){ console.warn('[timer] stale token — refused'); return false; }
-  if(isBellBusy()){ console.warn('[timer] bell busy — refused'); return false; }
-  japTimer = setInterval(()=>{
-    if(!running){ clearJapTimer(); return; }         // L1
-    if(isBellBusy()) return;
-    tickJap();
-  }, getJapInterval());
-  return true;
-}
-
-/* L4 WATCHDOG — koi bhi zombie 1 second me mar jayega */
-setInterval(()=>{
-  if(!running && japTimer){
-    console.warn('[watchdog] zombie japTimer killed');
-    clearJapTimer();
-  }
-}, 1000);
-
-/* ============ JAP CORE ============ */
-/* v1.5 FIX #10: force=true sirf legitimate prime call ke liye */
-function tickJap(force=false){
-  if(!force){
-    if(!running){ console.warn('[tickJap] blocked — not running'); return; }
-    if(isBellBusy()) return;
-  }
-  perm++; trip++; japsSinceBackup++;
-  recordJapForToday(1);
-  doVibrate();
-  updateUI();
-  if(japsSinceBackup >= SETTINGS.backupEvery){ japsSinceBackup = 0; scheduleAutoBackup(); }
-  bmOnJapFired();
-  checkMalaBell();
-}
-
-async function onStartClick(){
-  if(startBusy) return;                              // double-tap block
-  startBusy = true;
-  try{
-    if(running){
-      running = false;
-      newRunToken();                                 // L2
-      clearJapTimer();
-      applyRunningState();
-      if(blackModeActive) await exitBlackMode();
-      scheduleAutoBackup(true);
-      return;
-    }
-    if(conflictPending){ showToast('⚠ Resolve data conflict first','error'); openModal('conflict'); return; }
-    if(isBellBusy()){ showToast('🔔 Bell baj rahi hai - ek pal ruko','info'); return; }
-    openMansikPicker();
-  } finally {
-    setTimeout(()=>{ startBusy = false; }, 350);
-  }
-}
-
-function applyRunningState(){
-  const btn = $('startBtn'), stage = $('omStage'), elB = $('elapsedBlock'), tag = $('pauseTag');
-
-  // ⚠ token SABSE PEHLE badhao — purane async callbacks turant invalid
-  const myToken = newRunToken();
-  const doPrime = primeJapPending;
-  primeJapPending = false;                 // consume — resume pe muft jap NAHI
-
-  clearJapTimer();
-  btn.classList.remove('running');
-
-  if(running){
-    stopOmLoop();
-    btn.textContent = '⏸ PAUSE (🧘 Mansik)';
-    btn.classList.add('running');
-    stage.classList.remove('paused');
-    elB.classList.remove('paused');
-    tag.style.display = 'none';
-    if(!firstStartTs){ firstStartTs = Date.now(); $('startTime').textContent = fmtTime(new Date()); }
-    sessionStart = Date.now();
-    requestWakeLock(); startWakeVideo();
-    startSilentKeepAlive(); setupMediaSession();
-
-    /* v1.5 FIX #2: pehle yahan bina shart `tickJap()` tha —
-       har pause/resume pe 1 muft jap. 20 resume = 20 extra japs.
-       Ab sirf FRESH session ke pehle start pe. */
-    if(doPrime && !isBellBusy()) tickJap(true);
-    setJapTimer(myToken);
-  } else {
-    btn.textContent = '▶ RESUME MANSIK JAP';
-    stage.classList.add('paused');
-    elB.classList.add('paused');
-    tag.style.display = 'inline-block';
-    if(sessionStart){ elapsedMs += Date.now() - sessionStart; sessionStart = null; }
-    releaseWakeLock(); stopWakeVideo();
-    startOmLoop();
-  }
-}
-function forcePause(){
-  if(running){
-    running = false;
-    newRunToken(); clearJapTimer();
-    applyRunningState();
-    scheduleAutoBackup(true);
-  }
-}
-function forceResume(){
-  if(!running){
-    if(isBellBusy()){ showToast('🔔 Bell ke baad resume hoga','info'); return; }
-    running = true;
-    primeJapPending = false;               // v1.5: resume pe muft jap nahi
-    applyRunningState();
-  }
-}
-
-/* ============ WAKE LOCK ============ */
-async function requestWakeLock(){
-  try{
-    if('wakeLock' in navigator){
-      wakeLock = await navigator.wakeLock.request('screen');
-      wakeLock.addEventListener('release', ()=>{ if(running && document.visibilityState==='visible') requestWakeLock(); });
-    }
-  }catch(e){}
-}
-function releaseWakeLock(){ if(wakeLock){ try{ wakeLock.release(); }catch(e){} wakeLock = null; } }
+function stopKeepAlive(){ try{ $('silentAudio').pause(); }catch(e){} }
 function startWakeVideo(){
   const v = $('wakeVideo');
   if(!v.src) v.src = "data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAA/G1kYXQAAAKtBgX//6ncRem95tlIt5Ys2CDZI+7veDI2NAAAAAA=";
   v.play().catch(()=>{});
 }
 function stopWakeVideo(){ try{ $('wakeVideo').pause(); }catch(e){} }
+function setupMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  try{
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title:'🧘 Mansik Jap', artist:'ॐ नमः शिवाय', album:'Mahadev' });
+    navigator.mediaSession.setActionHandler('play',  ()=>{ if(!running) forceResume(); });
+    navigator.mediaSession.setActionHandler('pause', ()=>{ if(running) forcePause(); });
+  }catch(e){}
+}
 
-/* ============ VISIBILITY CATCH-UP ============ */
-document.addEventListener('visibilitychange', async ()=>{
+/* ============ TICK + BELL (buffers only, no upload UI) ============ */
+let tickBuffer = null, tickTried = false;
+let bellBuffer = null, bellTried = false;
+async function decodeSound(kind){
+  const key = kind==='tick' ? 'tickSound' : 'bellSound';
+  const st = await idbGet(key).catch(()=>null);
+  if(!st || !st.blob || st.blob.size > 8*1024*1024) return false;
+  try{
+    await ensureAudioCtx();
+    const buf = await audioCtx.decodeAudioData((await st.blob.arrayBuffer()).slice(0));
+    if(kind==='tick') tickBuffer = buf; else bellBuffer = buf;
+    return true;
+  }catch(e){ return false; }
+}
+async function playBuf(buf, vol){
+  if(!buf) return 0;
+  try{
+    await ensureAudioCtx();
+    const s = audioCtx.createBufferSource(), g = audioCtx.createGain();
+    g.gain.value = Math.max(0,Math.min(1,vol));
+    s.buffer = buf; s.connect(g); g.connect(audioCtx.destination); s.start();
+    s.onended = ()=>{ try{ s.disconnect(); g.disconnect(); }catch(e){} };
+    return buf.duration;
+  }catch(e){ return 0; }
+}
+function synthTick(){
+  try{ ensureAudioCtx().then(()=>{
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type='sine'; o.frequency.value=1400; g.gain.value = tickVolume*0.25;
+    o.connect(g); g.connect(audioCtx.destination); o.start(t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.06); o.stop(t+0.08);
+    o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
+  }).catch(()=>{}); }catch(e){}
+}
+function synthBell(){
+  try{ ensureAudioCtx().then(()=>{
+    const t = audioCtx.currentTime;
+    [523.25,659.25,783.99].forEach((f,i)=>{
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type='sine'; o.frequency.value=f;
+      g.gain.value = Math.max(0.02, bellVolume*(0.30-i*0.07));
+      o.connect(g); g.connect(audioCtx.destination); o.start(t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+1.6); o.stop(t+1.75);
+      o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
+    });
+  }).catch(()=>{}); }catch(e){}
+}
+function playTick(){
+  if(tickBuffer){ playBuf(tickBuffer, tickVolume); return; }
+  if(!tickTried){ tickTried = true;
+    decodeSound('tick').then(ok=> ok ? playBuf(tickBuffer,tickVolume) : synthTick()).catch(synthTick);
+    return; }
+  synthTick();
+}
+function doVibrate(){
+  if(tickSoundOn){ if(!tickSchedOn) playTick(); return; }   // scheduler chalu ho to double tick nahi
+  if(!navigator.vibrate) return;
+  const v = SETTINGS.vibrationMs;
+  if(v === 0 || (Array.isArray(v) && !v.length)) return;
+  try{ navigator.vibrate(v); }catch(e){}
+}
+
+/* ═══ AUDIO-CLOCK TICK SCHEDULER — screen off pe bhi rhythm exact ═══
+   setInterval throttle hota hai, AudioContext ka clock nahi. Isliye
+   ticks 3 second aage tak pre-schedule kar dete hain. */
+let tickSchedOn = false, tickSchedNext = 0, tickSchedTimer = null;
+function startTickSched(){
+  stopTickSched();
+  if(!tickSoundOn || !running) return;
+  if(!audioCtx){ ensureAudioCtx().then(()=>{ if(running&&tickSoundOn) startTickSched(); }).catch(()=>{}); return; }
+  tickSchedOn = true;
+  tickSchedNext = audioCtx.currentTime + 0.1;
+  tickAhead();
+  tickSchedTimer = setInterval(()=>{ if(running && tickSoundOn && !bellPlaying) tickAhead(); }, 1000);
+}
+function tickAhead(){
+  if(!audioCtx || !tickSchedOn) return;
+  const step = getJapInterval()/1000;
+  if(!isFinite(step) || step <= 0) return;
+  let guard = 0;
+  while(tickSchedNext < audioCtx.currentTime + 3 && guard++ < 60){
+    if(tickSchedNext > audioCtx.currentTime) schedOne(tickSchedNext);
+    tickSchedNext += step;
+  }
+}
+function schedOne(at){
+  try{
+    if(tickBuffer){
+      const s = audioCtx.createBufferSource(), g = audioCtx.createGain();
+      g.gain.value = Math.max(0,Math.min(1,tickVolume));
+      s.buffer = tickBuffer; s.connect(g); g.connect(audioCtx.destination); s.start(at);
+      s.onended = ()=>{ try{ s.disconnect(); g.disconnect(); }catch(e){} };
+    } else {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type='sine'; o.frequency.value=1400;
+      g.gain.setValueAtTime(tickVolume*0.25, at);
+      o.connect(g); g.connect(audioCtx.destination); o.start(at);
+      g.gain.exponentialRampToValueAtTime(0.0001, at+0.06); o.stop(at+0.08);
+      o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
+    }
+  }catch(e){}
+}
+function stopTickSched(){
+  tickSchedOn = false;
+  if(tickSchedTimer) clearInterval(tickSchedTimer);
+  tickSchedTimer = null; tickSchedNext = 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   🕐 WALL-CLOCK JAP ENGINE  (screen-off proof)
+   japs = ⌊beeta time ÷ interval⌋ — "kitne tick aaye" se NAHI.
+   Timer 5× slow ho jaye, count bilkul sahi rahega.
+   ═══════════════════════════════════════════════════════════════ */
+function isBellBusy(){ return !!bellPlaying; }
+function newRunToken(){ return ++runToken; }
+function tokenValid(t){ return t === runToken && running; }
+
+function clearJapTimer(){
+  if(japTimer) clearInterval(japTimer);
+  japTimer = null;
+  japAnchorTs = 0;              // stale anchor kabhi na bache (phantom jap guard)
+  japsSinceAnchor = 0;
+}
+function japAnchorReset(){ japAnchorTs = Date.now(); japsSinceAnchor = 0; }
+function japDue(){
+  if(!japAnchorTs) return 0;
+  const iv = getJapInterval();
+  if(!isFinite(iv) || iv < 250) return 0;
+  return Math.max(0, Math.floor((Date.now()-japAnchorTs)/iv) - japsSinceAnchor);
+}
+function japCatchUp(){
+  if(!japTimer) return 0;                       // armed guard — phantom japs band
+  if(!running || isBellBusy() || !japAnchorTs) return 0;
+  let n = japDue();
+  if(n <= 0) return 0;
+  if(n > JAP_MAX_BURST){ japAnchorReset(); return 0; }
+  japsSinceAnchor += n;
+  applyJaps(n);
+  if(n > 1) console.log('[catchUp] recovered', n, 'japs');
+  return n;
+}
+function applyJaps(n){
+  if(n <= 0) return;
+  perm += n; trip += n; japsSinceBackup += n;
+  dailyStats[todayKey()] = (dailyStats[todayKey()]||0) + n;
+  localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
+  doVibrate();
+  updateUI();
+  if(japsSinceBackup >= SETTINGS.backupEvery){ japsSinceBackup = 0; scheduleAutoBackup(); }
+  if(blackOn) $('bmN').textContent = fmtNum(trip);
+  checkMalaBell();
+}
+function setJapTimer(token, keepAnchor=false){
+  clearJapTimer();
+  if(!tokenValid(token)) return false;
+  if(isBellBusy()) return false;
+  if(!keepAnchor || !japAnchorTs) japAnchorReset();
+  const beat = Math.max(200, Math.min(getJapInterval(), 1000));
+  japTimer = setInterval(()=>{
+    if(!running){ clearJapTimer(); return; }
+    if(isBellBusy()) return;
+    japCatchUp();
+  }, beat);
+  startTickSched();
+  return true;
+}
+function tickJap(force=false){
+  if(!force){ if(!running || isBellBusy()) return; }
+  applyJaps(1);
+}
+/* WATCHDOG — zombie timer 1s me maut */
+setInterval(()=>{
+  if(!running && japTimer){ console.warn('[watchdog] zombie killed'); clearJapTimer(); }
+}, 1000);
+
+/* Keep-alive watchdog — screen off pe media ruk jaye to firse chalao */
+setInterval(()=>{
+  if(!running) return;
+  clockBeat();
+  const a = $('silentAudio'); if(bgAudioOn && a.src && a.paused) a.play().catch(()=>{});
+  const v = $('wakeVideo');   if(v.src && v.paused) v.play().catch(()=>{});
+}, 5000);
+
+/* ============ UI ============ */
+function markDirty(){ localVersion++; localStorage.setItem('localVersion', localVersion); }
+function checkMilestones(){
+  // sirf data shape parity ke liye — koi UI nahi
+  const T = [1000];
+  for(let v=5000; v<=100000; v+=5000) T.push(v);
+  for(let v=200000; v<=1000000; v+=100000) T.push(v);
+  for(let v=2000000; v<=10000000; v+=1000000) T.push(v);
+  let ch = false;
+  T.forEach(t=>{ if(perm >= t && !milestoneDates[t]){ milestoneDates[t] = new Date().toISOString(); ch = true; } });
+  if(ch) localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
+}
+function updateUI(dirty=true){
+  $('permV').textContent = fmtNum(perm);
+  $('tripV').textContent = fmtNum(trip);
+  localStorage.setItem('permCount', perm);
+  localStorage.setItem('tripCount', trip);
+  checkMilestones();
+  if(dirty) markDirty();
+}
+function updateIvLabel(){
+  const s = (getJapInterval()/1000).toFixed(1);
+  $('ivV').textContent = s+'s';
+  $('bmIv').textContent = 'Every '+s+'s';
+}
+function resetTrip(){
+  if(!confirm('Trip 0 karein?\n\n(Permanent safe rahega)')) return;
+  trip = 0; lastBellMala = 0;
+  localStorage.setItem('lastBellMala', 0);
+  updateUI(); scheduleAutoBackup();
+  if(blackOn) $('bmN').textContent = '0';
+  showToast('↺ Trip reset');
+}
+/* Master 500ms loop */
+setInterval(()=>{
+  const el = fmtDur(getElapsedMs());
+  $('elV').textContent = el;
+  if(blackOn) $('bmEl').textContent = el;
+  if(running){ clockBeat(); japCatchUp(); checkTimeAlerts(); }
+  updateSyncDot();
+}, 500);
+function updateSyncDot(){
+  if(backupInProgress){ setDot('busy'); return; }
+  if(!ghConfigured()){ setDot(''); return; }
+  setDot(localVersion > lastBackedUpVersion ? 'busy' : 'ok');
+}
+
+/* ============ START / PAUSE ============ */
+function onMainBtn(){
+  if(startBusy) return;
+  startBusy = true; setTimeout(()=>{ startBusy = false; }, 350);
+  if(running){ forcePause(); return; }
+  if(isBellBusy()){ showToast('🔔 Bell baj rahi hai — ek pal ruko','inf'); return; }
+  openPicker();
+}
+function applyRunningState(){
+  const myToken = newRunToken();
+  const doPrime = primeJapPending;
+  primeJapPending = false;
+  clearJapTimer();
+
+  const btn = $('mainBtn'), om = $('omStage'), cell = $('elCell'), tag = $('pTag');
+  if(running){
+    btn.textContent = '⏸ PAUSE';
+    btn.classList.add('run');
+    om.classList.remove('paused');
+    cell.classList.remove('dim');
+    tag.style.display = 'none';
+    clockResume();
+    requestWakeLock(); startWakeVideo(); startKeepAlive(); setupMediaSession();
+    if(doPrime && !isBellBusy()) tickJap(true);
+    setJapTimer(myToken);
+  } else {
+    btn.textContent = '🧘 MANSIK JAP START';
+    btn.classList.remove('run');
+    om.classList.add('paused');
+    cell.classList.add('dim');
+    tag.style.display = 'inline-block';
+    clockPause();
+    stopTickSched(); releaseWakeLock(); stopWakeVideo();
+  }
+  updateIvLabel();
+}
+function forcePause(){
+  if(!running) return;
+  running = false; newRunToken(); clearJapTimer();
+  applyRunningState(); scheduleAutoBackup(true);
+}
+function forceResume(){
+  if(running) return;
+  if(isBellBusy()){ showToast('🔔 Bell ke baad resume hoga','inf'); return; }
+  running = true; primeJapPending = false;      // resume pe muft jap NAHI
+  applyRunningState();
+}
+
+/* ============ WAKE LOCK ============ */
+async function requestWakeLock(){
+  try{ if('wakeLock' in navigator){
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', ()=>{
+      if(running && document.visibilityState==='visible') requestWakeLock(); });
+  }}catch(e){}
+}
+function releaseWakeLock(){
+  try{ if(wakeLock) wakeLock.release(); }catch(e){}
+  wakeLock = null;
+}
+
+/* ============ VISIBILITY ============ */
+document.addEventListener('visibilitychange', ()=>{
   if(document.visibilityState === 'hidden'){
-    if(running){ backgroundStartTs = Date.now(); backgroundStartCount = perm; startSilentKeepAlive(); }
+    if(running){ clockBeat(); startKeepAlive(); }
     if(localVersion > lastBackedUpVersion) scheduleAutoBackup(true);
-  } else {
-    if(running){
-      requestWakeLock(); startWakeVideo();
-      if(backgroundStartTs){
-        const gap = Date.now() - backgroundStartTs;
-        const expected = Math.floor(gap / getJapInterval());
-        const missed = Math.max(0, expected - (perm - backgroundStartCount));
-        if(missed > 0 && !isBellBusy()){
-          perm += missed; trip += missed;
-          recordJapForToday(missed);
-          localStorage.setItem('permCount', perm);
-          localStorage.setItem('tripCount', trip);
-          markDirty(); updateUI(false);
-          showToast(`⚡ Caught up ${missed} japs from background`,'info',3000);
-          scheduleAutoBackup(true);
-        }
-        /* v1.5 FIX #4: pehle raw `japTimer = setInterval(tickJap,...)` tha —
-           bell ke dauraan ya pause hote hi zombie ban jata. Ab guarded. */
-        clearJapTimer();
-        if(running && !isBellBusy()) setJapTimer(runToken);
-        backgroundStartTs = null;
-      }
-    }
-    const gap = Date.now() - lastVisibilityCheckTs;
-    if(!running && sessionReconciled && ghConfigured() && gap > 10*60*1000 && !syncLocked){
-      lastVisibilityCheckTs = Date.now();
-      sessionReconciled = false;
-      const res = await safePullFromGitHub(false);
-      if(res.ok && !res.conflict) sessionReconciled = true;
-    }
-    if(omBgOn && !running && !omLooping && !isBellBusy()) startOmLoop();
+  } else if(running){
+    requestWakeLock(); startWakeVideo();
+    const got = japCatchUp();                     // background ke japs recover
+    if(got > 1) showToast('⚡ '+got+' japs recovered','inf',3000);
+    if(!isBellBusy()) setJapTimer(runToken, true);
+    if(got > 0) scheduleAutoBackup(true);
   }
 });
-
 window.addEventListener('beforeunload', ()=>{
-  if(localVersion > lastBackedUpVersion && ghConfigured() && !conflictPending){
-    try{ safePushToGitHub(true); }catch(e){}
-  }
+  clockBeat();
+  if(localVersion > lastBackedUpVersion && ghConfigured()){ try{ pushNow(true); }catch(e){} }
 });
+window.addEventListener('pagehide', ()=>{ clockBeat(); });
 
-/* ============ ALERTS (time-based; count alerts from index.html honoured) ============ */
-function getAlertTimeMinutes(){
-  const b = parseInt($('alertTimeBase').value) || 0;
-  const m = parseInt($('alertTimeMult').value) || 1;
-  return b * m;
+/* ═══════════════════════════════════════════════════════════════
+   🧘 PICKER — page load pe SEEDHA khulta hai
+   ═══════════════════════════════════════════════════════════════ */
+function openPicker(){
+  const iv = localStorage.getItem('mansikIv') || (getJapInterval()/1000).toFixed(1);
+  const b  = localStorage.getItem('mansikAlertBase') || '10';
+  const m  = localStorage.getItem('mansikAlertMult') || '1';
+  const S=(el,v,d)=>{ const o=Array.from(el.options).map(x=>x.value);
+    el.value = o.includes(String(v)) ? String(v) : d; };
+  S($('pkIv'), parseFloat(iv).toFixed(1), '2.5');
+  S($('pkBase'), b, '10');
+  S($('pkMult'), m, '1');
+  pkPreview();
+  $('picker').classList.add('show');
 }
-function updateAlertTimePreview(){
-  const b = parseInt($('alertTimeBase').value) || 0;
-  const m = parseInt($('alertTimeMult').value) || 1;
-  const total = b * m, h = Math.floor(total/60), mm = total%60;
-  const human = h > 0 ? (mm > 0 ? `${h} hr ${mm} min` : `${h} hr`) : `${mm} min`;
-  const box = $('alertTimePreview');
-  if(box) box.innerHTML = `⏰ ${b} × ${m} = <b>${human}</b> → ${pad(h)}:${pad(mm)}:00`;
+function closePicker(){ $('picker').classList.remove('show'); }
+function pkMinutes(){
+  return (parseInt($('pkBase').value)||0) * (parseInt($('pkMult').value)||1);
 }
-// Local-only - never markDirty() (alerts/presets GitHub pe nahi jaate)
-function saveAlertsLocal(){ localStorage.setItem('alerts', JSON.stringify(alerts)); }
-function savePresets(){ localStorage.setItem('presets', JSON.stringify(presets)); }
+function pkPreview(){
+  const b = parseInt($('pkBase').value)||0, m = parseInt($('pkMult').value)||1;
+  const box = $('pkPv'), ms = $('pkMult');
+  if(b === 0){
+    ms.disabled = true;
+    box.style.background='rgba(120,120,120,.15)'; box.style.borderColor='#777'; box.style.color='#999';
+    box.innerHTML = '🔇 No alert — jap chalta rahega';
+    return;
+  }
+  ms.disabled = false;
+  box.style.background='rgba(16,185,129,.15)'; box.style.borderColor='#10b981'; box.style.color='#6ee7b7';
+  const tot = b*m, h = Math.floor(tot/60), mm = tot%60;
+  const hu = h>0 ? (mm>0 ? h+' hr '+mm+' min' : h+' hr') : mm+' min';
+  box.innerHTML = '⏰ '+b+' × '+m+' = <b>'+hu+'</b> → '+pad(h)+':'+pad(mm)+':00';
+}
+function startMansik(choice){
+  const sec = parseFloat($('pkIv').value) || 2.5;
+  applySessionInterval(sec);
+  localStorage.setItem('mansikIv', sec);
+  localStorage.setItem('mansikAlertBase', $('pkBase').value);
+  localStorage.setItem('mansikAlertMult', $('pkMult').value);
 
-function addAlert(){
-  const totalMin = getAlertTimeMinutes();
-  if(!totalMin || totalMin < 1){ showToast('Select a valid timer','error'); return; }
-  const ms = totalMin * 60000;
-  const h = Math.floor(totalMin/60), m = totalMin%60;
-  const str = `${pad(h)}:${pad(m)}:00`;
-  alerts.push({ id: Date.now(), type:'time', delta: ms, target: getElapsedMs()+ms, label:`After ${str}`, triggered:false });
-  if($('saveAsPreset').checked && !presets.some(p => p.type==='time' && p.delta===ms)){
-    presets.push({ type:'time', delta: ms, label:`After ${str}` });
-    savePresets();
+  alerts = alerts.filter(a => a.src !== 'mansik');   // array kabhi na badhe
+  let alertTxt = null;
+  const tot = pkMinutes();
+  if(tot > 0){
+    const ms = tot*60000, h = Math.floor(tot/60), m = tot%60;
+    const lbl = 'After '+pad(h)+':'+pad(m)+':00';
+    alerts.push({ id:Date.now(), type:'time', delta:ms,
+                  target:getElapsedMs()+ms, label:lbl, triggered:false, src:'mansik' });
+    alertTxt = pad(h)+':'+pad(m)+':00';
   }
-  saveAlertsLocal(); renderAlerts(); renderPresets();
-  showToast('🔔 Alert added: '+str);
+  localStorage.setItem('alerts', JSON.stringify(alerts));
+
+  closePicker();
+  primeJapPending = !firstStartTs;        // instant jap sirf FRESH session pe
+  running = true;
+  blackOn = (choice === 'black');
+  if(blackOn) showBlack(alertTxt);
+  applyRunningState();
+  showToast(alertTxt ? '🔔 Alert set: after '+alertTxt : '🧘 Jap chalu — Har Har Mahadev');
 }
-function activatePreset(i){
-  const p = presets[i]; if(!p) return;
-  alerts.push({
-    id: Date.now(), type: p.type, delta: p.delta,
-    target: p.type==='count' ? trip + p.delta : getElapsedMs() + p.delta,
-    label: p.label, triggered: false
-  });
-  saveAlertsLocal(); renderAlerts();
-  showToast('🔔 Alert active: '+p.label);
+
+/* ═══════════════════════════════════════════════════════════════
+   🖤 BLACK MODE
+   ═══════════════════════════════════════════════════════════════ */
+function showBlack(alertTxt){
+  const ov = $('bm');
+  if(navigator.vibrate) navigator.vibrate([100,50,100]);
+  updateIvLabel();
+  const al = $('bmAl');
+  if(alertTxt){ al.textContent = '🔔 Alert after '+alertTxt; al.style.display='block'; }
+  else al.style.display = 'none';
+  $('bmN').textContent = fmtNum(trip);
+  $('bmEl').textContent = fmtDur(getElapsedMs());
+  ov.classList.add('show'); ov.classList.remove('paused');
+  blackPaused = false;
+  acquireBmWake();
+  ov.onclick = (e)=>{
+    if(e.target.closest('.bmexit')) return;
+    toggleBlackPause(e);
+  };
 }
-function deletePreset(i){
-  if(!confirm('Delete this preset?')) return;
-  presets.splice(i,1); savePresets(); renderPresets();
-}
-function renderPresets(){
-  const box = $('presetChips'); if(!box) return;
-  if(!presets.length){ box.innerHTML = '<p style="color:#888;font-size:12px;">No presets yet.</p>'; return; }
-  box.innerHTML = presets.map((p,i)=>{
-    const icon = p.type==='count' ? '📿' : '⏰';
-    return `<span class="preset-chip" onclick="activatePreset(${i})">${icon} ${p.label}<span class="x" onclick="event.stopPropagation();deletePreset(${i})">✕</span></span>`;
-  }).join('');
-}
-function removeAlert(id){ alerts = alerts.filter(a=>a.id!==id); saveAlertsLocal(); renderAlerts(); showToast('Alert removed'); }
-function reactivateAlert(id){
-  const a = alerts.find(x=>x.id===id); if(!a) return;
-  a.triggered = false;
-  a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
-  saveAlertsLocal(); renderAlerts(); showToast('🔔 Re-activated');
-}
-function startEditAlert(id){ editingAlertId = id; renderAlerts(); }
-function cancelEditAlert(){ editingAlertId = null; renderAlerts(); }
-function saveEditAlert(id){
-  const a = alerts.find(x=>x.id===id); if(!a) return;
-  const val = $('editAlertInput_'+id).value;
-  if(a.type==='count'){
-    const n = parseInt(val); if(!n || n<1){ showToast('Invalid','error'); return; }
-    a.delta = n; a.target = trip + n; a.label = `${fmtNum(n)} japs`;
-  } else {
-    const ms = parseHMS(val); if(!ms){ showToast('Format: HH:MM:SS','error'); return; }
-    a.delta = ms; a.target = getElapsedMs() + ms; a.label = `After ${val}`;
+function toggleBlackPause(e, force=false){
+  if(!force){
+    if(bmTapBusy) return;                 // tap-spam se muft jap nahi
+    if(isBellBusy()) return;
+    bmTapBusy = true; setTimeout(()=>{ bmTapBusy = false; }, 400);
   }
-  a.triggered = false; editingAlertId = null;
-  saveAlertsLocal(); renderAlerts(); showToast('✓ Updated');
+  running = !running;
+  if(!running){ newRunToken(); clearJapTimer(); }
+  primeJapPending = false;
+  applyRunningState();
+  blackPaused = !running;
+  if(e && e.clientX){
+    const r = document.createElement('div');
+    r.className = 'rip'; r.style.left = e.clientX+'px'; r.style.top = e.clientY+'px';
+    $('bmFx').appendChild(r); setTimeout(()=>r.remove(), 550);
+  }
+  $('bm').classList.toggle('paused', blackPaused);
 }
-function renderAlerts(){
-  const box = $('alertsList'); if(!box) return;
-  if(!alerts.length){ box.innerHTML = '<p style="color:#888;font-size:12px;">No alerts yet</p>'; return; }
-  box.innerHTML = alerts.map(a => {
-    const icon = a.type==='count' ? '📿' : '⏰';
-    let status;
-    if(a.triggered) status = '✓ Triggered - click Re-activate';
-    else if(a.type==='count') status = `Fire at ${fmtNum(a.target)} • ${fmtNum(Math.max(0,a.target-trip))} japs left`;
-    else status = `Fire at ${fmtDur(a.target)} • ${fmtDur(Math.max(0,a.target-getElapsedMs()))} left`;
-    const src = a.src === 'mansik' ? ' <small style="color:#a78bfa;">(auto)</small>' : '';
-    const editing = editingAlertId === a.id;
-    return `<div class="alert-row ${a.triggered?'triggered':''}">
-      <div class="info"><b>${icon} ${a.label}</b>${src}<small>${status}</small></div>
-      <div class="btns">
-        <button class="b-react" onclick="reactivateAlert(${a.id})">${a.triggered?'♻':'↻'}</button>
-        <button class="b-edit" onclick="startEditAlert(${a.id})">✏</button>
-        <button class="b-del" onclick="removeAlert(${a.id})">✕</button>
-      </div>
-      <div class="alert-edit-inline" style="display:${editing?'block':'none'};">
-        <input type="text" id="editAlertInput_${a.id}" value="${a.type==='count'?a.delta:fmtDur(a.delta)}">
-        <div class="btns"><button class="save" onclick="saveEditAlert(${a.id})">Save</button><button class="cancel" onclick="cancelEditAlert()">Cancel</button></div>
-      </div>
-    </div>`;
-  }).join('');
+async function acquireBmWake(){
+  try{ if('wakeLock' in navigator){
+    bmWakeLock = await navigator.wakeLock.request('screen');
+    bmWakeLock.addEventListener('release', ()=>{
+      if(blackOn && document.visibilityState==='visible') acquireBmWake(); });
+  }}catch(e){}
 }
-/* Handles BOTH time and count alerts (count alerts index.html se aa sakte hain) */
+async function releaseBmWake(){
+  try{ if(bmWakeLock) await bmWakeLock.release(); }catch(e){}
+  bmWakeLock = null;
+}
+async function exitBlack(e){
+  if(e) e.stopPropagation();
+  blackOn = false; blackPaused = false;
+  const ov = $('bm');
+  ov.classList.remove('show','paused'); ov.onclick = null;
+  $('bmFx').innerHTML = '';
+  await releaseBmWake();
+  if(running){ running = false; newRunToken(); clearJapTimer();
+    applyRunningState(); scheduleAutoBackup(true); }
+  showToast('🕉 Meditation ended — Har Har Mahadev','inf');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⏰ TIME ALERTS (count-alerts index.html se aa sakte hain)
+   ═══════════════════════════════════════════════════════════════ */
+function saveAlerts(){ localStorage.setItem('alerts', JSON.stringify(alerts)); }
 function checkTimeAlerts(){
-  if(currentAlert) return;                    // v1.5: popup pehle se khula
+  if(currentAlert) return;
   const cur = getElapsedMs();
   for(const a of alerts){
     if(a.triggered) continue;
     const hit = a.type === 'time' ? (cur >= a.target) : (trip >= a.target);
-    if(hit){ a.triggered = true; saveAlertsLocal(); triggerAlert(a); break; }
+    if(hit){ a.triggered = true; saveAlerts(); triggerAlert(a); break; }
   }
 }
 function triggerAlert(a){
-  if(currentAlert && currentAlert.id !== a.id) return;   // v1.5: ek waqt me ek
-  stopBeep();                                           // purana beep pehle band
+  stopBeep();
   currentAlert = a;
-  const wasRunning = running;
+  const was = running;
   forcePause();
-  $('alertTitle').textContent = a.type==='count' ? '🎯 Jap Target Reached!' : '⏰ Time Alert!';
-  $('alertMsg').textContent = a.label + ' - Har Har Mahadev!';
-  $('alertPausedInfo').style.display = wasRunning ? 'block' : 'none';
-  $('newInputBox').style.display = 'none';
-  $('alertMainBtns').style.display = 'block';
-  $('alertNewBtns').style.display = 'none';
-  $('alertPopup').classList.add('show');
+  $('apT').textContent = a.type === 'count' ? '🎯 Jap Target Reached!' : '⏰ Time Alert!';
+  $('apM').textContent = (a.label||'Alert')+' — Har Har Mahadev!';
+  $('apP').style.display = was ? 'block' : 'none';
+  $('ap').classList.add('show');
   playBeep();
   if(navigator.vibrate) navigator.vibrate([300,100,300,100,500]);
 }
-function alertContinue(){
+function apClose(){ $('ap').classList.remove('show'); stopBeep(); currentAlert = null; }
+function apContinue(){
   if(!currentAlert) return;
   const a = currentAlert;
   a.triggered = false;
-  a.target = a.type==='count' ? trip + a.delta : getElapsedMs() + a.delta;
-  saveAlertsLocal(); closeAlertPopup();
-  /* v1.5: pehle `running = true; applyRunningState();` direct tha →
-     applyRunningState ka tickJap() chal jata → muft jap. Ab forceResume(). */
+  a.target = a.type === 'count' ? trip + a.delta : getElapsedMs() + a.delta;
+  saveAlerts(); apClose();
   forceResume();
-  if(blackModeActive){ $('blackModeOverlay').classList.remove('paused'); blackModePaused = false; }
-  showToast('▶ Continuing: '+a.label);
+  if(blackOn){ $('bm').classList.remove('paused'); blackPaused = false; }
+  showToast('▶ Continuing: '+(a.label||''));
 }
-function alertShowNewInput(){
-  $('alertMainBtns').style.display = 'none';
-  $('alertNewBtns').style.display = 'block';
-  $('newInputBox').style.display = 'block';
-  const mins = Math.round((currentAlert.delta || 600000) / 60000);
-  const bSel = $('newAlertBase'), mSel = $('newAlertMult');
-  const bOpts = Array.from(bSel.options).map(o => parseInt(o.value));
-  let base = bOpts.includes(mins) ? mins : 10, mult = 1;
-  if(!bOpts.includes(mins)){
-    for(const b of bOpts){
-      if(mins % b === 0 && mins/b >= 1 && mins/b <= 12){ base = b; mult = mins/b; break; }
-    }
-  }
-  bSel.value = String(base); mSel.value = String(mult);
-  updateNewAlertPreview();
+function apAdd10(){
+  if(!currentAlert) return;
+  const a = currentAlert;
+  a.type='time'; a.delta = 10*60000; a.target = getElapsedMs()+a.delta;
+  a.label = 'After 00:10:00'; a.triggered = false;
+  saveAlerts(); apClose();
+  forceResume();
+  if(blackOn){ $('bm').classList.remove('paused'); blackPaused = false; }
+  showToast('✓ Naya alert: 10 min');
 }
-function getNewAlertMinutes(){
-  const b = parseInt($('newAlertBase').value) || 0;
-  const m = parseInt($('newAlertMult').value) || 1;
-  return b * m;
-}
-function updateNewAlertPreview(){
-  const b = parseInt($('newAlertBase').value) || 0;
-  const m = parseInt($('newAlertMult').value) || 1;
-  const total = b*m, h = Math.floor(total/60), mm = total%60;
-  const human = h > 0 ? (mm > 0 ? `${h} hr ${mm} min` : `${h} hr`) : `${mm} min`;
-  const box = $('newAlertPreview');
-  if(box) box.innerHTML = `⏰ ${b} × ${m} = <b>${human}</b> → ${pad(h)}:${pad(mm)}:00`;
-}
-function alertCancelNew(){
-  $('alertMainBtns').style.display = 'block';
-  $('alertNewBtns').style.display = 'none';
-  $('newInputBox').style.display = 'none';
-}
-function alertApplyNew(){
-  const a = currentAlert; if(!a) return;
-  const totalMin = getNewAlertMinutes();
-  if(!totalMin || totalMin < 1){ showToast('Select a valid timer','error'); return; }
-  const ms = totalMin*60000, h = Math.floor(totalMin/60), m = totalMin%60;
-  const str = `${pad(h)}:${pad(m)}:00`;
-  a.type = 'time'; a.delta = ms; a.target = getElapsedMs()+ms; a.label = `After ${str}`;
-  a.triggered = false;
-  saveAlertsLocal(); closeAlertPopup();
-  forceResume();                            // v1.5: muft jap nahi
-  if(blackModeActive){ $('blackModeOverlay').classList.remove('paused'); blackModePaused = false; }
-  showToast('✓ New timer set: '+str);
-}
-function alertDismissOnly(){ closeAlertPopup(); showToast('Dismissed - jap paused'); }
-function closeAlertPopup(){
-  $('alertPopup').classList.remove('show');
-  stopBeep(); currentAlert = null;
-  if(isOpen('alerts')) renderAlerts();
-}
+function apDismiss(){ apClose(); showToast('Dismissed — jap paused','inf'); }
 
-/* ============ BEEP ============ */
-let beepCtx = null, beepInterval = null, beepKillTimer = null;
+let beepCtx = null, beepIv = null, beepKill = null;
 function playBeep(){
-  stopBeep();                               // v1.5: purana pehle band
+  stopBeep();
   try{
     beepCtx = new (window.AudioContext||window.webkitAudioContext)();
-    const beep = ()=>{
-      try{
-        const o = beepCtx.createOscillator(), g = beepCtx.createGain();
-        o.frequency.value = 880; o.type = 'sine'; g.gain.value = 0.3;
-        o.connect(g); g.connect(beepCtx.destination);
-        o.start(); o.stop(beepCtx.currentTime + 0.3);
-      }catch(e){}
-    };
-    beep(); beepInterval = setInterval(beep, 600);
-    beepKillTimer = setTimeout(stopBeep, 30000);   // v1.5 FIX #9: safety kill
+    const b = ()=>{ try{
+      const o = beepCtx.createOscillator(), g = beepCtx.createGain();
+      o.frequency.value = 880; o.type='sine'; g.gain.value = 0.3;
+      o.connect(g); g.connect(beepCtx.destination);
+      o.start(); o.stop(beepCtx.currentTime+0.3);
+    }catch(e){} };
+    b(); beepIv = setInterval(b, 600);
+    beepKill = setTimeout(stopBeep, 30000);        // safety kill
   }catch(e){}
 }
 function stopBeep(){
-  if(beepInterval){ clearInterval(beepInterval); beepInterval = null; }
-  if(beepKillTimer){ clearTimeout(beepKillTimer); beepKillTimer = null; }
+  if(beepIv){ clearInterval(beepIv); beepIv = null; }
+  if(beepKill){ clearTimeout(beepKill); beepKill = null; }
   if(beepCtx){ try{ beepCtx.close(); }catch(e){} beepCtx = null; }
 }
 
-/* ============ MODALS ============ */
-function openModal(name){
-  $(name+'Modal').classList.add('open');
-  if(name === 'alerts'){ updateAlertTimePreview(); renderAlerts(); renderPresets(); }
-  if(name === 'settings'){
-    $('ghOwner').value = localStorage.getItem('ghOwner') || '';
-    $('ghRepo').value  = localStorage.getItem('ghRepo')  || '';
-    $('ghToken').value = localStorage.getItem('ghToken') || '';
-    $('ghBackupAudio').checked = localStorage.getItem('ghBackupAudio') !== 'false';
-    $('vibrationToggle').checked = vibrationOn;
-    $('bgAudioToggle').checked = bgAudioOn;
-    $('tickSoundToggle').checked = tickSoundOn;
-    $('bellToggle').checked = bellEnabled;
-    $('omBgToggle').checked = omBgOn;
-    const omSel = $('omVolumeSel');
-    const opts = Array.from(omSel.options).map(o => o.value);
-    omSel.value = opts.includes(String(omVolume)) ? String(omVolume) : '0.5';
-    $('prefInterval').value = (getJapInterval()/1000).toFixed(1);
-    updateSoundInfo('om'); updateSoundInfo('tick'); updateSoundInfo('bell');
+/* ═══════════════════════════════════════════════════════════════
+   🔔 MALA BELL — har 108 pe (odd malas only)
+   ═══════════════════════════════════════════════════════════════ */
+function checkMalaBell(){
+  if(!bellEnabled || bellPlaying) return;
+  const mala = Math.floor(trip/108);
+  if(mala < lastBellMala){ lastBellMala = mala; localStorage.setItem('lastBellMala',mala); return; }
+  if(mala < 1 || mala === lastBellMala) return;
+  lastBellMala = mala; localStorage.setItem('lastBellMala', mala);
+  if(mala % 2 === 0) return;
+  playMalaBell((((mala-1)/2)%5)+1, mala);
+}
+async function playMalaBell(rings, mala){
+  if(bellPlaying) return;
+  bellPlaying = true;
+  const bellToken = runToken;
+  clearJapTimer(); stopTickSched();
+
+  $('boM').textContent = mala+' × 108 = '+fmtNum(mala*108)+' japs';
+  $('boR').textContent = '🔔 '+rings+(rings>1?' rings':' ring');
+  $('boD').innerHTML = Array.from({length:rings},(_,i)=>'<span class="dot" id="bd'+(i+1)+'">🔔</span>').join('');
+  $('boP').textContent = '0 / '+rings;
+  $('boX').style.display = 'none';
+  $('bo').classList.add('show');
+
+  if(!bellBuffer && !bellTried){ bellTried = true; await decodeSound('bell').catch(()=>{}); }
+  for(let i=1;i<=rings;i++){
+    const d = $('bd'+i); if(d) d.classList.add('on');
+    $('boP').textContent = i+' / '+rings;
+    let dur = 1.4;
+    if(bellBuffer) dur = await playBuf(bellBuffer, bellVolume); else synthBell();
+    if(navigator.vibrate) navigator.vibrate([250,90,250]);
+    await sleep(Math.max(700, dur*1000) + 400);
   }
-}
-function closeModal(name){
-  if(name === 'conflict' && conflictPending){ showToast('⚠ Please choose an option','error'); return; }
-  $(name+'Modal').classList.remove('open');
-  if(name === 'alerts') editingAlertId = null;
-}
-document.querySelectorAll('.modal').forEach(m => {
-  m.addEventListener('click', e => {
-    if(e.target !== m) return;
-    const name = m.getAttribute('data-name');
-    if(!name || name === 'conflict') return;
-    closeModal(name);
-  });
-});
-document.addEventListener('keydown', e => {
-  if(e.key !== 'Escape') return;
-  document.querySelectorAll('.modal.open').forEach(m => {
-    const name = m.getAttribute('data-name');
-    if(!name || name === 'conflict') return;
-    closeModal(name);
-  });
-});
+  $('boX').style.display = 'block';
+  await sleep(3000);
+  $('bo').classList.remove('show');
+  bellPlaying = false;
 
-/* ============ GITHUB HELPERS (shared paths with index.html) ============ */
-const GH_DATA_PATH = 'data/jap_data.json';
-
-function ghHeaders(extra={}){
-  return { Authorization: `Bearer ${localStorage.getItem('ghToken')}`, Accept: 'application/vnd.github+json', ...extra };
-}
-function ghRepo(){ return { o: localStorage.getItem('ghOwner'), r: localStorage.getItem('ghRepo') }; }
-function ghConfigured(){ return !!(localStorage.getItem('ghToken') && localStorage.getItem('ghOwner') && localStorage.getItem('ghRepo')); }
-
-function saveGhSettings(){
-  const o = $('ghOwner').value.trim(), r = $('ghRepo').value.trim(), t = $('ghToken').value.trim();
-  if(!o || !r || !t){ showToast('Fill all 3 fields','error'); return; }
-  localStorage.setItem('ghOwner', o);
-  localStorage.setItem('ghRepo', r);
-  localStorage.setItem('ghToken', t);
-  localStorage.setItem('ghBackupAudio', $('ghBackupAudio').checked);
-  showToast('✓ Settings saved');
-  setSyncStatus('syncing','checking');
-  safePullFromGitHub(true).then(res => { if(res.ok && !res.conflict) sessionReconciled = true; });
+  if(!tokenValid(bellToken)){ clearJapTimer(); return; }   // session badla → resume nahi
+  setJapTimer(bellToken);                                  // relax time japs me nahi ginega
 }
 
-async function ghGetFileInfo(path){
+/* ═══════════════════════════════════════════════════════════════
+   ☁ SILENT BACKUP — koi UI nahi. Creds index.html se aate hain.
+   Sirf PUSH karta hai (aur wo bhi tab jab local aage ho).
+   Agar GitHub aage nikli ho → push rok deta hai, index.html
+   resolve karega. Isse data kabhi overwrite nahi hota.
+   ═══════════════════════════════════════════════════════════════ */
+const GH_PATH = 'data/jap_data.json';
+function ghConfigured(){
+  return !!(localStorage.getItem('ghToken') && localStorage.getItem('ghOwner') && localStorage.getItem('ghRepo'));
+}
+function ghH(x={}){ return { Authorization:'Bearer '+localStorage.getItem('ghToken'),
+  Accept:'application/vnd.github+json', ...x }; }
+function ghRepo(){ return { o:localStorage.getItem('ghOwner'), r:localStorage.getItem('ghRepo') }; }
+async function ghInfo(){
   const {o,r} = ghRepo();
-  try{
-    const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, { headers: ghHeaders() });
-    if(res.ok) return await res.json();
-  }catch(e){}
+  try{ const res = await fetch('https://api.github.com/repos/'+o+'/'+r+'/contents/'+GH_PATH,{headers:ghH()});
+    if(res.ok) return await res.json(); }catch(e){}
   return null;
 }
-function blobToBase64(blob){
-  return new Promise((res,rej)=>{
-    const rd = new FileReader();
-    rd.onload = ()=> res(rd.result.split(',')[1]);
-    rd.onerror = rej;
-    rd.readAsDataURL(blob);
-  });
+function buildPayload(){
+  return { perm, trip, version:localVersion, milestoneDates, dailyStats,
+           settings:SETTINGS, deviceId:DEVICE_ID,
+           updatedAt:new Date().toISOString(), appVersion:'v20.6' };
 }
-async function ghPutFile(path, base64Content, message){
-  const {o,r} = ghRepo();
-  const existing = await ghGetFileInfo(path);
-  const body = { message, content: base64Content };
-  if(existing) body.sha = existing.sha;
-  const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, {
-    method:'PUT', headers: ghHeaders({'Content-Type':'application/json'}), body: JSON.stringify(body)
-  });
-  if(!res.ok){
-    const err = await res.json().catch(()=>({}));
-    throw new Error(`${res.status}: ${err.message||'Upload failed'}`);
-  }
-  return true;
-}
-async function ghGetDefaultBranch(){
-  const {o,r} = ghRepo();
-  const res = await fetch(`https://api.github.com/repos/${o}/${r}`, { headers: ghHeaders() });
-  if(!res.ok) throw new Error('Cannot read repo info');
-  return (await res.json()).default_branch || 'main';
-}
-async function ghPutLargeFile(path, blob, message){
-  const {o,r} = ghRepo();
-  const branch = await ghGetDefaultBranch();
-  const b64 = await blobToBase64(blob);
-  let res = await fetch(`https://api.github.com/repos/${o}/${r}/git/blobs`, {
-    method:'POST', headers: ghHeaders({'Content-Type':'application/json'}),
-    body: JSON.stringify({ content: b64, encoding:'base64' })
-  });
-  if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(`Blob: ${res.status} ${e.message||''}`); }
-  const blobSha = (await res.json()).sha;
-  res = await fetch(`https://api.github.com/repos/${o}/${r}/git/ref/heads/${branch}`, { headers: ghHeaders() });
-  if(!res.ok) throw new Error('Cannot get branch ref');
-  const refSha = (await res.json()).object.sha;
-  res = await fetch(`https://api.github.com/repos/${o}/${r}/git/commits/${refSha}`, { headers: ghHeaders() });
-  if(!res.ok) throw new Error('Cannot get commit');
-  const treeSha = (await res.json()).tree.sha;
-  res = await fetch(`https://api.github.com/repos/${o}/${r}/git/trees`, {
-    method:'POST', headers: ghHeaders({'Content-Type':'application/json'}),
-    body: JSON.stringify({ base_tree: treeSha, tree: [{ path, mode:'100644', type:'blob', sha: blobSha }] })
-  });
-  if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(`Tree: ${res.status} ${e.message||''}`); }
-  const newTreeSha = (await res.json()).sha;
-  res = await fetch(`https://api.github.com/repos/${o}/${r}/git/commits`, {
-    method:'POST', headers: ghHeaders({'Content-Type':'application/json'}),
-    body: JSON.stringify({ message, tree: newTreeSha, parents: [refSha] })
-  });
-  if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(`Commit: ${res.status} ${e.message||''}`); }
-  const newCommitSha = (await res.json()).sha;
-  res = await fetch(`https://api.github.com/repos/${o}/${r}/git/refs/heads/${branch}`, {
-    method:'PATCH', headers: ghHeaders({'Content-Type':'application/json'}),
-    body: JSON.stringify({ sha: newCommitSha })
-  });
-  if(!res.ok){ const e = await res.json().catch(()=>({})); throw new Error(`Ref: ${res.status} ${e.message||''}`); }
-  return true;
-}
-/* raw media type - 1MB+ files ke liye zaroori */
-async function ghFetchRawBlob(path){
-  const {o,r} = ghRepo();
-  try{
-    const res = await fetch(`https://api.github.com/repos/${o}/${r}/contents/${path}`, {
-      headers: ghHeaders({ Accept: 'application/vnd.github.raw' })
-    });
-    if(res.ok){
-      const b = await res.blob();
-      if(b && b.size > 0) return b;
-    }
-  }catch(e){ console.warn('ghFetchRawBlob', e); }
-  return null;
-}
-
-/* ============ CONFLICT DETECTION (identical logic to index.html) ============ */
-async function fetchRemoteData(){
-  if(!ghConfigured()) return null;
-  const info = await ghGetFileInfo(GH_DATA_PATH);
-  if(!info) return { empty: true };
-  try{
-    return JSON.parse(decodeURIComponent(escape(atob(info.content.replace(/\n/g,'')))));
-  }catch(e){ console.error('Parse remote error:', e); return null; }
-}
-function detectConflict(remote){
-  if(!remote || remote.empty) return { conflict:false, reason:'no_remote' };
-  const rp = remote.perm || 0, rt = remote.trip || 0, lp = perm, lt = trip;
-  if(rp === lp && rt === lt) return { conflict:false, reason:'match' };
-  if(lp < rp) return { conflict:true, reason:`Local Permanent (${fmtNum(lp)}) is LESS than GitHub (${fmtNum(rp)}). Doosre device pe jap hua ho sakta hai.` };
-  if(lastKnownRemote && (rp !== (lastKnownRemote.perm||0) || rt !== (lastKnownRemote.trip||0)))
-    return { conflict:true, reason:`GitHub doosre device se update hui (last seen: ${fmtNum(lastKnownRemote.perm||0)}, now: ${fmtNum(rp)}).` };
-  if(!lastKnownRemote && (lp !== rp || lt !== rt))
-    return { conflict:true, reason:`Pehli sync pe mismatch. Local: ${fmtNum(lp)}, GitHub: ${fmtNum(rp)}. Dhyan se chuno.` };
-  return { conflict:false, reason:'local_ahead_safe' };
-}
-function showConflictModal(remote, reason){
-  const wasRunning = running;
-  if(wasRunning) forcePause();
-  conflictPending = { remote, wasRunning };
-  syncLocked = true;
-
-  const lp = perm, lt = trip, rp = remote.perm||0, rt = remote.trip||0;
-  $('conflictLocalPerm').textContent = fmtNum(lp);
-  $('conflictLocalTrip').textContent = fmtNum(lt);
-  $('conflictRemotePerm').textContent = fmtNum(rp);
-  $('conflictRemoteTrip').textContent = fmtNum(rt);
-
-  const lb = $('conflictLocalBadge'), rb = $('conflictRemoteBadge');
-  const lc = $('conflictCardLocal'),  rc = $('conflictCardRemote');
-  lb.style.display = rb.style.display = 'none';
-  lc.classList.remove('recommended'); rc.classList.remove('recommended');
-
-  if(rp > lp){
-    rb.textContent = 'RECOMMENDED'; rb.className = 'cc-badge'; rb.style.display = 'inline-block';
-    rc.classList.add('recommended');
-    lb.textContent = 'BEHIND'; lb.className = 'cc-badge warn'; lb.style.display = 'inline-block';
-  } else if(lp > rp){
-    lb.textContent = 'HIGHER'; lb.className = 'cc-badge warn'; lb.style.display = 'inline-block';
-    rb.textContent = 'OLDER';  rb.className = 'cc-badge warn'; rb.style.display = 'inline-block';
-  }
-
-  $('conflictHint').innerHTML = `⚠ ${reason}<br><b>Jap paused ho gaya hai.</b> Chuno kaunsa sahi hai.`;
-  const d = remote.updatedAt ? new Date(remote.updatedAt).toLocaleString('en-GB') : 'unknown';
-  $('conflictMeta').innerHTML = `GitHub last updated: <b>${d}</b> by <code>${remote.deviceId||'unknown'}</code>`;
-
-  setSyncStatus('conflict','CONFLICT!');
-  $('conflictModal').classList.add('open');
-  playBeep(); setTimeout(stopBeep, 2000);
-}
-async function resolveConflict(action){
-  if(!conflictPending){ $('conflictModal').classList.remove('open'); syncLocked = false; return; }
-  const { remote } = conflictPending;
-
-  if(action === 'cancel'){
-    $('conflictModal').classList.remove('open');
-    conflictPending = null; syncLocked = false;
-    showToast('Cancelled - sync blocked until resolved','info',4000);
-    return;
-  }
-  if(action === 'pull'){
-    perm = remote.perm || 0;
-    trip = remote.trip || 0;
-    milestoneDates = remote.milestoneDates || {};
-    if(remote.dailyStats) dailyStats = remote.dailyStats;
-    if(remote.settings) SETTINGS = sanitizeSettings(remote.settings);   // v1.5 FIX #5
-    localVersion = remote.version || 0;
-    lastBackedUpVersion = localVersion;
-    lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
-    localStorage.setItem('permCount', perm);
-    localStorage.setItem('tripCount', trip);
-    localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-    localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
-    localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-    localStorage.setItem('localVersion', localVersion);
-    localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
-    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
-    lastSyncTs = Date.now(); localStorage.setItem('lastSyncTs', lastSyncTs);
-    lastBellMala = Math.floor(trip/108); saveBellState();
-    updateUI(false);
-    updateBmInfoDisplay();                      // v1.5: naya interval overlay pe dikhe
-    $('conflictModal').classList.remove('open');
-    conflictPending = null; syncLocked = false;
-    sessionReconciled = true; lastVisibilityCheckTs = Date.now();
-    setSyncStatus('synced','now');
-    showToast(`✓ Restored from GitHub: ${fmtNum(perm)} japs`,'success',4000);
-    return;
-  }
-  if(action === 'push'){
-    if(!confirm(`⚠ GitHub OVERWRITE hoga local values se (${fmtNum(perm)} perm, ${fmtNum(trip)} trip).\n\nGitHub pe abhi ${fmtNum(remote.perm||0)} perm hai. SURE?`)) return;
-    $('conflictModal').classList.remove('open');
-    conflictPending = null; syncLocked = false;
-    localVersion = Math.max(localVersion, (remote.version||0)) + 1;
-    localStorage.setItem('localVersion', localVersion);
-    const ok = await doPushToGitHub(false, true);
-    if(ok){
-      sessionReconciled = true; lastVisibilityCheckTs = Date.now();
-      showToast(`✓ GitHub overwritten: ${fmtNum(perm)} japs`,'success',4000);
-    }
-  }
-}
-
-/* ============ SAFE SYNC ============ */
-async function safePullFromGitHub(showUI=true){
-  if(!ghConfigured()) return { ok:false, reason:'not_configured' };
-  if(syncLocked) return { ok:false, reason:'locked' };
-  if(showUI) setSyncStatus('syncing','pulling');
-  try{
-    const remote = await fetchRemoteData();
-    if(!remote){ if(showUI) setSyncStatus('error','fetch failed'); return { ok:false, reason:'fetch_failed' }; }
-    if(remote.empty){ if(showUI) setSyncStatus('synced','no backup'); return { ok:true, empty:true }; }
-    const c = detectConflict(remote);
-    if(c.conflict){ showConflictModal(remote, c.reason); return { ok:true, conflict:true }; }
-    let changed = false;
-    if((remote.version || 0) > localVersion){
-      perm = remote.perm || 0;
-      trip = remote.trip || 0;
-      milestoneDates = remote.milestoneDates || {};
-      if(remote.dailyStats) dailyStats = remote.dailyStats;
-      if(remote.settings) SETTINGS = sanitizeSettings(remote.settings);   // v1.5 FIX #5
-      localVersion = remote.version || 0;
-      lastBackedUpVersion = localVersion;
-      localStorage.setItem('permCount', perm);
-      localStorage.setItem('tripCount', trip);
-      localStorage.setItem('milestoneDates', JSON.stringify(milestoneDates));
-      localStorage.setItem('dailyStats', JSON.stringify(dailyStats));
-      localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-      localStorage.setItem('localVersion', localVersion);
-      localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
-      lastBellMala = Math.floor(trip/108); saveBellState();
-      updateUI(false);
-      updateBmInfoDisplay();
-      changed = true;
-    }
-    lastKnownRemote = { perm: remote.perm, trip: remote.trip, version: remote.version };
-    localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
-    lastSyncTs = Date.now(); localStorage.setItem('lastSyncTs', lastSyncTs);
-    if(showUI){ setSyncStatus('synced','now'); if(changed) showToast(`⬇ Pulled: ${fmtNum(perm)} japs`); }
-    return { ok:true, changed };
-  }catch(e){
-    console.error('Safe pull error:', e);
-    if(showUI) setSyncStatus('error','failed');
-    return { ok:false, error:e.message };
-  }
-}
-async function safePushToGitHub(silent=false){
-  if(!ghConfigured()) return false;
-  if(backupInProgress || syncLocked) return false;
-  if(localVersion <= lastBackedUpVersion){ if(!silent) setSyncStatus('synced','up to date'); return true; }
-  if(sessionReconciled) return doPushToGitHub(silent, false);
-  const remote = await fetchRemoteData();
-  if(!remote){
-    if(!silent) showToast('❌ Cannot reach GitHub','error');
-    setSyncStatus('error','fetch failed');
-    return false;
-  }
-  if(!remote.empty){
-    const c = detectConflict(remote);
-    if(c.conflict){ showConflictModal(remote, c.reason); return false; }
-  }
-  return doPushToGitHub(silent, false);
-}
-async function doPushToGitHub(silent=false, forceOverwrite=false){
+async function pushNow(silent=false){
   if(!ghConfigured() || backupInProgress) return false;
-  backupInProgress = true;
-  setSyncStatus('syncing','pushing');
-  const versionAtStart = localVersion;
+  if(localVersion <= lastBackedUpVersion) return true;
+  backupInProgress = true; setDot('busy');
   try{
-    const payload = buildPayload();
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
-    const msg = forceOverwrite
-      ? `⚠ FORCE OVERWRITE v${payload.version} • ${fmtNum(perm)} japs • ${DEVICE_ID} (mansik)`
-      : `v${payload.version} • ${fmtNum(perm)} japs • ${DEVICE_ID} (mansik)`;
-    await ghPutFile(GH_DATA_PATH, content, msg);
-    lastBackedUpVersion = versionAtStart;
+    const info = await ghInfo();
+    if(info && info.content){
+      let rem = null;
+      try{ rem = JSON.parse(decodeURIComponent(escape(atob(info.content.replace(/\n/g,''))))); }catch(e){}
+      if(rem && (rem.perm||0) > perm){          // GitHub aage hai → overwrite mat karo
+        setDot('err');
+        if(!silent) showToast('⚠ GitHub aage hai — 🔱 main page pe resolve karo','err',5000);
+        return false;
+      }
+    }
+    const body = { message:'v'+localVersion+' • '+fmtNum(perm)+' japs • '+DEVICE_ID+' (mansik)',
+                   content: btoa(unescape(encodeURIComponent(JSON.stringify(buildPayload(),null,2)))) };
+    if(info) body.sha = info.sha;
+    const {o,r} = ghRepo();
+    const res = await fetch('https://api.github.com/repos/'+o+'/'+r+'/contents/'+GH_PATH,{
+      method:'PUT', headers:ghH({'Content-Type':'application/json'}), body:JSON.stringify(body) });
+    if(!res.ok) throw new Error(res.status);
+    lastBackedUpVersion = localVersion;
     localStorage.setItem('lastBackedUpVersion', lastBackedUpVersion);
     lastSyncTs = Date.now(); localStorage.setItem('lastSyncTs', lastSyncTs);
-    lastKnownRemote = { perm, trip, version: versionAtStart };
+    lastKnownRemote = { perm, trip, version:localVersion };
     localStorage.setItem('lastKnownRemote', JSON.stringify(lastKnownRemote));
-    sessionReconciled = true;
-    setSyncStatus('synced','now');
-    if(!silent) showToast(`☁ Backed up: ${fmtNum(perm)} japs`);
+    setDot('ok');
+    if(!silent) showToast('☁ Backed up: '+fmtNum(perm)+' japs');
     return true;
   }catch(e){
-    console.error('Push error:', e);
-    setSyncStatus('error','push failed');
-    if(!silent) showToast('❌ Backup: '+e.message,'error',4000);
+    setDot('err');
+    if(!silent) showToast('❌ Backup fail','err');
     return false;
   }finally{ backupInProgress = false; }
 }
-/* IDENTICAL shape to index.html - alerts/presets local-only */
-function buildPayload(){
-  return {
-    perm, trip,
-    version: localVersion,
-    milestoneDates,
-    dailyStats,
-    settings: SETTINGS,
-    deviceId: DEVICE_ID,
-    updatedAt: new Date().toISOString(),
-    appVersion: 'v20.5'
-  };
-}
-function scheduleAutoBackup(immediate=false){
-  if(!ghConfigured() || syncLocked || conflictPending) return;
+function scheduleAutoBackup(now=false){
+  if(!ghConfigured()) return;
   if(backupDebounceTimer) clearTimeout(backupDebounceTimer);
-  if(immediate){ safePushToGitHub(true); return; }
-  backupDebounceTimer = setTimeout(()=> safePushToGitHub(true), SETTINGS.backupDebounce);
-}
-async function manualBackup(){
-  if(!ghConfigured()){ showToast('⚙ Configure GitHub first','error'); openModal('settings'); return; }
-  const ok = await safePushToGitHub(false);
-  if(ok) showToast('✓ Manual backup complete');
-}
-async function manualRestore(){
-  if(!ghConfigured()){ showToast('⚙ Configure GitHub first','error'); openModal('settings'); return; }
-  if(!confirm('⬇ Pull latest from GitHub?\n\nConflict hoga to poocha jayega.')) return;
-  syncLocked = false; sessionReconciled = false;
-  const res = await safePullFromGitHub(true);
-  if(res.ok && !res.conflict && !res.empty){ sessionReconciled = true; lastVisibilityCheckTs = Date.now(); }
-}
-async function manualSync(){
-  if(!ghConfigured()){ openModal('settings'); return; }
-  if(conflictPending){ openModal('conflict'); return; }
-  if(localVersion > lastBackedUpVersion) await safePushToGitHub(false);
-  else {
-    const res = await safePullFromGitHub(true);
-    if(res.ok && !res.conflict && !res.empty){ sessionReconciled = true; lastVisibilityCheckTs = Date.now(); }
-  }
+  if(now){ pushNow(true); return; }
+  backupDebounceTimer = setTimeout(()=>pushNow(true), SETTINGS.backupDebounce);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   🧘 MANSIK PICKER + BLACK MODE
-   ═══════════════════════════════════════════════════════════════ */
-let blackModeActive = false, blackModePaused = false, blackModeWakeLock = null;
-let bmOrigAudioDuration = null, bmOrigJapsPerAudio = null, bmOrigVibrationMs = null;
-let bmSettingsOpen = false;
-let bmAutoPaused = false;         // v1.5 FIX #14: settings ne khud pause kiya tha?
-
-function openMansikPicker(){
-  const b = localStorage.getItem('mansikAlertBase') || '10';
-  const m = localStorage.getItem('mansikAlertMult') || '1';
-  const bSel = $('mansikAlertBase'), mSel = $('mansikAlertMult');
-  const bOpts = Array.from(bSel.options).map(o => o.value);
-  const mOpts = Array.from(mSel.options).map(o => o.value);
-  bSel.value = bOpts.includes(b) ? b : '10';
-  mSel.value = mOpts.includes(m) ? m : '1';
-  $('mansikSavePreset').checked = false;
-  updateMansikAlertPreview();
-  openModal('mansikPicker');
-}
-function getMansikAlertMinutes(){
-  const b = parseInt($('mansikAlertBase').value) || 0;
-  const m = parseInt($('mansikAlertMult').value) || 1;
-  return b * m;
-}
-function updateMansikAlertPreview(){
-  const b = parseInt($('mansikAlertBase').value) || 0;
-  const m = parseInt($('mansikAlertMult').value) || 1;
-  const total = b*m, box = $('mansikAlertPreview'), mSel = $('mansikAlertMult');
-  if(b === 0){
-    mSel.disabled = true;
-    box.style.background = 'rgba(120,120,120,.15)';
-    box.style.borderColor = '#777'; box.style.color = '#999';
-    box.innerHTML = '🔇 No alert - jap chalta rahega';
-    return;
-  }
-  mSel.disabled = false;
-  box.style.background = 'rgba(16,185,129,.15)';
-  box.style.borderColor = '#10b981'; box.style.color = '#6ee7b7';
-  const h = Math.floor(total/60), mm = total%60;
-  const human = h > 0 ? (mm > 0 ? `${h} hr ${mm} min` : `${h} hr`) : `${mm} min`;
-  box.innerHTML = `⏰ ${b} × ${m} = <b>${human}</b> → ${pad(h)}:${pad(mm)}:00`;
-}
-function startMansikChoice(choice){
-  const saveAsPreset = $('mansikSavePreset').checked;
-  const totalMin = getMansikAlertMinutes();
-  let alertAdded = null;
-
-  alerts = alerts.filter(a => a.src !== 'mansik');   // array kabhi na badhe
-
-  if(totalMin > 0){
-    const ms = totalMin*60000, h = Math.floor(totalMin/60), m = totalMin%60;
-    const label = `After ${pad(h)}:${pad(m)}:00`;
-    alerts.push({ id: Date.now(), type:'time', delta: ms, target: getElapsedMs()+ms, label, triggered:false, src:'mansik' });
-    if(saveAsPreset && !presets.some(p => p.type==='time' && p.delta===ms)){
-      presets.push({ type:'time', delta: ms, label }); savePresets(); renderPresets();
-    }
-    alertAdded = `${pad(h)}:${pad(m)}:00`;
-  }
-  saveAlertsLocal(); renderAlerts();
-  localStorage.setItem('mansikAlertBase', $('mansikAlertBase').value);
-  localStorage.setItem('mansikAlertMult', $('mansikAlertMult').value);
-  closeModal('mansikPicker');
-
-  primeJapPending = !firstStartTs;        // v1.5 FIX #2: instant jap sirf fresh start pe
-  running = true;
-  blackModeActive = (choice === 'black');
-  if(blackModeActive) showBlackModeOverlay(alertAdded);
-  applyRunningState();
-  if(alertAdded) showToast(`🔔 Alert set: After ${alertAdded}`,'success');
-}
-
-function showBlackModeOverlay(alertTime){
-  const ov = $('blackModeOverlay');
-  if(!navigator.vibrate) showToast('⚠ Ye browser vibration support nahi karta','error',4000);
-  else navigator.vibrate([100,50,100]);
-  updateBmInfoDisplay();
-  const ai = $('bmAlertInfo');
-  if(alertTime){ ai.textContent = `🔔 Alert after ${alertTime}`; ai.style.display = 'block'; }
-  else ai.style.display = 'none';
-  $('bmCountNum').textContent = fmtNum(trip);
-  ov.classList.add('show'); ov.classList.remove('paused');
-  blackModePaused = false;
-  bmAutoPaused = false;
-  acquireBmWakeLock();
-  ov.onclick = (e)=>{
-    if(bmSettingsOpen) return;
-    if(e.target.closest('.bm-icon-btn')) return;
-    toggleBlackModePause(e);
-  };
-}
-function updateBmInfoDisplay(){
-  const t = $('bmIntervalTxt');
-  if(t) t.textContent = `Every ${(getJapInterval()/1000).toFixed(1)}s`;
-}
-function spawnTapRipple(x,y){
-  const fx = $('bmEffects'); if(!fx) return;
-  const r = document.createElement('div');
-  r.className = 'bm-tap-ripple';
-  if(typeof x === 'number'){ r.style.left = x+'px'; r.style.top = y+'px'; r.style.transform = 'translate(-50%,-50%) scale(0.2)'; }
-  fx.appendChild(r);
-  setTimeout(()=> r.remove(), 550);
-}
-function bmOnJapFired(){
-  if(!blackModeActive) return;
-  const el = $('bmCountNum');
-  if(el) el.textContent = fmtNum(trip);
-}
-
-/* ═══ v1.5 FIX #8: TAP DEBOUNCE
-   Bug tha: black overlay pe taabadtod tap karne pe running toggle hota
-   rehta tha, aur applyRunningState() ka tickJap() har resume pe fire hota
-   → 30 fast taps = ~15 muft japs. Ab 400ms debounce + primeJapPending=false.
-   `force` = programmatic call (settings open/close) ke liye bypass. ═══ */
-function toggleBlackModePause(e, force=false){
-  if(!force){
-    if(bmTapBusy) return;
-    if(isBellBusy()) return;
-    bmTapBusy = true;
-    setTimeout(()=>{ bmTapBusy = false; }, 400);
-  }
-  const ov = $('blackModeOverlay');
-  running = !running;
-  if(!running){ newRunToken(); clearJapTimer(); }     // L2
-  primeJapPending = false;                            // resume pe muft jap NAHI
-  applyRunningState();
-  blackModePaused = !running;
-  if(e && e.clientX) spawnTapRipple(e.clientX, e.clientY);
-  ov.classList.toggle('paused', blackModePaused);
-}
-async function acquireBmWakeLock(){
-  try{
-    if('wakeLock' in navigator){
-      blackModeWakeLock = await navigator.wakeLock.request('screen');
-      blackModeWakeLock.addEventListener('release', ()=>{
-        if(blackModeActive && document.visibilityState === 'visible') acquireBmWakeLock();
-      });
-    }
-  }catch(e){}
-}
-async function releaseBmWakeLock(){
-  try{ if(blackModeWakeLock){ await blackModeWakeLock.release(); } }catch(e){}
-  blackModeWakeLock = null;
-}
-function restoreBmSessionOverrides(){
-  if(bmOrigAudioDuration !== null) SETTINGS.audioDuration = bmOrigAudioDuration;
-  if(bmOrigJapsPerAudio  !== null) SETTINGS.japsPerAudio  = bmOrigJapsPerAudio;
-  if(bmOrigVibrationMs   !== null) SETTINGS.vibrationMs   = bmOrigVibrationMs;
-  bmOrigAudioDuration = bmOrigJapsPerAudio = bmOrigVibrationMs = null;
-  SETTINGS = sanitizeSettings(SETTINGS);        // v1.5: restore ke baad bhi safe
-}
-async function exitBlackMode(e){
-  if(e) e.stopPropagation();
-  blackModeActive = false;
-  bmSettingsOpen = false;
-  bmAutoPaused = false;
-  const ov = $('blackModeOverlay');
-  ov.classList.remove('show','paused');
-  ov.onclick = null;
-  const fx = $('bmEffects'); if(fx) fx.innerHTML = '';
-  const bms = $('bmSettingsModal'); if(bms) bms.classList.remove('show');
-  await releaseBmWakeLock();
-  restoreBmSessionOverrides();
-  if(running){
-    running = false;
-    newRunToken(); clearJapTimer();               // v1.5
-    applyRunningState();
-    scheduleAutoBackup(true);
-  }
-  showToast('🕉 Meditation ended - Har Har Mahadev','info');
-}
-
-/* ═══ BM Session Settings ═══ */
-function openBmSettings(e){
-  if(e) e.stopPropagation();
-  bmSettingsOpen = true;
-
-  bmAutoPaused = false;
-  if(running && !blackModePaused){
-    toggleBlackModePause(null, true);            // force: debounce bypass
-    bmAutoPaused = true;
-  }
-
-  const ivSel = $('bmSessionInterval'), vibSel = $('bmSessionVibration');
-  const cur = parseFloat((getJapInterval()/1000).toFixed(1));
-  const opts = Array.from(ivSel.options).map(o => parseFloat(o.value));
-  let closest = opts[0], minDiff = Math.abs(cur - closest);
-  for(const v of opts){ const d = Math.abs(cur - v); if(d < minDiff){ minDiff = d; closest = v; } }
-  ivSel.value = closest.toFixed(1);
-
-  const cv = SETTINGS.vibrationMs;
-  const cvStr = Array.isArray(cv) ? cv.join(',') : String(cv);
-  const vOpts = Array.from(vibSel.options).map(o => o.value);
-  vibSel.value = vOpts.includes(cvStr) ? cvStr : '30';
-
-  $('bmTickEnabled').checked = tickSoundOn;
-  const tv = $('bmTickVolume'), tvOpts = Array.from(tv.options).map(o => o.value);
-  tv.value = tvOpts.includes(String(tickVolume)) ? String(tickVolume) : '0.7';
-
-  $('bmBellEnabled').checked = bellEnabled;
-  const bv = $('bmBellVolume'), bvOpts = Array.from(bv.options).map(o => o.value);
-  bv.value = bvOpts.includes(String(bellVolume)) ? String(bellVolume) : '0.9';
-
-  toggleTickSoundMode();
-  $('bmSettingsModal').classList.add('show');
-}
-
-/* ═══ v1.5 FIX #14: Cancel dabane pe jap STUCK PAUSED reh jata tha.
-   Pehle closeBmSettings() sirf modal band karta tha; resume sirf
-   applyBmSettings() ke aakhir me `if(blackModePaused) toggleBlackModePause()`
-   se hota tha. Ab dono raste theek — aur sirf wahi resume hota hai
-   jo humne khud pause kiya tha. ═══ */
-function closeBmSettings(){
-  bmSettingsOpen = false;
-  const bms = $('bmSettingsModal');
-  if(bms) bms.classList.remove('show');
-
-  if(bmAutoPaused && blackModeActive && blackModePaused && !isBellBusy()){
-    bmAutoPaused = false;
-    toggleBlackModePause(null, true);           // force
-  } else {
-    bmAutoPaused = false;
-  }
-}
-function toggleTickSoundMode(){
-  const on = $('bmTickEnabled').checked;
-  $('bmSessionVibration').disabled = on;
-  $('bmTickVolume').disabled = !on;
-  $('bmVibWrap').classList.toggle('bm-disabled', on);
-  $('bmTickVolWrap').classList.toggle('bm-disabled', !on);
-}
-function applyBmSettings(){
-  const iv = parseFloat($('bmSessionInterval').value);
-  const vibRaw = $('bmSessionVibration').value;
-  const tickOn = $('bmTickEnabled').checked;
-  const tVol = parseFloat($('bmTickVolume').value);
-  const bOn = $('bmBellEnabled').checked;
-  const bVol = parseFloat($('bmBellVolume').value);
-
-  if(!iv || !isFinite(iv) || iv < 0.3 || iv > 60){ showToast('⚠ Interval 0.3 – 60 sec','error'); return; }
-
-  let vibPattern;
-  if(vibRaw.includes(',')) vibPattern = vibRaw.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
-  else { vibPattern = parseInt(vibRaw); if(isNaN(vibPattern)) vibPattern = 0; }
-
-  if(bmOrigAudioDuration === null){
-    bmOrigAudioDuration = SETTINGS.audioDuration;
-    bmOrigJapsPerAudio  = SETTINGS.japsPerAudio;
-    bmOrigVibrationMs   = SETTINGS.vibrationMs;
-  }
-  SETTINGS.audioDuration = iv;
-  SETTINGS.japsPerAudio  = 1;
-  SETTINGS.vibrationMs   = tickOn ? 0 : vibPattern;
-
-  tickSoundOn = tickOn;
-  tickVolume  = isNaN(tVol) ? 0.7 : tVol;
-  bellEnabled = bOn;
-  bellVolume  = isNaN(bVol) ? 0.9 : bVol;
-  localStorage.setItem('tickSoundOn', tickSoundOn);
-  localStorage.setItem('tickVolume', tickVolume);
-  localStorage.setItem('bellEnabled', bellEnabled);
-  localStorage.setItem('bellVolume', bellVolume);
-
-  const tst = $('tickSoundToggle'); if(tst) tst.checked = tickSoundOn;
-  const blt = $('bellToggle');      if(blt) blt.checked = bellEnabled;
-
-  if(tickOn){
-    ensureAudioCtx().then(()=>{
-      if(!tickBuffer && !tickDecodeTried){ tickDecodeTried = true; decodeSound('tick').catch(()=>{}); }
-      playTickSound();
-    }).catch(()=>{});
-  }
-
-  /* v1.5 FIX #7: pehle `if(running) japTimer = setInterval(...)` bina
-     bellPlaying guard ke tha — bell ke dauraan Apply dabane pe do timer
-     chal padte the (bell ke baad bhi ek naya banta tha). Ab guarded. */
-  clearJapTimer();
-  if(running && !isBellBusy()) setJapTimer(runToken);
-
-  updateBmInfoDisplay();
-  const fb = tickOn ? `🎧 tick @${Math.round(tickVolume*100)}%`
-    : (Array.isArray(vibPattern) ? `📳 ${vibPattern.length} pulses`
-      : (vibPattern === 0 ? '🔇 silent' : `📳 ${vibPattern}ms`));
-  showToast(`⚙ ${iv}s • ${fb} • 🔔 ${bOn?'on':'off'}`,'success',3000);
-
-  closeBmSettings();     // v1.5: yahi resume bhi kar dega (single path)
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   🔔 SOUNDS - Tick + Bell (buffers) • Om (streaming)
-   ═══════════════════════════════════════════════════════════════ */
-const SOUND_DEFS = {
-  tick: { idbKey:'tickSound', ghBin:'data/tick_sound.bin', ghMeta:'data/tick_sound_meta.json', label:'Tick' },
-  bell: { idbKey:'bellSound', ghBin:'data/bell_sound.bin', ghMeta:'data/bell_sound_meta.json', label:'Bell' },
-  om:   { idbKey:'omSound',   ghBin:'data/om_sound.bin',   ghMeta:'data/om_sound_meta.json',   label:'Om' }
-};
-let tickBuffer = null, tickName = '', tickDecodeTried = false;
-let bellBuffer = null, bellName = '', bellDecodeTried = false;
-let tickSoundOn = localStorage.getItem('tickSoundOn') === 'true';
-let tickVolume  = parseFloat(localStorage.getItem('tickVolume')) || 0.7;
-let bellVolume  = parseFloat(localStorage.getItem('bellVolume')) || 0.9;
-let bellEnabled = localStorage.getItem('bellEnabled') !== 'false';
-let lastBellMala = parseInt(localStorage.getItem('lastBellMala')) || 0;
-let bellPlaying = false;
-
-const BELL_GAP_MS = 400, BELL_RELAX_MS = 3000;
-const DECODE_MAX_BYTES = 8*1024*1024;
-const GH_SOUND_MAX = 45*1024*1024;
-
-let omEl = null, omURL = null, omName = '', omReady = false, omLooping = false;
-let omFadeTimer = null, omGestureArmed = false;
-let omBgOn   = localStorage.getItem('omBgOn') === 'true';
-let omVolume = parseFloat(localStorage.getItem('omVolume')) || 0.5;
-
-function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
-
-async function playSoundBuffer(buffer, volume){
-  if(!buffer) return 0;
-  try{
-    await ensureAudioCtx();
-    const src = audioCtx.createBufferSource(), g = audioCtx.createGain();
-    g.gain.value = Math.max(0, Math.min(1, volume));
-    src.buffer = buffer;
-    src.connect(g); g.connect(audioCtx.destination);
-    src.start();
-    src.onended = ()=>{ try{ src.disconnect(); g.disconnect(); }catch(e){} };   // v1.5 FIX #16
-    return buffer.duration;
-  }catch(e){ console.warn('playSoundBuffer', e); return 0; }
-}
-function synthTick(){
-  try{
-    ensureAudioCtx().then(()=>{
-      const t = audioCtx.currentTime;
-      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = 'sine'; o.frequency.value = 1400;
-      g.gain.value = tickVolume * 0.25;
-      o.connect(g); g.connect(audioCtx.destination);
-      o.start(t);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
-      o.stop(t + 0.08);
-      o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
-    }).catch(()=>{});
-  }catch(e){}
-}
-function synthBell(){
-  try{
-    ensureAudioCtx().then(()=>{
-      const t = audioCtx.currentTime;
-      [523.25, 659.25, 783.99].forEach((f,i)=>{
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = 'sine'; o.frequency.value = f;
-        g.gain.value = Math.max(0.02, bellVolume * (0.30 - i*0.07));
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(t);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
-        o.stop(t + 1.75);
-        o.onended = ()=>{ try{ o.disconnect(); g.disconnect(); }catch(e){} };
-      });
-    }).catch(()=>{});
-  }catch(e){}
-}
-function playTickSound(){
-  if(tickBuffer){ playSoundBuffer(tickBuffer, tickVolume); return; }
-  if(!tickDecodeTried){
-    tickDecodeTried = true;
-    decodeSound('tick').then(ok => ok ? playSoundBuffer(tickBuffer, tickVolume) : synthTick()).catch(()=> synthTick());
-    return;
-  }
-  synthTick();
-}
-async function decodeSound(kind){
-  if(kind === 'om') return false;               // Om NEVER decoded
-  const def = SOUND_DEFS[kind];
-  const stored = await idbGet(def.idbKey).catch(()=>null);
-  if(!stored || !stored.blob) return false;
-  if(stored.blob.size > DECODE_MAX_BYTES){ console.warn(kind+': too big to decode'); return false; }
-  try{
-    await ensureAudioCtx();
-    const arr = await stored.blob.arrayBuffer();
-    const buf = await audioCtx.decodeAudioData(arr.slice(0));
-    if(kind === 'tick'){ tickBuffer = buf; tickName = stored.name; }
-    else { bellBuffer = buf; bellName = stored.name; }
-    return true;
-  }catch(e){ console.warn('decodeSound '+kind, e); return false; }
-}
-function pickSound(kind){
-  const map = { tick:'tickFile', bell:'bellFile', om:'omFile' };
-  $(map[kind]).click();
-}
-/* SAVE FIRST, then play - 20MB pe bhi crash-proof */
-async function handleSoundPick(kind, e){
-  const file = e.target.files[0]; if(!file) return;
-  const def = SOUND_DEFS[kind], szTxt = fmtSize(file.size);
-  try{
-    await idbSet(def.idbKey, { blob: file, name: file.name });
-    await updateSoundInfo(kind);
-    showToast(`✓ ${def.label} saved (${szTxt})`);
-  }catch(err){
-    console.error('idbSet failed', err);
-    showToast(`❌ Save failed: ${err.message}`,'error',5000);
-    e.target.value = ''; return;
-  }
-  try{
-    if(kind === 'om'){
-      attachOmBlob(file, file.name);
-      pingOmChanged();
-      if(omBgOn && !running){ stopOmLoop(); setTimeout(()=> startOmLoop(), 400); showToast('🕉 Om chalu - START pe band hoga','info',3500); }
-      else showToast('🕉 Om saved - toggle ON karo','info',4000);
-    } else if(file.size > DECODE_MAX_BYTES){
-      showToast(`⚠ ${def.label} ${szTxt} - bahut badi! 1-2 sec ki file use karo`,'error',5000);
-    } else {
-      await ensureAudioCtx();
-      const arr = await file.arrayBuffer();
-      const buf = await audioCtx.decodeAudioData(arr.slice(0));
-      if(kind === 'tick'){ tickBuffer = buf; tickName = file.name; tickDecodeTried = true; }
-      else { bellBuffer = buf; bellName = file.name; bellDecodeTried = true; }
-      playSoundBuffer(buf, kind === 'tick' ? tickVolume : bellVolume);
-    }
-  }catch(err){
-    console.error(err);
-    showToast(`⚠ ${def.label} saved hai, par play nahi hua - MP3/M4A try karo`,'error',5000);
-  }
-  if(ghConfigured() && localStorage.getItem('ghBackupAudio') !== 'false'){
-    if(file.size > GH_SOUND_MAX) showToast(`⚠ ${szTxt} - GitHub backup skip (45MB max). Local safe hai.`,'error',5000);
-    else { showToast(`☁ ${def.label} upload ho raha hai (${szTxt})...`,'info',4000); ghUploadSound(kind, file); }
-  }
-  e.target.value = '';
-}
-async function ghUploadSound(kind, blob){
-  if(!ghConfigured()) return false;
-  const def = SOUND_DEFS[kind];
-  try{
-    const sizeMB = (blob.size/1048576).toFixed(2);
-    if(blob.size < 900000){
-      await ghPutFile(def.ghBin, await blobToBase64(blob), `${def.label} sound: ${blob.name}`);
-    } else {
-      await ghPutLargeFile(def.ghBin, blob, `${def.label} sound: ${blob.name} (${sizeMB}MB)`);
-    }
-    const meta = { name: blob.name, size: blob.size, type: blob.type || 'audio/mpeg', date: new Date().toISOString() };
-    await ghPutFile(def.ghMeta, btoa(unescape(encodeURIComponent(JSON.stringify(meta)))), `${def.label} meta`);
-    showToast(`☁ ${def.label} backed up (${sizeMB}MB)`,'success',4000);
-    return true;
-  }catch(e){
-    console.error(e);
-    showToast(`❌ ${def.label} upload: ${e.message}`,'error',6000);
-    return false;
-  }
-}
-async function ghDownloadSound(kind){
-  if(!ghConfigured()){ showToast('⚙ GitHub settings bharo','error'); return false; }
-  const def = SOUND_DEFS[kind];
-  try{
-    const metaInfo = await ghGetFileInfo(def.ghMeta);
-    if(!metaInfo || !metaInfo.content){ showToast(`❌ GitHub pe ${def.label} nahi mila`,'error',4000); return false; }
-    const meta = JSON.parse(decodeURIComponent(escape(atob(metaInfo.content.replace(/\n/g,'')))));
-    let blob = await ghFetchRawBlob(def.ghBin);
-    if(!blob){
-      const bi = await ghGetFileInfo(def.ghBin);
-      if(bi && bi.download_url) blob = await (await fetch(bi.download_url)).blob();
-      else if(bi && bi.content){
-        const bin = atob(bi.content.replace(/\n/g,''));
-        const arr = new Uint8Array(bin.length);
-        for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
-        blob = new Blob([arr]);
-      }
-    }
-    if(!blob || !blob.size){ showToast(`❌ ${def.label} download fail`,'error',4000); return false; }
-    const typed = new Blob([blob], { type: meta.type || 'audio/mpeg' });
-    await idbSet(def.idbKey, { blob: typed, name: meta.name });
-    if(kind === 'tick'){ tickName = meta.name; tickBuffer = null; tickDecodeTried = false; }
-    else if(kind === 'om'){ attachOmBlob(typed, meta.name); pingOmChanged(); }
-    else { bellName = meta.name; bellBuffer = null; bellDecodeTried = false; }
-    await updateSoundInfo(kind);
-    showToast(`✓ ${def.label} restored (${fmtSize(typed.size)})`,'success',4000);
-    return true;
-  }catch(e){ console.error('ghDownloadSound '+kind, e); showToast('❌ '+e.message,'error',5000); return false; }
-}
-async function restoreOmFromGitHub(){
-  if(!ghConfigured()){ showToast('⚙ Pehle GitHub settings bharo','error'); return; }
-  showToast('☁ Om GitHub se laa rahe hain...','info',4000);
-  const ok = await ghDownloadSound('om');
-  if(ok && omBgOn && !running){ stopOmLoop(); setTimeout(()=> startOmLoop(), 400); }
-}
-async function updateSoundInfo(kind){
-  const ids = { tick:'tickInfo', bell:'bellInfo', om:'omInfo' };
-  const el = $(ids[kind]); if(!el) return;
-  const stored = await idbGet(SOUND_DEFS[kind].idbKey).catch(()=>null);
-  if(stored && stored.blob) el.innerHTML = `✓ <b>${stored.name}</b> (${fmtSize(stored.blob.size)})`;
-  else if(kind === 'om') el.innerHTML = ghConfigured() ? '⚠ No Om - 📂 upload ya ☁ restore' : '⚠ No Om - 📂 upload karo';
-  else el.innerHTML = `⚠ No ${SOUND_DEFS[kind].label.toLowerCase()} - built-in use hoga`;
-}
-async function clearSound(kind){
-  const def = SOUND_DEFS[kind];
-  const extra = kind === 'om' ? '' : '\n(Built-in fallback use hoga)';
-  if(!confirm(`Delete saved ${def.label} sound?${extra}`)) return;
-  await idbDel(def.idbKey);
-  if(kind === 'tick'){ tickBuffer = null; tickName = ''; tickDecodeTried = false; }
-  else if(kind === 'om'){ detachOm(); pingOmChanged(); }
-  else { bellBuffer = null; bellName = ''; bellDecodeTried = false; }
-  await updateSoundInfo(kind);
-  showToast(`${def.label} sound cleared`);
-}
-async function testSound(kind){
-  if(kind === 'tick'){ playTickSound(); return; }
-  if(kind === 'om'){
-    if(!omReady){
-      const ok = await loadOmFromIDB();
-      if(!ok && ghConfigured()){ showToast('☁ Om laa rahe hain...','info',3000); await ghDownloadSound('om'); }
-    }
-    if(!omReady){ showToast('⚠ Pehle Om file 📂 se upload karo','error',4000); return; }
-    if(omLooping){ stopOmLoop(); showToast('🕉 Om stopped','info'); }
-    else { await startOmLoopForced(); showToast('🕉 Om playing - dobara ▶ dabao band karne ke liye','info',3500); }
-    return;
-  }
-  if(!bellBuffer && !bellDecodeTried){ bellDecodeTried = true; await decodeSound('bell').catch(()=>{}); }
-  if(bellBuffer) playSoundBuffer(bellBuffer, bellVolume);
-  else { synthBell(); showToast('▶ Built-in bell (apni mandir ghanti upload karo)','info'); }
-}
-
-/* ═══ OM STREAMING ENGINE ═══ */
-function getOmEl(){ if(!omEl) omEl = $('omAudio'); return omEl; }
-function attachOmBlob(blob, name){
-  const el = getOmEl(); if(!el || !blob) return false;
-  if(omURL){ try{ URL.revokeObjectURL(omURL); }catch(e){} }
-  omURL = URL.createObjectURL(blob);
-  el.src = omURL; el.loop = true; el.volume = 0; el.load();
-  omName = name || ''; omReady = true;
-  return true;
-}
-function detachOm(){
-  stopOmLoop();
-  const el = getOmEl();
-  if(el){ try{ el.pause(); el.removeAttribute('src'); el.load(); }catch(e){} }
-  if(omURL){ try{ URL.revokeObjectURL(omURL); }catch(e){} }
-  omURL = null; omName = ''; omReady = false; omLooping = false;
-}
-async function loadOmFromIDB(){
-  if(omReady) return true;
-  const stored = await idbGet(SOUND_DEFS.om.idbKey).catch(()=>null);
-  if(!stored || !stored.blob) return false;
-  return attachOmBlob(stored.blob, stored.name);
-}
-function omFadeTo(target, ms, onDone){
-  const el = getOmEl(); if(!el){ if(onDone) onDone(); return; }
-  if(omFadeTimer){ clearInterval(omFadeTimer); omFadeTimer = null; }
-  const steps = 18, stepMs = Math.max(20, ms/steps), start = el.volume, diff = target - start;
-  let i = 0;
-  omFadeTimer = setInterval(()=>{
-    i++;
-    try{ el.volume = Math.max(0, Math.min(1, start + diff*(i/steps))); }catch(e){}
-    if(i >= steps){ clearInterval(omFadeTimer); omFadeTimer = null; if(onDone) onDone(); }
-  }, stepMs);
-}
-function armOmGestureUnlock(){
-  if(omGestureArmed) return;
-  omGestureArmed = true;
-  const fn = ()=>{
-    document.removeEventListener('pointerdown', fn);
-    document.removeEventListener('touchstart', fn);
-    omGestureArmed = false;
-    if(omBgOn && !running) startOmLoop();
-  };
-  document.addEventListener('pointerdown', fn, { passive:true });
-  document.addEventListener('touchstart', fn, { passive:true });
-}
-function saveOmBgPref(){
-  omBgOn = $('omBgToggle').checked;
-  localStorage.setItem('omBgOn', omBgOn);
-  if(omBgOn){ if(!running) startOmLoop(); showToast('🕉 Om background ON','info'); }
-  else { stopOmLoop(); showToast('🕉 Om background OFF','info'); }
-}
-function saveOmVolumePref(){
-  omVolume = parseFloat($('omVolumeSel').value) || 0.5;
-  localStorage.setItem('omVolume', omVolume);
-  const el = getOmEl();
-  if(el && omLooping){
-    if(omFadeTimer){ clearInterval(omFadeTimer); omFadeTimer = null; }
-    try{ el.volume = omVolume; }catch(e){}
-  }
-}
-async function startOmLoop(){
-  if(!omBgOn || running) return;
-  if(isBellBusy()) return;                          // v1.5: bell ke dauraan Om nahi
-  if(!omReady){ const ok = await loadOmFromIDB(); if(!ok) return; }
-  if(running) return;                               // await ke baad dobara check
-  const el = getOmEl(); if(!el) return;
-  try{
-    el.loop = true; el.volume = 0;
-    await el.play();
-    if(running){ el.pause(); omLooping = false; return; }   // race guard
-    omLooping = true;
-    omFadeTo(omVolume, 700);
-    startSilentKeepAlive();
-  }catch(err){
-    omLooping = false;
-    if(err && err.name === 'NotAllowedError') armOmGestureUnlock();
-    else console.warn('startOmLoop', err);
-  }
-}
-async function startOmLoopForced(){
-  if(!omReady){ const ok = await loadOmFromIDB(); if(!ok) return; }
-  const el = getOmEl(); if(!el) return;
-  try{
-    el.loop = true; el.volume = 0;
-    await el.play();
-    omLooping = true;
-    omFadeTo(omVolume, 400);
-  }catch(err){
-    omLooping = false;
-    showToast('⚠ Om play block hua - screen pe ek baar tap karo','error',4000);
-  }
-}
-function stopOmLoop(){
-  const el = getOmEl();
-  if(!el){ omLooping = false; return; }
-  if(!omLooping && el.paused){ omLooping = false; return; }
-  omLooping = false;
-  omFadeTo(0, 300, ()=>{ try{ el.pause(); }catch(e){} });
-}
-async function initCustomSounds(){
-  for(const kind of ['om','tick','bell']){
-    const def = SOUND_DEFS[kind];
-    const local = await idbGet(def.idbKey).catch(()=>null);
-    if(local && local.blob){
-      if(kind === 'tick') tickName = local.name;
-      else if(kind === 'om') attachOmBlob(local.blob, local.name);
-      else bellName = local.name;
-      await updateSoundInfo(kind);
-    } else if(ghConfigured()){
-      const ok = await ghDownloadSound(kind).catch(()=>false);
-      if(!ok) await updateSoundInfo(kind);
-    } else {
-      await updateSoundInfo(kind);
-    }
-  }
-  const omTg = $('omBgToggle'); if(omTg) omTg.checked = omBgOn;
-  const omSel = $('omVolumeSel');
-  if(omSel){
-    const opts = Array.from(omSel.options).map(o => o.value);
-    omSel.value = opts.includes(String(omVolume)) ? String(omVolume) : '0.5';
-  }
-  if(omBgOn && !running) startOmLoop();
-}
-
-/* ═══ MALA BELL ENGINE ═══ */
-function saveBellState(){ localStorage.setItem('lastBellMala', lastBellMala); }
-function checkMalaBell(){
-  if(!bellEnabled || bellPlaying) return;
-  const mala = Math.floor(trip / 108);
-  if(mala < lastBellMala){ lastBellMala = mala; saveBellState(); return; }
-  if(mala < 1 || mala === lastBellMala) return;
-  lastBellMala = mala; saveBellState();
-  if(mala % 2 === 0) return;                        // ODD malas only
-  const rings = (((mala - 1) / 2) % 5) + 1;         // 1,3,5,7,9 → 1..5
-  playMalaBell(rings, mala);
-}
-
-/* ═══ v1.5 FIX #3: BELL ORPHAN TIMER
-   Bug tha: bell 5-15 sec chalti hai. Us dauraan user PAUSE (ya
-   pause→resume) kar deta, to bell ke aakhir me `if(running)` sach hone
-   par naya setInterval ban jata — aur beech me applyRunningState() ne jo
-   timer banaya tha uska handle overwrite ho jata → ORPHAN, jo reload ke
-   bina band nahi hota. Ab bellToken se check hota hai ki wahi session
-   chal raha hai ya nahi. ═══ */
-async function playMalaBell(rings, mala){
-  if(bellPlaying) return;                  // re-entry guard
-  bellPlaying = true;
-  const bellToken = runToken;              // session fingerprint
-
-  clearJapTimer();
-  showBellOverlay(rings, mala);
-  if(!bellBuffer && !bellDecodeTried){ bellDecodeTried = true; await decodeSound('bell').catch(()=>{}); }
-  for(let i=1;i<=rings;i++){
-    updateBellOverlayRing(i, rings);
-    let dur = 1.4;
-    if(bellBuffer) dur = await playSoundBuffer(bellBuffer, bellVolume);
-    else synthBell();
-    if(navigator.vibrate) navigator.vibrate([250,90,250]);
-    await sleep(Math.max(700, dur*1000) + BELL_GAP_MS);
-  }
-  setBellOverlayRelax();
-  await sleep(BELL_RELAX_MS);
-  hideBellOverlay();
-  bellPlaying = false;
-
-  // Auto-resume — SIRF agar wahi session abhi bhi chal raha ho
-  if(!tokenValid(bellToken)){
-    console.warn('[bell] session changed during bell — no resume');
-    clearJapTimer();
-    return;
-  }
-  setJapTimer(bellToken);
-}
-function showBellOverlay(rings, mala){
-  const ov = $('bellOverlay'); if(!ov) return;
-  $('bellMalaTxt').textContent = `${mala} × 108 = ${fmtNum(mala*108)} japs`;
-  $('bellRingTxt').textContent = `🔔 ${rings} ${rings>1?'rings':'ring'}`;
-  $('bellDots').innerHTML = Array.from({length:rings},(_,i)=>`<span class="bell-dot" id="bellDot${i+1}">🔔</span>`).join('');
-  $('bellProgress').textContent = `0 / ${rings}`;
-  $('bellRelaxTxt').style.display = 'none';
-  ov.classList.add('show');
-}
-function updateBellOverlayRing(i, total){
-  const d = $('bellDot'+i); if(d) d.classList.add('active');
-  const p = $('bellProgress'); if(p) p.textContent = `${i} / ${total}`;
-}
-function setBellOverlayRelax(){ const r = $('bellRelaxTxt'); if(r) r.style.display = 'block'; }
-function hideBellOverlay(){ const ov = $('bellOverlay'); if(ov) ov.classList.remove('show'); }
-
-/* ═══════════════════════════════════════════════════════════════
-   🔗 CROSS-PAGE SYNC (index.html ↔ mansik.html)
-   Same origin → localStorage shared. Dusra page badle to yahan reflect.
-   ═══════════════════════════════════════════════════════════════ */
-window.addEventListener('storage', (e)=>{
+/* ============ CROSS-PAGE SYNC ============ */
+window.addEventListener('storage', e=>{
   if(!e.key) return;
   if(e.key === 'permCount' || e.key === 'tripCount'){
-    if(running) return;                       // apna jap chal raha ho to chhedo mat
-    perm = parseInt(localStorage.getItem('permCount') || '0');
-    trip = parseInt(localStorage.getItem('tripCount') || '0');
+    if(running) return;                        // apna jap chal raha ho to chhedo mat
+    perm = parseInt(localStorage.getItem('permCount')||'0');
+    trip = parseInt(localStorage.getItem('tripCount')||'0');
     lastBellMala = Math.floor(trip/108);
-    saveBellState();                          // v1.5: persist bhi karo
-    $('permCount').textContent = fmtNum(perm);
-    $('tripCount').textContent = fmtNum(trip);
+    localStorage.setItem('lastBellMala', lastBellMala);
+    $('permV').textContent = fmtNum(perm);
+    $('tripV').textContent = fmtNum(trip);
     return;
   }
-  if(e.key === 'localVersion'){
-    const v = parseInt(e.newValue || '0');
-    if(v > localVersion) localVersion = v;
-    return;
-  }
-  if(e.key === 'lastBackedUpVersion'){ lastBackedUpVersion = parseInt(e.newValue || '-1'); return; }
-  if(e.key === 'lastKnownRemote'){ try{ lastKnownRemote = JSON.parse(e.newValue || 'null'); }catch(err){} return; }
-  if(e.key === 'lastSyncTs'){ lastSyncTs = parseInt(e.newValue || '0'); sessionReconciled = true; return; }
-  if(e.key === 'dailyStats'){ try{ dailyStats = JSON.parse(e.newValue || '{}'); }catch(err){} return; }
-  if(e.key === 'milestoneDates'){ try{ milestoneDates = JSON.parse(e.newValue || '{}'); }catch(err){} return; }
-  if(e.key === 'advSettings'){
-    /* v1.5 FIX #5 (3rd raasta): dusre page se aaya 0/NaN interval
-       yahan runaway counting kara deta tha. Ab sanitise + guarded restart. */
-    try{
-      SETTINGS = sanitizeSettings(JSON.parse(e.newValue || '{}'));
-      updateBmInfoDisplay();
-      if(running && !isBellBusy()){ clearJapTimer(); setJapTimer(runToken); }
-    }catch(err){}
-    return;
-  }
-  if(e.key === 'alerts'){ try{ alerts = JSON.parse(e.newValue || '[]'); if(isOpen('alerts')) renderAlerts(); }catch(err){} return; }
-  if(e.key === 'omStamp'){
-    detachOm();
-    loadOmFromIDB().then(()=>{
-      updateSoundInfo('om');
-      if(omBgOn && !running) startOmLoop();
-    });
+  if(e.key === 'localVersion'){ const v = parseInt(e.newValue||'0'); if(v > localVersion) localVersion = v; return; }
+  if(e.key === 'lastBackedUpVersion'){ lastBackedUpVersion = parseInt(e.newValue||'-1'); return; }
+  if(e.key === 'lastSyncTs'){ lastSyncTs = parseInt(e.newValue||'0'); return; }
+  if(e.key === 'alerts'){ try{ alerts = JSON.parse(e.newValue||'[]'); }catch(err){} return; }
+  if(e.key === 'dailyStats'){ try{ dailyStats = JSON.parse(e.newValue||'{}'); }catch(err){} return; }
+  if(e.key === 'advSettings' && ivOrigDur === null){
+    try{ SETTINGS = sanitizeSettings(JSON.parse(e.newValue||'{}')); updateIvLabel();
+      if(running && !isBellBusy()) setJapTimer(runToken); }catch(err){}
   }
 });
-function pingOmChanged(){ localStorage.setItem('omStamp', Date.now()); }
 
-/* ============ STARTUP ============ */
-async function initApp(){
-  /* v1.5: boot pe hi safety — corrupt localStorage se aaya 0/NaN
-     interval ya stale bell state yahin theek ho jaye */
-  SETTINGS = sanitizeSettings(SETTINGS);
-  localStorage.setItem('advSettings', JSON.stringify(SETTINGS));
-  if(!isFinite(lastBellMala) || lastBellMala < 0) lastBellMala = 0;
-  if(lastBellMala > Math.floor(trip/108)){ lastBellMala = Math.floor(trip/108); saveBellState(); }
-  console.log('[mansik v1.5] jap interval =', getJapInterval(), 'ms');
-
-  updateUI(false);
-  renderPresets();
-  renderAlerts();
-  $('omStage').classList.add('paused');
-  $('elapsedBlock').classList.add('paused');
-  $('pauseTag').style.display = 'inline-block';
-
-  const tst = $('tickSoundToggle'); if(tst) tst.checked = tickSoundOn;
-  const blt = $('bellToggle');      if(blt) blt.checked = bellEnabled;
-  updateBmInfoDisplay();
-
-  if(ghConfigured()){
-    showStartup('☁ Syncing with GitHub...','Checking for updates');
-    const res = await safePullFromGitHub(false);
-    hideStartup();
-    if(res.ok && !res.conflict){
-      sessionReconciled = true;
-      lastVisibilityCheckTs = Date.now();
-      setSyncStatus('synced', res.empty ? 'no backup' : 'now');
-    } else if(!res.conflict){
-      setSyncStatus('error','offline');
-      showToast('⚠ GitHub sync fail - offline mode','error',4000);
-    }
-  } else {
-    setSyncStatus('offline','offline');
-    showToast('⚙ GitHub configure karo Settings me','info',4000);
+/* ============ BACK TO INDEX ============ */
+async function goHome(){
+  if(running){
+    if(!confirm('Jap chal raha hai. Pause karke main page pe jaayein?')) return;
+    forcePause();
   }
-
-  await initCustomSounds();
-  showToast('🕉 Mansik Jap ready - Har Har Mahadev','success',3000);
+  if(blackOn) await exitBlack();
+  restoreSessionInterval();
+  localStorage.setItem('advSettings', JSON.stringify(sanitizeSettings(
+    JSON.parse(localStorage.getItem('advSettings')||'{}'))));    // advSettings chheda nahi
+  clockBeat();
+  if(localVersion > lastBackedUpVersion && ghConfigured()){
+    showToast('☁ Saving…','inf',1500);
+    await pushNow(true);
+  }
+  location.href = 'index.html';
 }
 
-initApp();
-</script>
+/* ============ STARTUP — seedha picker ============ */
+(function init(){
+  clockLoad();
+  if(!isFinite(lastBellMala) || lastBellMala < 0) lastBellMala = 0;
+  if(lastBellMala > Math.floor(trip/108)){ lastBellMala = Math.floor(trip/108);
+    localStorage.setItem('lastBellMala', lastBellMala); }
 
+  $('permV').textContent = fmtNum(perm);
+  $('tripV').textContent = fmtNum(trip);
+  $('elV').textContent = fmtDur(getElapsedMs());
+  updateIvLabel();
+  updateSyncDot();
+  console.log('[mansik v2.0] elapsed =', fmtDur(getElapsedMs()), '| interval =', getJapInterval(),'ms');
+
+  // Tick/bell buffers chupchap background me load (agar index.html ne upload kiye hain)
+  if(tickSoundOn){ tickTried = true; decodeSound('tick').catch(()=>{}); }
+  if(bellEnabled){ bellTried = true; decodeSound('bell').catch(()=>{}); }
+
+  openPicker();          // ⬅ SEEDHA. Koi sync overlay, koi settings, kuch nahi.
+})();
+</script>
 </body>
 </html>
