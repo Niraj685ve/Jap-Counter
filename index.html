@@ -2445,6 +2445,8 @@ function clockLoad(){
   }
   localStorage.setItem(CK_SINCE, '0');
   sessionStart = null;
+  /* v20.7: clock fresh hai → mansik setup bhi fresh (picker dobara aayega) */
+  if(!firstStartTs) clearMansikSetup();
 }
 function clockResume(){
   if(!firstStartTs){
@@ -2521,6 +2523,7 @@ function resetSessionTimer(e){
   localStorage.setItem(CK_SINCE, '0');
   localStorage.setItem(CK_BEAT, '0');
   localStorage.removeItem(CK_FIRST);
+  clearMansikSetup();                      // v20.7: naya session → picker dobara
 
   // Time-alerts ko delta se re-arm (count-alerts untouched)
   alerts.forEach(a => {
@@ -3273,6 +3276,8 @@ function toggleMode(){
   const idx = MODES.indexOf(chantMode);
   chantMode = MODES[(idx + 1) % MODES.length];
   localStorage.setItem('chantMode', chantMode);
+  /* v20.7: mansik me naya aaye → setup dobara poochho */
+  if(chantMode === 'mansik') clearMansikSetup();
   updateModeBadge();
   const info = MODE_LABELS[chantMode];
   showToast(`${info.icon} ${info.name} - ${info.hint}`);
@@ -3582,6 +3587,12 @@ async function onStartClick(){
       return;
     }
     if(chantMode === 'mansik'){
+      /* v20.7 FIX: RESUME pe picker NAHI + alert reschedule NAHI.
+         Timer badalna ho to START ko 700ms daba ke rakho. */
+      if(mansikSetupDone() && firstStartTs){
+        mansikResume();
+        return;
+      }
       openMansikPicker();
       return;
     }
@@ -4770,6 +4781,68 @@ let bmOrigVibrationMs = null;
 let bmSettingsOpen = false;
 let bmAutoPaused = false;         // v20.5 FIX #14: settings ne khud pause kiya tha?
 
+/* ═══════════════════════════════════════════════════════════════
+   🧘 v20.7 MANSIK SESSION STATE — picker sirf FRESH start pe
+   ─────────────────────────────────────────────────────────────
+   ASLI BUG: onStartClick() mansik mode me hamesha openMansikPicker()
+   khol deta tha, aur startMansikChoice() purana mansik-alert delete
+   karke naya `target = elapsed + delta` bana deta tha.
+   → Har pause/resume pe alert AAGE sarak jaata tha, kabhi fire hi nahi hota.
+   Label ("After 00:05:00") wahi rehta tha, isliye pakad me nahi aaya.
+
+   AB: setup flag localStorage me. Picker sirf tab —
+     • fresh session (firstStartTs null / RT reset ke baad)
+     • mode switch karke mansik me aaye
+     • START ko 700ms long-press kiya (timer jaan-boojh ke badalna)
+   Resume pe alert ko koi chhuega nahi.
+   ═══════════════════════════════════════════════════════════════ */
+const MK_SETUP  = 'mansikSetupDone';
+const MK_CHOICE = 'mansikLastChoice';
+
+function mansikSetupDone(){ return localStorage.getItem(MK_SETUP) === '1'; }
+function setMansikSetup(choice){
+  localStorage.setItem(MK_SETUP, '1');
+  if(choice) localStorage.setItem(MK_CHOICE, choice);
+}
+function clearMansikSetup(){ localStorage.removeItem(MK_SETUP); }
+
+/* Chalu (untriggered) mansik time-alert */
+function activeMansikAlert(){
+  return alerts.find(a => a.src === 'mansik' && a.type === 'time' && !a.triggered) || null;
+}
+
+/* Black-mode overlay pe ABSOLUTE fire-time dikhao (relative nahi) */
+function paintBmAlertInfo(){
+  const ai = document.getElementById('bmAlertInfo');
+  if(!ai) return;
+  const a = activeMansikAlert();
+  if(a){
+    ai.textContent = `🔔 Alert at ${fmtDur(a.target)}`;
+    ai.style.display = 'block';
+  } else {
+    ai.style.display = 'none';
+  }
+}
+
+/* ▶ RESUME — picker nahi, alert untouched */
+function mansikResume(){
+  primeJapPending = false;                 // resume pe muft jap nahi
+  running = true;
+  const wantBlack = localStorage.getItem(MK_CHOICE) === 'black';
+  blackModeActive = wantBlack;
+  if(wantBlack) showBlackModeOverlay(null);
+  applyRunningState();
+  paintBmAlertInfo();
+
+  const a = activeMansikAlert();
+  if(a){
+    const left = Math.max(0, a.target - getElapsedMs());
+    showToast(`▶ Resume • 🔔 ${fmtDur(left)} baad (${fmtDur(a.target)} pe)`, 'info', 3500);
+  } else {
+    showToast('▶ Mansik jap resume', 'info', 2500);
+  }
+}
+
 function openMansikPicker(){
   const savedBase = localStorage.getItem('mansikAlertBase') || '10';
   const savedMult = localStorage.getItem('mansikAlertMult') || '1';
@@ -4819,30 +4892,30 @@ function updateMansikAlertPreview(){
 function startMansikChoice(choice){
   const saveAsPreset = document.getElementById('mansikSavePreset').checked;
   const totalMin = getMansikAlertMinutes();
-  let alertAdded = null;
 
-  // v20.2: Remove any previous mansik-created alert so the array never grows
-  alerts = alerts.filter(a => a.src !== 'mansik');
+  /* Ye sirf FRESH setup / jaan-boojh ke timer badalne pe chalta hai.
+     Resume ab yahan aata hi nahi (mansikResume() handle karta hai). */
+  alerts = alerts.filter(a => a.src !== 'mansik');   // purana mansik alert hatao
 
   if(totalMin > 0){
     const ms = totalMin * 60000;
     const h = Math.floor(totalMin / 60), m = totalMin % 60;
-    const label = `After ${pad(h)}:${pad(m)}:00`;
+    const str = `${pad(h)}:${pad(m)}:00`;
+    const target = getElapsedMs() + ms;               // ⏱ absolute elapsed target — FIX ho gaya
     alerts.push({
       id: Date.now(),
       type: 'time',
       delta: ms,
-      target: getElapsedMs() + ms,
-      label,
+      target,
+      label: `After ${str}`,
       triggered: false,
       src: 'mansik'
     });
-    if(saveAsPreset && !presets.some(p => p.type==='time' && p.delta===ms)){
-      presets.push({ type:'time', delta: ms, label });
+    if(saveAsPreset && !presets.some(p => p.type === 'time' && p.delta === ms)){
+      presets.push({ type:'time', delta: ms, label: `After ${str}` });
       if(typeof savePresets === 'function') savePresets();
       if(typeof renderPresets === 'function') renderPresets();
     }
-    alertAdded = `${pad(h)}:${pad(m)}:00`;
   }
 
   saveAlertsLocal();
@@ -4852,17 +4925,18 @@ function startMansikChoice(choice){
 
   closeModal('mansikPicker');
 
-  primeJapPending = !firstStartTs;        // v20.5 FIX #2: instant jap sirf fresh start pe
-  running = true;
-  if(choice === 'black'){
-    blackModeActive = true;
-    showBlackModeOverlay(alertAdded);
-  } else {
-    blackModeActive = false;
-  }
-  applyRunningState();
+  setMansikSetup(choice);                  // v20.7: session armed → resume pe picker nahi
 
-  if(alertAdded) showToast(`🔔 Alert set: After ${alertAdded}`, 'success');
+  primeJapPending = !firstStartTs;         // instant jap sirf fresh session pe
+  running = true;
+  blackModeActive = (choice === 'black');
+  if(blackModeActive) showBlackModeOverlay(null);
+  applyRunningState();
+  paintBmAlertInfo();                      // absolute fire-time overlay pe
+
+  const a = activeMansikAlert();
+  if(a) showToast(`🔔 Alert set: ${fmtDur(a.target)} elapsed pe`, 'success', 3500);
+  else  showToast('🧘 Mansik jap shuru — koi alert nahi', 'info', 2500);
 }
 
 function showBlackModeOverlay(alertTime){
@@ -5838,6 +5912,40 @@ async function initApp(){
   // 🔔 v20.3: Load tick + bell + om sounds (local first, else GitHub auto-restore)
   await initCustomSounds();
 }
+
+/* ═══ v20.7: PAUSED + mansik me START ko 700ms dabao → picker khulega
+   (mid-session timer badalne ka saaf raasta) ═══ */
+(function(){
+  const btn = document.getElementById('startBtn');
+  if(!btn) return;
+  let lpTimer = null, lpFired = false;
+
+  const begin = ()=>{
+    lpFired = false;
+    if(running || chantMode !== 'mansik') return;
+    lpTimer = setTimeout(()=>{
+      lpTimer = null; lpFired = true;
+      try{ if(navigator.vibrate) navigator.vibrate(40); }catch(e){}
+      showToast('🧘 Mansik timer badlo', 'info', 2000);
+      openMansikPicker();
+    }, 700);
+  };
+  const end = ()=>{ if(lpTimer){ clearTimeout(lpTimer); lpTimer = null; } };
+
+  btn.addEventListener('pointerdown', begin);
+  btn.addEventListener('pointerup', end);
+  btn.addEventListener('pointerleave', end);
+  btn.addEventListener('pointercancel', end);
+
+  /* document-capture — inline onclick se PEHLE chalta hai, isliye suppress ho jata hai */
+  document.addEventListener('click', (e)=>{
+    if(!lpFired) return;
+    if(!e.target.closest || !e.target.closest('#startBtn')) return;
+    lpFired = false;
+    e.preventDefault();
+    e.stopPropagation();
+  }, true);
+})();
 
 initApp();
 </script>
