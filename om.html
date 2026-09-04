@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🕉 ॐ — Mahadev</title>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   🕉 OM SCREENSAVER — v1.6  (laptop only)
+
+   v1.6 SMOOTHNESS FIX — rings ab butter-smooth ghumte hain:
+   ① ring5Aura HATAYA — wo filter:drop-shadow ki VALUES animate
+     karta tha. Animated filter GPU compositing todta hai → har
+     frame CPU pe re-render. Ab uski jagah opacity pulse (GPU).
+   ② spinObsessed → pura linear spin. Pehle 25/50/75% pe scale
+     badalta tha, isliye ghoomne ki raftaar badalti thi = "atakna".
+   ③ .mandala.mini ka parent blur HATAYA — parent pe blur + andar
+     rotating children = parent har frame dobara blur hota tha.
+     Ab blur seedha leaf SVG pe (static filter = texture me bake).
+   ④ Har rotating element pe will-change + rotate3d() → apni GPU
+     layer milti hai, transform sirf texture ghumata hai.
+
+   RULE: STATIC filter theek hai (ek baar bake). ANIMATED filter
+   aur PARENT blur — kabhi nahi.
+   ═══════════════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}          /* html pe background NAHI */
+body{
+  font-family:-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:#ffd97a;
+  background:#000;                              /* sirf body pe */
+  display:flex;align-items:center;justify-content:center;
+  user-select:none;cursor:none;
+}
+body.showcur{cursor:default}
+
+/* ═══ BACKGROUND — index.html se HUBAHU ═══ */
+.bg-layer{
+  position:fixed;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse at center, rgba(80,10,0,0.4), rgba(0,0,0,0.95)),
+    url('https://images.unsplash.com/photo-1567878577863-8de91e8862f8?auto=format&fit=crop&w=1600&q=70'),
+    radial-gradient(ellipse at center, #501000, #000);   /* offline fallback */
+  background-size:cover;background-position:center;
+  filter:blur(6px) brightness(0.55) saturate(1.4);
+  transform:scale(1.1);
+}
+.fire-layer{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(circle at 20% 90%, rgba(255,80,0,0.5), transparent 40%),
+    radial-gradient(circle at 80% 95%, rgba(255,140,0,0.5), transparent 45%),
+    radial-gradient(circle at 50% 100%, rgba(255,50,0,0.6), transparent 50%);
+  animation:fireFlicker 3s ease-in-out infinite alternate;
+  will-change:opacity;
+}
+@keyframes fireFlicker{0%{opacity:.7}50%{opacity:1}100%{opacity:.8}}
+.embers{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.ember{
+  position:absolute;bottom:-10px;width:4px;height:4px;
+  background:radial-gradient(circle,#ffcc00,#ff3300);
+  border-radius:50%;box-shadow:0 0 8px #ff6600;
+  animation:rise linear infinite;
+  will-change:transform,opacity;
+}
+@keyframes rise{to{transform:translate3d(var(--drift),-110vh,0);opacity:0}}
+
+/* ═══ MANDALA (center) ═══ */
+.mandala{
+  --m:min(84vh,84vw,860px);          /* center size — sirf yahan badlo */
+  position:relative;
+  z-index:10;                        /* bg layers (0/1/2) ke upar */
+  width:var(--m);
+  aspect-ratio:1/1;
+}
+.mandala svg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;
+  /* v1.6: apni GPU layer — rotation sirf texture ghumati hai */
+  will-change:transform;
+  backface-visibility:hidden;
+  transform-origin:50% 50%;
+}
+
+/* ═══ 4 CORNER MINI MANDALAS ═══ */
+.mini-slot{
+  --mini:min(27vh,27vw,270px);       /* corner size — sirf yahan badlo */
+  position:fixed;z-index:5;
+  width:var(--mini);aspect-ratio:1/1;
+  pointer-events:none;
+}
+.mini-slot.tl{top:1vh;left:1vh}
+.mini-slot.tr{top:1vh;right:1vh}
+.mini-slot.bl{bottom:1vh;left:1vh}
+.mini-slot.br{bottom:1vh;right:1vh}
+
+.mandala.mini{
+  --m:var(--mini);                   /* ॐ + circle khud scale ho jaate hain */
+  width:100%;
+  z-index:auto;
+  opacity:.62;
+  /* ⚠ yahan filter:blur NAHI — parent blur rotating children ko
+     har frame re-blur karta hai. Blur neeche leaf svg pe hai. */
+}
+/* v1.6: blur seedha leaf pe — static filter, texture me bake, smooth */
+.mandala.mini svg{filter:blur(1.4px)}
+.mandala.mini .circle.unified{filter:blur(1.1px)}
+
+/* Corners halke rakhne ke liye — heavy layers off */
+.mandala.mini .shockwave,
+.mandala.mini .kaleido-core{display:none}
+
+/* Corners ek doosre se desync — sab ek saath na ghumein */
+.mini-slot.tl .mandala.mini *{animation-delay:-3s}
+.mini-slot.tr .mandala.mini *{animation-delay:-7s}
+.mini-slot.bl .mandala.mini *{animation-delay:-11s}
+.mini-slot.br .mandala.mini *{animation-delay:-15s}
+
+body.nomini .mini-slot{display:none}
+
+/* ═══ 5 RINGS — index.html ke exact same speed ═══ */
+.ring1{animation:spin    25s linear infinite;filter:drop-shadow(0 0 6px #ff6600)}
+.ring2{animation:spinRev 30s linear infinite;filter:drop-shadow(0 0 5px #ffcc00)}
+.ring3{animation:spin    35s linear infinite;filter:drop-shadow(0 0 5px #ff9933)}
+.ring4{animation:spinRev 40s linear infinite;filter:drop-shadow(0 0 5px #ffb347)}
+/* v1.6: pehle spinObsessed (scale jerk) + ring5Aura (animated filter).
+   Ab pura linear spin + opacity pulse — dono GPU pe. */
+.ring5{
+  animation:spin 14s linear infinite, ring5Pulse 2.4s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 12px #ffcc00) drop-shadow(0 0 26px #ff6600);
+}
+@keyframes ring5Pulse{from{opacity:.80}to{opacity:1}}
+.ring5 text{fill:#ffd700}
+
+/* rotate3d() → 3D compositing hint, zero jank */
+@keyframes spin{
+  from{transform:rotate3d(0,0,1,0deg)}
+  to  {transform:rotate3d(0,0,1,360deg)}
+}
+@keyframes spinRev{
+  from{transform:rotate3d(0,0,1,0deg)}
+  to  {transform:rotate3d(0,0,1,-360deg)}
+}
+
+.ring-text{font-size:17px;font-weight:bold;fill:#ffd700;letter-spacing:3px}
+.ring-text.r2{fill:#ff9933;font-size:15px;letter-spacing:2px}
+.ring-text.r3{fill:#ffb347;font-size:13px;letter-spacing:2px}
+.ring-text.r4{fill:#ffcc00;font-size:12px;letter-spacing:2px}
+.ring-text.r5{fill:#ffd700;font-size:14px;letter-spacing:4px;font-weight:900}
+
+/* ═══ HYPNOTIC OVERLAYS ═══ */
+.hypnotic-rays{
+  position:absolute;inset:24%;border-radius:50%;pointer-events:none;
+  background:conic-gradient(from 0deg,
+    transparent 0deg, rgba(255,204,0,0.15) 20deg, transparent 40deg,
+    rgba(255,102,0,0.18) 60deg, transparent 80deg, rgba(255,204,0,0.15) 100deg,
+    transparent 120deg, rgba(255,102,0,0.18) 140deg, transparent 160deg,
+    rgba(255,204,0,0.15) 180deg, transparent 200deg, rgba(255,102,0,0.18) 220deg,
+    transparent 240deg, rgba(255,204,0,0.15) 260deg, transparent 280deg,
+    rgba(255,102,0,0.18) 300deg, transparent 320deg, rgba(255,204,0,0.15) 340deg,
+    transparent 360deg);
+  animation:hypnoRays 11s linear infinite;
+  mix-blend-mode:screen;filter:blur(4px);z-index:1;
+  will-change:transform;backface-visibility:hidden;
+}
+@keyframes hypnoRays{
+  from{transform:rotate3d(0,0,1,0deg)}
+  to  {transform:rotate3d(0,0,1,-360deg)}
+}
+
+.aura-pulse{
+  position:absolute;inset:30%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,
+    rgba(255,204,0,0.32) 0%, rgba(255,102,0,0.22) 30%,
+    rgba(255,50,0,0.1) 55%, transparent 75%);
+  animation:auraPulse 3.5s ease-in-out infinite;
+  filter:blur(6px);z-index:1;mix-blend-mode:screen;
+  will-change:transform,opacity;backface-visibility:hidden;
+}
+@keyframes auraPulse{
+  0%,100%{transform:scale3d(.85,.85,1);opacity:0.55}
+  50%    {transform:scale3d(1.18,1.18,1);opacity:1}
+}
+
+.kaleido-core{
+  position:absolute;top:50%;left:50%;
+  width:55%;aspect-ratio:1/1;border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:conic-gradient(from 0deg,
+    rgba(255,204,0,0.12), rgba(255,80,0,0.18), rgba(255,0,0,0.12),
+    rgba(255,80,0,0.18), rgba(255,204,0,0.12), rgba(255,80,0,0.18),
+    rgba(255,0,0,0.12), rgba(255,80,0,0.18), rgba(255,204,0,0.12));
+  animation:kaleido 18s linear infinite;
+  mix-blend-mode:overlay;filter:blur(8px);pointer-events:none;z-index:1;
+  will-change:transform;backface-visibility:hidden;
+}
+@keyframes kaleido{
+  from{transform:translate(-50%,-50%) rotate3d(0,0,1,0deg)}
+  to  {transform:translate(-50%,-50%) rotate3d(0,0,1,360deg)}
+}
+
+.shockwave{
+  position:absolute;top:50%;left:50%;
+  width:30%;aspect-ratio:1/1;border-radius:50%;
+  border:2px solid rgba(255,204,0,0.5);
+  transform:translate(-50%,-50%) scale(0.4);
+  animation:shockwave 4.5s ease-out infinite;
+  pointer-events:none;z-index:1;
+  box-shadow:0 0 15px rgba(255,204,0,0.4), inset 0 0 15px rgba(255,102,0,0.3);
+  will-change:transform,opacity;backface-visibility:hidden;
+}
+.shockwave.delay1{animation-delay:1.5s;border-color:rgba(255,102,0,0.5)}
+.shockwave.delay2{animation-delay:3s;border-color:rgba(255,50,0,0.5)}
+/* v1.6: border-width animate nahi (layout reflow) — sirf transform+opacity */
+@keyframes shockwave{
+  0%  {transform:translate(-50%,-50%) scale(0.4);opacity:0.9}
+  100%{transform:translate(-50%,-50%) scale(1.9);opacity:0}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ⭕ UNIFIED DIVINE CENTER — index.html se HUBAHU
+   ═══════════════════════════════════════════════════════════════ */
+.counters{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:40%;aspect-ratio:1/1;
+  pointer-events:none;z-index:3;
+}
+.circle.unified{
+  width:100%;height:100%;
+  border-radius:50%;
+  display:flex;flex-direction:column;
+  justify-content:center;align-items:center;
+  padding:5% 6%;
+  position:relative;overflow:hidden;
+
+  /* STATIC base - never jumps */
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,200,80,0.28), transparent 45%),
+    radial-gradient(circle at 70% 75%, rgba(255,70,0,0.30), transparent 50%),
+    radial-gradient(circle, rgba(70,20,0,0.92), rgba(15,2,0,0.98));
+  border:3px solid #e68a00;
+
+  /* Only shadow pulses - smooth like breathing */
+  animation:divineBreath 5s ease-in-out infinite;
+}
+@keyframes divineBreath{
+  0%,100%{
+    box-shadow:
+      0 0 18px rgba(255,120,0,0.45),
+      0 0 35px rgba(255,80,0,0.25),
+      inset 0 0 15px rgba(255,100,0,0.3),
+      inset 0 0 30px rgba(255,60,0,0.2);
+  }
+  50%{
+    box-shadow:
+      0 0 40px rgba(255,180,0,0.85),
+      0 0 75px rgba(255,80,0,0.55),
+      0 0 110px rgba(255,50,0,0.3),
+      inset 0 0 28px rgba(255,200,50,0.55),
+      inset 0 0 55px rgba(255,90,0,0.45);
+  }
+}
+
+/* Independent overlay glow - softly fades in/out */
+.circle.unified > .breath-glow{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,
+    rgba(255,220,100,0.35) 0%,
+    rgba(255,120,0,0.2) 40%,
+    transparent 70%);
+  pointer-events:none;
+  animation:breathGlowFade 5s ease-in-out infinite;
+  z-index:1;mix-blend-mode:screen;
+  will-change:opacity;
+}
+@keyframes breathGlowFade{
+  0%,100%{opacity:0.15}
+  50%{opacity:0.85}
+}
+
+/* Rotating rainbow border */
+.circle.unified::before{
+  content:'';
+  position:absolute;inset:-5px;border-radius:50%;
+  background:conic-gradient(from 0deg,
+    #ffcc00, #ff6600, #ff0000, #ff9933, #ffff33,
+    #ff6600, #ffcc00, #ff3300, #ffcc00);
+  z-index:-1;
+  animation:rotBorder 7s linear infinite;
+  opacity:0.75;filter:blur(3px);
+  will-change:transform;backface-visibility:hidden;
+}
+@keyframes rotBorder{
+  from{transform:rotate3d(0,0,1,0deg)}
+  to  {transform:rotate3d(0,0,1,360deg)}
+}
+
+/* Shimmer float */
+.circle.unified::after{
+  content:'';
+  position:absolute;inset:6%;border-radius:50%;
+  background:radial-gradient(circle at 30% 20%, rgba(255,255,200,0.35), transparent 40%);
+  pointer-events:none;
+  animation:shimmerFloat 5s ease-in-out infinite alternate;
+  z-index:2;
+  will-change:transform,opacity;
+}
+@keyframes shimmerFloat{
+  from{transform:translate3d(-3%,-3%,0);opacity:0.4}
+  to  {transform:translate3d(3%,3%,0);opacity:0.8}
+}
+
+/* ═══ ॐ — counters ki jagah, HORIZONTAL rotating ═══
+   .om-glow → blurred copy, sirf opacity pulse (GPU, sasta)
+   .om      → sharp glyph, STATIC shadow, sirf rotateY */
+.om-stage{
+  position:relative;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  perspective:1000px;line-height:1;
+}
+.om-stage .om,
+.om-stage .om-glow{
+  font-size:calc(var(--m) * 0.20);
+  line-height:1;display:block;
+}
+.om-stage .om{
+  color:#ffe066;
+  /* STATIC — kabhi animate nahi hota */
+  text-shadow:
+    0 0 10px #ffcc00,
+    0 0 24px #ff6600,
+    0 0 45px #ff3300;
+  animation:omHoriz 16s linear infinite;
+  transform-style:preserve-3d;
+  backface-visibility:visible;
+  will-change:transform;
+}
+@keyframes omHoriz{
+  from{transform:rotate3d(0,1,0,0deg)}
+  to  {transform:rotate3d(0,1,0,360deg)}
+}
+.om-stage .om-glow{
+  position:absolute;top:0;left:50%;
+  transform:translateX(-50%);
+  color:#ff8800;filter:blur(18px);opacity:.45;
+  pointer-events:none;
+  animation:omGlowPulse 5s ease-in-out infinite;
+  will-change:opacity;z-index:-1;
+}
+@keyframes omGlowPulse{
+  0%,100%{opacity:.28}
+  50%{opacity:.9}
+}
+
+/* ═══ LITE MODE (L dabao — purane laptop ke liye) ═══ */
+body.lite .hypnotic-rays,
+body.lite .kaleido-core,
+body.lite .aura-pulse,
+body.lite .circle.unified > .breath-glow{
+  mix-blend-mode:normal;filter:none;
+}
+body.lite .shockwave.delay1,
+body.lite .shockwave.delay2{display:none}
+body.lite .bg-layer{filter:brightness(0.5) saturate(1.3)}
+body.lite .om-glow{filter:blur(10px)}
+body.lite .mandala.mini svg,
+body.lite .mandala.mini .circle.unified{filter:none}
+body.lite .mandala.mini{opacity:.5}
+body.lite .mandala.mini .hypnotic-rays,
+body.lite .mandala.mini .aura-pulse{display:none}
+body.lite .ring1,body.lite .ring2,body.lite .ring3,
+body.lite .ring4,body.lite .ring5{filter:none}
+
+/* ═══ GESTURE UNLOCK (autoplay policy) ═══ */
+.unlock{
+  position:fixed;inset:0;z-index:50;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(0,0,0,.85);backdrop-filter:blur(6px);
+  cursor:pointer;transition:opacity .6s;
+}
+.unlock.gone{opacity:0;pointer-events:none}
+.unlock .o{font-size:96px;color:#ffcc00;text-shadow:0 0 20px #ffcc00,0 0 50px #ff6600}
+.unlock .t{font-size:15px;color:#ffd9a0;letter-spacing:3px}
+.unlock .s{font-size:11px;color:#888;letter-spacing:1px}
+
+/* ═══ TINY STATUS ═══ */
+.stat{
+  position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  font-size:10.5px;letter-spacing:1.5px;color:rgba(255,180,80,.45);
+  z-index:40;transition:opacity 1s;pointer-events:none;
+}
+.stat.gone{opacity:0}
+.hintbar{
+  position:fixed;top:12px;left:50%;transform:translateX(-50%);
+  font-size:10px;letter-spacing:1px;color:rgba(255,180,80,.3);
+  z-index:40;transition:opacity 1s;pointer-events:none;
+}
+.hintbar.gone{opacity:0}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="fire-layer"></div>
+<div class="embers" id="embers"></div>
+
+<audio id="omAudio" loop></audio>
+
+<!-- 4 corner slots — JS inme mini mandala clone karta hai -->
+<div class="mini-slot tl"></div>
+<div class="mini-slot tr"></div>
+<div class="mini-slot bl"></div>
+<div class="mini-slot br"></div>
+
+<div class="mandala center" id="centerMandala">
+
+  <!-- ⚠ RING1 FIX: textLength = 2πr = 2π(190) ≈ 1193 viewBox units.
+       textPath na wrap karta hai na shrink — jitna text path se lamba,
+       wo render hi nahi hota. Devanagari me matras alag code point
+       hote hain (शिवाय = 5 chars) to letter-spacing se length phool
+       jaati thi aur aakhri akshar kat jaate the. Ab text theek 360°
+       me fit hota hai aur jodd bhi seamless milta hai.
+       Text ek hi line me rakho — newline se extra space aa jaata hai. -->
+  <svg viewBox="0 0 400 400" class="ring1">
+    <defs><path id="c1" d="M 200,200 m -190,0 a 190,190 0 1,1 380,0 a 190,190 0 1,1 -380,0"/></defs>
+    <text class="ring-text"><textPath href="#c1" startOffset="0" textLength="1193" lengthAdjust="spacing">ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय • ॐ नमः शिवाय •</textPath></text>
+  </svg>
+
+  <svg viewBox="0 0 400 400" class="ring2">
+    <defs><path id="c2" d="M 200,200 m -162,0 a 162,162 0 1,1 324,0 a 162,162 0 1,1 -324,0"/></defs>
+    <text class="ring-text r2"><textPath href="#c2" startOffset="0">
+      हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦ हर हर महादेव ✦
+    </textPath></text>
+  </svg>
+
+  <svg viewBox="0 0 400 400" class="ring3">
+    <defs><path id="c3" d="M 200,200 m -135,0 a 135,135 0 1,1 270,0 a 135,135 0 1,1 -270,0"/></defs>
+    <text class="ring-text r3"><textPath href="#c3" startOffset="0">
+      श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ श्री शिवाय नमस्तुभ्यं ॥ नमस्तुभ्यं ॥
+    </textPath></text>
+  </svg>
+
+  <svg viewBox="0 0 400 400" class="ring4">
+    <defs><path id="c4" d="M 200,200 m -110,0 a 110,110 0 1,1 220,0 a 110,110 0 1,1 -220,0"/></defs>
+    <text class="ring-text r4"><textPath href="#c4" startOffset="0">
+      जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥ जय श्री महाकाल ॥
+    </textPath></text>
+  </svg>
+
+  <svg viewBox="0 0 400 400" class="ring5">
+    <defs><path id="c5" d="M 200,200 m -88,0 a 88,88 0 1,1 176,0 a 88,88 0 1,1 -176,0"/></defs>
+    <text class="ring-text r5"><textPath href="#c5" startOffset="0">
+      ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦ ॐ ✦
+    </textPath></text>
+  </svg>
+
+  <div class="hypnotic-rays"></div>
+  <div class="kaleido-core"></div>
+  <div class="aura-pulse"></div>
+  <div class="shockwave"></div>
+  <div class="shockwave delay1"></div>
+  <div class="shockwave delay2"></div>
+
+  <!-- ⭕ index.html ka same circle — andar sirf ॐ -->
+  <div class="counters">
+    <div class="circle unified">
+      <div class="breath-glow"></div>
+      <div class="om-stage">
+        <span class="om-glow">ॐ</span>
+        <span class="om">ॐ</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="hintbar" id="hint">F fullscreen • Space mute • ↑↓ volume • L lite • M corners</div>
+<div class="stat" id="stat">…</div>
+
+<div class="unlock" id="unlock">
+  <div class="o">ॐ</div>
+  <div class="t">कहीं भी क्लिक करें</div>
+  <div class="s">Om sound शुरू करने के लिए</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   🕉 OM SCREENSAVER — v1.6
+   Om sound: pehle IndexedDB('japDB' → omSound), warna GitHub
+   (data/om_sound.bin). Creds index.html ne localStorage me daale
+   hote hain — yahan sirf PADHE jaate hain. Kuch likha nahi jaata,
+   isliye jap data ko koi khatra nahi.
+   ═══════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const el = $('omAudio');
+let omVol = parseFloat(localStorage.getItem('omVolume')) || 0.5;
+let omReady = false, fadeT = null;
+
+/* ── CORNER MINI MANDALAS ──
+   Center mandala ko clone karke 4 corners me daalte hain.
+   ⚠ SVG defs ke IDs unique karna ZAROORI hai — duplicate ID pe
+   textPath pehle wale path ko pakad leta hai aur ring toot jaati hai.
+   textLength attribute clone me khud aa jaata hai (viewBox units). */
+(function(){
+  const src = $('centerMandala');
+  document.querySelectorAll('.mini-slot').forEach((slot, i)=>{
+    const c = src.cloneNode(true);
+    c.removeAttribute('id');
+    c.classList.remove('center');
+    c.classList.add('mini');
+    c.querySelectorAll('svg').forEach((svg, k)=>{
+      const p  = svg.querySelector('defs path');
+      const tp = svg.querySelector('textPath');
+      if(!p || !tp) return;
+      const nid = 'mc'+(i+1)+'_'+(k+1);
+      p.setAttribute('id', nid);
+      tp.setAttribute('href', '#'+nid);
+      tp.setAttributeNS('http://www.w3.org/1999/xlink','xlink:href','#'+nid);
+    });
+    slot.appendChild(c);
+  });
+})();
+
+/* ── EMBERS ── */
+(function(){
+  const box = $('embers');
+  for(let i=0;i<24;i++){
+    const e = document.createElement('div');
+    e.className = 'ember';
+    e.style.left = Math.random()*100+'%';
+    e.style.animationDuration = (6+Math.random()*9)+'s';
+    e.style.animationDelay = (Math.random()*10)+'s';
+    e.style.setProperty('--drift',(Math.random()*100-50)+'px');
+    const s = 2+Math.random()*4;
+    e.style.width = e.style.height = s+'px';
+    box.appendChild(e);
+  }
+})();
+
+/* ── STATUS (2.5s baad khud fade) ── */
+let statT = null;
+function stat(msg, keep=false){
+  const s = $('stat');
+  s.textContent = msg;
+  s.classList.remove('gone');
+  clearTimeout(statT);
+  if(!keep) statT = setTimeout(()=> s.classList.add('gone'), 2500);
+}
+
+/* ── IDB (read-only, timeout-safe) ── */
+function idbGet(key){
+  return new Promise(res=>{
+    let done = false;
+    const fin = v => { if(!done){ done = true; res(v); } };
+    setTimeout(()=>fin(null), 4000);
+    try{
+      const r = indexedDB.open('japDB',1);
+      r.onupgradeneeded = ()=>{ try{ r.transaction.abort(); }catch(e){} fin(null); };
+      r.onerror = ()=> fin(null);
+      r.onsuccess = e=>{
+        const db = e.target.result;
+        if(!db.objectStoreNames.contains('kv')) return fin(null);
+        const tx = db.transaction('kv','readonly');
+        const q = tx.objectStore('kv').get(key);
+        q.onsuccess = ()=> fin(q.result);
+        q.onerror = ()=> fin(null);
+      };
+    }catch(e){ fin(null); }
+  });
+}
+
+/* ── GITHUB (read-only) ── */
+function ghCfg(){
+  const t = localStorage.getItem('ghToken'),
+        o = localStorage.getItem('ghOwner'),
+        r = localStorage.getItem('ghRepo');
+  return (t && o && r) ? {t,o,r} : null;
+}
+async function ghOmBlob(){
+  const c = ghCfg(); if(!c) return null;
+  const H = x => ({ Authorization:'Bearer '+c.t, ...x });
+  const base = 'https://api.github.com/repos/'+c.o+'/'+c.r+'/contents/';
+  const P = 'data/om_sound.bin';
+  /* 1) raw media type — 1MB+ files ke liye ZAROORI hai */
+  try{
+    const res = await fetch(base+P, { headers:H({Accept:'application/vnd.github.raw'}) });
+    if(res.ok){ const b = await res.blob(); if(b && b.size) return b; }
+  }catch(e){}
+  /* 2) fallback: download_url / base64 content */
+  try{
+    const res = await fetch(base+P, { headers:H({Accept:'application/vnd.github+json'}) });
+    if(res.ok){
+      const j = await res.json();
+      if(j.download_url){ const b = await (await fetch(j.download_url)).blob(); if(b && b.size) return b; }
+      if(j.content){
+        const bin = atob(j.content.replace(/\n/g,''));
+        const arr = new Uint8Array(bin.length);
+        for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+        return new Blob([arr],{type:'audio/mpeg'});
+      }
+    }
+  }catch(e){}
+  return null;
+}
+
+/* ── LOAD OM ── */
+async function loadOm(){
+  stat('🕉 ॐ ढूंढ रहे हैं…', true);
+  const local = await idbGet('omSound');
+  if(local && local.blob && local.blob.size){
+    attach(local.blob);
+    stat('🕉 ॐ ready (local)');
+    return true;
+  }
+  if(!ghCfg()){
+    stat('⚠ Om file नहीं — index.html में upload करो', true);
+    return false;
+  }
+  stat('☁ GitHub से ॐ आ रहा है…', true);
+  const blob = await ghOmBlob();
+  if(blob){
+    attach(blob);
+    stat('🕉 ॐ ready (GitHub)');
+    return true;
+  }
+  stat('⚠ GitHub पे Om नहीं मिला', true);
+  return false;
+}
+function attach(blob){
+  el.src = URL.createObjectURL(new Blob([blob], {type: blob.type || 'audio/mpeg'}));
+  el.loop = true;
+  el.volume = 0;
+  el.load();
+  omReady = true;
+}
+
+/* ── FADE ── */
+function fadeTo(target, ms){
+  if(fadeT) clearInterval(fadeT);
+  const steps = 24, stepMs = Math.max(20, ms/steps);
+  const start = el.volume, diff = target - start;
+  let i = 0;
+  fadeT = setInterval(()=>{
+    i++;
+    try{ el.volume = Math.max(0, Math.min(1, start + diff*(i/steps))); }catch(e){}
+    if(i >= steps){ clearInterval(fadeT); fadeT = null; }
+  }, stepMs);
+}
+async function playOm(){
+  if(!omReady) return false;
+  try{
+    el.volume = 0;
+    await el.play();
+    fadeTo(omVol, 2500);
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ── UNLOCK (browser autoplay policy) ── */
+$('unlock').addEventListener('click', async ()=>{
+  $('unlock').classList.add('gone');
+  const ok = await playOm();
+  if(ok) stat('🕉 ॐ playing — vol '+Math.round(omVol*100)+'%');
+  else if(omReady) stat('⚠ Play block हुआ — दोबारा click करो');
+  setTimeout(()=> $('hint').classList.add('gone'), 6000);
+});
+
+/* ── CONTROLS ── */
+let muted = false;
+if(localStorage.getItem('omLite')   === 'true') document.body.classList.add('lite');
+if(localStorage.getItem('omNoMini') === 'true') document.body.classList.add('nomini');
+
+document.addEventListener('keydown', e=>{
+  const k = e.key.toLowerCase();
+  if(k === 'f'){
+    e.preventDefault();
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+    else document.exitFullscreen().catch(()=>{});
+    return;
+  }
+  if(k === 'l'){
+    const on = document.body.classList.toggle('lite');
+    localStorage.setItem('omLite', on);
+    stat(on ? '⚡ Lite mode ON — max smooth' : '✨ Full effects ON');
+    return;
+  }
+  if(k === 'm'){
+    const off = document.body.classList.toggle('nomini');
+    localStorage.setItem('omNoMini', off);
+    stat(off ? '⬛ Corner mandalas OFF' : '🕉 Corner mandalas ON');
+    return;
+  }
+  if(k === ' '){
+    e.preventDefault();
+    muted = !muted;
+    fadeTo(muted ? 0 : omVol, 500);
+    stat(muted ? '🔇 muted' : '🔊 vol '+Math.round(omVol*100)+'%');
+    return;
+  }
+  if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+    e.preventDefault();
+    omVol = Math.max(0, Math.min(1, omVol + (e.key === 'ArrowUp' ? 0.1 : -0.1)));
+    omVol = Math.round(omVol*10)/10;
+    localStorage.setItem('omVolume', omVol);
+    muted = false;
+    fadeTo(omVol, 250);
+    stat('🔊 vol '+Math.round(omVol*100)+'%');
+    return;
+  }
+  if(k === 'escape' && document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+});
+
+/* ── CURSOR auto-hide (3s idle) ── */
+let curT = null;
+document.addEventListener('mousemove', ()=>{
+  document.body.classList.add('showcur');
+  $('hint').classList.remove('gone');
+  clearTimeout(curT);
+  curT = setTimeout(()=>{
+    document.body.classList.remove('showcur');
+    $('hint').classList.add('gone');
+  }, 3000);
+});
+
+/* ── Tab wapas aane pe Om phir chalao ── */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && omReady && !muted && el.paused){
+    el.play().catch(()=>{});
+  }
+});
+
+/* ── BOOT ── */
+(async function(){
+  const ok = await loadOm();
+  if(!ok){
+    $('unlock').querySelector('.s').textContent = 'सिर्फ़ visual (Om file नहीं मिली)';
+  }
+  console.log('[om.html v1.6] ready — smooth rotation');
+})();
+</script>
+</body>
+</html>
