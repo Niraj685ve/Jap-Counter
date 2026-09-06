@@ -1,7 +1,7 @@
 {
-  "perm": 12508,
-  "trip": 3492,
-  "version": 14524,
+  "perm": 12529,
+  "trip": 3513,
+  "version": 14545,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z",
     "5000": "2026-09-03T16:17:08.848Z",
@@ -13,18 +13,18 @@
     "2026-09-03": 2338,
     "2026-09-04": 2420,
     "2026-09-05": 1442,
-    "2026-09-06": 3343
+    "2026-09-06": 3364
   },
   "settings": {
-    "audioDuration": 5.4,
-    "japsPerAudio": 4,
+    "audioDuration": 2,
+    "japsPerAudio": 1,
     "tapCooldown": 150,
     "backupEvery": 20,
     "backupDebounce": 3000,
     "chantHours": 4,
-    "vibrationMs": 30
+    "vibrationMs": 0
   },
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-09-06T17:28:03.722Z",
+  "updatedAt": "2026-09-06T17:31:42.798Z",
   "appVersion": "v20.5"
 }
