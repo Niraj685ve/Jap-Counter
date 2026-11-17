@@ -1,7 +1,7 @@
 {
   "perm": 137769,
-  "trip": 1576,
-  "version": 133960,
+  "trip": 0,
+  "version": 133961,
   "milestoneDates": {
     "1000": "2026-09-01T06:05:44.058Z",
     "5000": "2026-09-03T16:17:08.848Z",
@@ -106,6 +106,6 @@
     "vibrationMs": 0
   },
   "deviceId": "dev_ezh0kxit",
-  "updatedAt": "2026-11-17T03:56:16.578Z",
+  "updatedAt": "2026-11-17T03:56:27.262Z",
   "appVersion": "v20.5"
 }
